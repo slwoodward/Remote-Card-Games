@@ -18,7 +18,7 @@ This file is Liverpool specific because different games may need additional butt
 
 
 def CreateButtons(hand_view):
-    """This creates the buttons used for HandAndFoot. """
+    """This creates the buttons and text used for game. """
     hand_view.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
     hand_view.ready_yes_btn = \
         Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 70), 125, 25, text='Ready:YES')
@@ -30,7 +30,13 @@ def CreateButtons(hand_view):
     hand_view.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
     hand_view.sort_suit_btn = Btn.Button(UIC.White, 900, 50, 225, 25, text='sort by suit')
     hand_view.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
-    hand_view.prepare_card_btn = Btn.Button(UIC.White, 400, 15, 345, 25, text='Selected cards -> prepared cards')
+    # from HandAndFoot:
+    # hand_view.prepare_card_btn = Btn.Button(UIC.White, 400, 15, 345, 25, text='Selected cards -> prepared cards')
+    #
+    #  For liverpool need multiple buttons to assign cards to appropriate set/run.
+    #  and need to do this at beginning of each round, so replace prepare_card_btn
+    #  with an array of buttons that are created in method 'newRound' below.
+    hand_view.assign_cards_btns = [[]]
     hand_view.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 53, 225, 25, text='Clear prepared cards')
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
     hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
@@ -62,13 +68,15 @@ def ButtonDisplay(hand_view):
     if hand_view.controller._state.round == -1:
         hand_view.ready_yes_btn.draw(hand_view.display, hand_view.ready_yes_btn.outline_color)
         hand_view.ready_no_btn.draw(hand_view.display, hand_view.ready_no_btn.outline_color)
-    else:
-        hand_view.labelMedium(str(Meld_Threshold[hand_view.controller._state.round]) + "points to meld",
-                              hand_view.round_indicator_xy[0], hand_view.round_indicator_xy[1])
+    # else:
+    #    hand_view.labelMedium(str(Meld_Threshold[hand_view.controller._state.round]) + "points to meld",
+    #                          hand_view.round_indicator_xy[0], hand_view.round_indicator_xy[1])
     hand_view.sort_status_btn.draw(hand_view.display, hand_view.sort_status_btn.outline_color)
     hand_view.sort_suit_btn.draw(hand_view.display, hand_view.sort_btn.outline_color)
     hand_view.sort_btn.draw(hand_view.display, hand_view.sort_btn.outline_color)
-    hand_view.prepare_card_btn.draw(hand_view.display, hand_view.prepare_card_btn.outline_color)
+    for btn_list in hand_view.assign_cards_btns:
+        for button in btn_list:
+            button.draw(hand_view.display, button.outline_color)
     hand_view.clear_prepared_cards_btn.draw(hand_view.display, hand_view.clear_prepared_cards_btn.outline_color)
     hand_view.clear_selected_cards_btn.draw(hand_view.display, hand_view.clear_selected_cards_btn.outline_color)
     hand_view.play_prepared_cards_btn.draw(hand_view.display, hand_view.play_prepared_cards_btn.outline_color)
@@ -94,6 +102,7 @@ def ClickedButton(hand_view, pos):
             key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
+    '''
     elif hand_view.prepare_card_btn.isOver(pos):
         hand_view.already_prepared_cards = hand_view.controller.getPreparedCards()
         hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
@@ -117,7 +126,9 @@ def ClickedButton(hand_view, pos):
         # If there are cards that could not be automatically prepared, then HandView.nextEvent
         # will be looking for keystrokes (buttons are not involved), and HandView.assignWilds will
         # take care of assigning values and marking wilds as prepared.
-    elif hand_view.play_prepared_cards_btn.isOver(pos):
+    '''
+    # elif  < if in next line was an elif until I commented out big block above.
+    if hand_view.play_prepared_cards_btn.isOver(pos):
         hand_view.controller.play()
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
@@ -172,10 +183,11 @@ def MouseHiLight(hand_view, pos):
         hand_view.sort_btn.outline_color = UIC.Black  # set outline color
     else:
         hand_view.sort_btn.outline_color = UIC.Gray  # remove highlighted outline
-    if hand_view.prepare_card_btn.isOver(pos):
-        hand_view.prepare_card_btn.outline_color = UIC.Bright_Blue  # set outline color
-    else:
-        hand_view.prepare_card_btn.outline_color = UIC.Blue  # remove highlighted outline
+    #todo: put following in loop that goes through all the prepare_card_btns...
+    # if hand_view.prepare_card_btn.isOver(pos):
+    #     hand_view.prepare_card_btn.outline_color = UIC.Bright_Blue  # set outline color
+    # else:
+    #     hand_view.prepare_card_btn.outline_color = UIC.Blue  # remove highlighted outline
     if hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
     else:
@@ -193,3 +205,29 @@ def MouseHiLight(hand_view, pos):
     else:
         hand_view.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
     return
+
+
+def newRound(hand_view, sets_runs_tuple, num_players=1):
+    print(sets_runs_tuple)
+    hand_view.assign_cards_btns = []
+    for idx in range(num_players):
+        oneplayers_assignbtns = []
+        for setnum in range(sets_runs_tuple[0]):
+            txt = "set " + str(setnum+1)
+            x = 100 + (100*idx)
+            y = 175 + (75*setnum)
+            w = 75
+            h = 50
+            prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
+            oneplayers_assignbtns.append(prepare_card_btn)
+        for runnum in range(sets_runs_tuple[1]):
+            txt = "run " + str(runnum+1)
+            jdx = sets_runs_tuple[0] + runnum
+            x = 100 + (100 * idx)
+            y = 175 + (75 * jdx)
+            w = 75
+            h = 50
+            prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
+            oneplayers_assignbtns.append(prepare_card_btn)
+        hand_view.assign_cards_btns.append(oneplayers_assignbtns)
+

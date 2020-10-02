@@ -4,10 +4,11 @@ from PodSixNet.Connection import connection, ConnectionListener
 from client.ClientState import ClientState
 from client.Controller import Controller
 from client.CreateDisplay import CreateDisplay
-from client.HandView import HandView
 from client.TableView import TableView
+from client.HandView import HandView
 # imports below added so that can generate executable using pyinstaller.
-import common.HandAndFoot
+# import common.HandAndFoot
+import common.Liverpool
 import common.Card
 import client.Button
 import client.ClickableImage
@@ -31,10 +32,11 @@ def RunClient():
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
+    # gamers = []
     playername = gameControl.getName()
     gameboard = CreateDisplay(playername)
-    handView = HandView(gameControl, gameboard.display)
     tableView = TableView(gameboard.display)
+    handView = HandView(gameControl, gameboard.display)
     while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
         # Note that if two people join with the same name almost simultaneously, then both might be renamed.
         note = "waiting for updated list of player names"
@@ -49,13 +51,15 @@ def RunClient():
     gameControl.checkNames(tableView.player_names)
     while True:
         # Primary game loop.
+        # gamers = tableView.player_names  # In Liverpool handView needs to know number of players (and maybe their names).
         gameboard.refresh()
         handView.nextEvent()
         connection.Pump()
         gameControl.Pump()
         tableView.Pump()
-        handView.update()
-        tableView.playerByPlayer()
+        tableView.playerByPlayer() # for Liverpool need to put handView.update on TOP of playerByPlayer.
+        handView.update(len(tableView.player_names)) # Liverpool needs # players, HandAndFoot did not.
+        # tableView.playerByPlayer()
         note = gameControl.note
         gameboard.render(note)
         sleep(0.001)

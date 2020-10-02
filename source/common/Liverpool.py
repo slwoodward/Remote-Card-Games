@@ -14,9 +14,9 @@ Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
 
-Meld_Threshold = [50, 90, 120, 150]  # from Hand and Foot example
-#to do implement change in threshold so it's a tuple with the number of sets and runs.
-# Meld_Threshold = [(2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]  # Liverpool need this to be number of sets and runs.
+# Meld_Threshold = [50, 90, 120, 150]  # from Hand and Foot example
+# first element below is for testing only.
+Meld_Threshold = [(2,1), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]  # Liverpool need this to be number of sets and runs.
 Number_Rounds = len(Meld_Threshold)  # For convenience
 
 Deal_Size = 11
