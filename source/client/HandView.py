@@ -81,7 +81,7 @@ class HandView:
                     score = 0
                     self.controller.lateJoinScores(score)
                 self.round_index = self.controller._state.round
-            # Need to recreate 'prepare cards' buttons when commence each round.
+            # For Liverpool need to recreate 'prepare cards' buttons when commence each round.
             if self.need_updated_buttons:
                 RuleSetsButtons.newRound(self, Meld_Threshold[self.round_index], num_players)
                 self.need_updated_buttons = False

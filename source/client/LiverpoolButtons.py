@@ -92,10 +92,10 @@ def ClickedButton(hand_view, pos):
     if hand_view.draw_pile.isOver(pos):
         hand_view.controller.draw()
     elif hand_view.sort_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key)
+        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[0])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_suit_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key3)
+        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[2])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_status_btn.isOver(pos):
         hand_view.hand_info.sort(
@@ -183,11 +183,13 @@ def MouseHiLight(hand_view, pos):
         hand_view.sort_btn.outline_color = UIC.Black  # set outline color
     else:
         hand_view.sort_btn.outline_color = UIC.Gray  # remove highlighted outline
-    #todo: put following in loop that goes through all the prepare_card_btns...
-    # if hand_view.prepare_card_btn.isOver(pos):
-    #     hand_view.prepare_card_btn.outline_color = UIC.Bright_Blue  # set outline color
-    # else:
-    #     hand_view.prepare_card_btn.outline_color = UIC.Blue  # remove highlighted outline
+    #  loop through all the assign card buttons
+    for oneplayer_assign_btns in hand_view.assign_cards_btns:
+        for prepare_card_btn in oneplayer_assign_btns:
+            if prepare_card_btn.isOver(pos):
+                prepare_card_btn.outline_color = UIC.Black  # set outline color
+            else:
+                prepare_card_btn.outline_color = UIC.Gray  # remove highlighted outline
     if hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
     else:
@@ -208,25 +210,37 @@ def MouseHiLight(hand_view, pos):
 
 
 def newRound(hand_view, sets_runs_tuple, num_players=1):
+    """ At start of each round this creates buttons used to assign cards."""
+
+    # Unlike columns for players (found in TableView.playerByPlayer)
+    # it does not refresh if a player leaves mid-round.
+    # todo: consider whether it should update if a player leaves mid-round.
+
     print(sets_runs_tuple)
     hand_view.assign_cards_btns = []
+    if num_players > 1:
+        players_sp_w = UIC.Disp_Width / num_players
+    else:
+        players_sp_w = UIC.Disp_Width
+    players_sp_h = UIC.Disp_Height / 8
+    players_sp_top = (UIC.Disp_Height / 5) + players_sp_h
     for idx in range(num_players):
         oneplayers_assignbtns = []
         for setnum in range(sets_runs_tuple[0]):
             txt = "set " + str(setnum+1)
-            x = 100 + (100*idx)
-            y = 175 + (75*setnum)
+            x = 100 + (players_sp_w*idx)
+            y = players_sp_top + (players_sp_h*setnum)
             w = 75
-            h = 50
+            h = 25
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             oneplayers_assignbtns.append(prepare_card_btn)
         for runnum in range(sets_runs_tuple[1]):
             txt = "run " + str(runnum+1)
             jdx = sets_runs_tuple[0] + runnum
-            x = 100 + (100 * idx)
-            y = 175 + (75 * jdx)
+            x = 100 + (players_sp_w * idx)
+            y = players_sp_top + (players_sp_h * jdx)
             w = 75
-            h = 50
+            h = 25
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             oneplayers_assignbtns.append(prepare_card_btn)
         hand_view.assign_cards_btns.append(oneplayers_assignbtns)

@@ -32,7 +32,6 @@ def RunClient():
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
-    # gamers = []
     playername = gameControl.getName()
     gameboard = CreateDisplay(playername)
     tableView = TableView(gameboard.display)
@@ -51,7 +50,6 @@ def RunClient():
     gameControl.checkNames(tableView.player_names)
     while True:
         # Primary game loop.
-        # gamers = tableView.player_names  # In Liverpool handView needs to know number of players (and maybe their names).
         gameboard.refresh()
         handView.nextEvent()
         connection.Pump()
