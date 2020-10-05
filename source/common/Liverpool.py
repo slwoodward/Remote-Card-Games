@@ -80,6 +80,9 @@ def canPlayGroup(key, card_group):
 def canMeld(prepared_cards, round_index):
     """Determines if a set of card groups is a legal meld"""
     # todo: rewrite to see if have legal set/run for each one required in meld threshold.
+    print('Liverpool does not currently check that meld is legal.  Must edit Liverpool.canMeld')
+    '''
+    # This section is from HandAndFoot.
     score = 0
     for key, card_group in prepared_cards.items():
         if canPlayGroup(key, card_group):
@@ -87,6 +90,7 @@ def canMeld(prepared_cards, round_index):
     min_score = Meld_Threshold[round_index]
     if score < min_score:
         raise Exception("Meld does not meet round minimum score or {0}".format(min_score))
+    '''
     return True
 
 

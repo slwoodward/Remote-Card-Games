@@ -102,33 +102,7 @@ def ClickedButton(hand_view, pos):
             key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
-    '''
-    elif hand_view.prepare_card_btn.isOver(pos):
-        hand_view.already_prepared_cards = hand_view.controller.getPreparedCards()
-        hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
-        hand_view.wild_cards = hand_view.controller.automaticallyPrepareCards(hand_view.wrapped_cards_to_prep)
-        # wild_cards contains a list of lists.
-        # The latter contains [card that could not be automatically prepared, list of possible options for that card]
-        # In HandAndFoot:
-        #       wild_cards[k][0] rank should be 0 or 2 (a wild card) for all k.
-        #       wild_cards[k][1] is list of playable card values: [1,4,5,6,7,8,9,10,11,12,13]
-        hand_view.num_wilds = len(hand_view.wild_cards)
-        hand_view.newly_prepped_cards = hand_view.controller.getPreparedCards()
-        for element in hand_view.already_prepared_cards:
-            hand_view.newly_prepped_cards.remove(element)
-        # hand_view newly_prepped_cards is now all prepared cards minus already_prepared_cards
-        for wrappedcard in hand_view.wrapped_cards_to_prep:
-            if wrappedcard.card in hand_view.newly_prepped_cards:
-                hand_view.newly_prepped_cards.remove(wrappedcard.card)
-                wrappedcard.status = 2
-                wrappedcard.img_clickable.changeOutline(4)
-        # This concludes handling of the automatically prepared cards.
-        # If there are cards that could not be automatically prepared, then HandView.nextEvent
-        # will be looking for keystrokes (buttons are not involved), and HandView.assignWilds will
-        # take care of assigning values and marking wilds as prepared.
-    '''
-    # elif  < if in next line was an elif until I commented out big block above.
-    if hand_view.play_prepared_cards_btn.isOver(pos):
+    elif hand_view.play_prepared_cards_btn.isOver(pos):
         hand_view.controller.play()
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
@@ -152,6 +126,40 @@ def ClickedButton(hand_view, pos):
         hand_view.hand_info = hand_view.last_round_hand
         hand_view.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
         hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
+    else:
+        #  loop through all the buttons which prepare cards by assigning them to a particular run or set
+        #Todo: this currently only supports sets, need to expand to support runs, too.
+        print('need to modify controller so that newly prepared cards are assigned to proper run/set')
+        print('as of Oct 5 it simply assigns to sets as it would in HandAndFoot')
+        print('I suspect code here can be simplified once controller insists one set per button')
+        for oneplayer_assign_btns in hand_view.assign_cards_btns:
+            for prepare_card_btn in oneplayer_assign_btns:
+                if prepare_card_btn.isOver(pos):
+                    # Following is from HandAndFoot
+                    hand_view.already_prepared_cards = hand_view.controller.getPreparedCards()
+                    hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
+                    hand_view.wild_cards = hand_view.controller.automaticallyPrepareCards( \
+                        hand_view.wrapped_cards_to_prep)
+                    # wild_cards contains a list of lists.
+                    # The latter contains [card that could not be automatically prepared,
+                    # list of possible options for that card]
+                    # In HandAndFoot:
+                    #       wild_cards[k][0] rank should be 0 or 2 (a wild card) for all k.
+                    #       wild_cards[k][1] is list of playable card values: [1,4,5,6,7,8,9,10,11,12,13]
+                    hand_view.num_wilds = len(hand_view.wild_cards)
+                    hand_view.newly_prepped_cards = hand_view.controller.getPreparedCards()
+                    for element in hand_view.already_prepared_cards:
+                        hand_view.newly_prepped_cards.remove(element)
+                    # hand_view newly_prepped_cards is now all prepared cards minus already_prepared_cards
+                    for wrappedcard in hand_view.wrapped_cards_to_prep:
+                        if wrappedcard.card in hand_view.newly_prepped_cards:
+                            hand_view.newly_prepped_cards.remove(wrappedcard.card)
+                            wrappedcard.status = 2
+                            wrappedcard.img_clickable.changeOutline(4)
+                    # This concludes handling of the automatically prepared cards.
+                    # If there are cards that could not be automatically prepared, then HandView.nextEvent
+                    # will be looking for keystrokes (buttons are not involved), and HandView.assignWilds will
+                    # take care of assigning values and marking wilds as prepared.
     return
 
 
