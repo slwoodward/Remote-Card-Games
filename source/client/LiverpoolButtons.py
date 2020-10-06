@@ -27,9 +27,11 @@ def CreateButtons(hand_view):
         Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 30), 125, 25, text='Ready:NO')
     hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
     hand_view.round_indicator_xy = ((UIC.Disp_Width - 100), (UIC.Disp_Height - 20))
-    hand_view.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
-    hand_view.sort_suit_btn = Btn.Button(UIC.White, 900, 50, 225, 25, text='sort by suit')
-    hand_view.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
+    hand_view.sort_status_btn = Btn.Button(UIC.White, 850, 25, 275, 20, text=' sort by status ')
+    hand_view.sort_suit_al_btn = Btn.Button(UIC.White, 850, 50, 175, 20, text=' by suit (Aces=1) ')
+    hand_view.sort_al_btn = Btn.Button(UIC.White, 850, 75, 175, 20, text=' by  no. (Aces=1) ')
+    hand_view.sort_suit_ah_btn = Btn.Button(UIC.White, 1025, 50, 100, 20, text=' (Aces high)')
+    hand_view.sort_ah_btn = Btn.Button(UIC.White, 1025, 75, 100, 20, text=' (Aces high)')
     # from HandAndFoot:
     # hand_view.prepare_card_btn = Btn.Button(UIC.White, 400, 15, 345, 25, text='Selected cards -> prepared cards')
     #
@@ -72,8 +74,10 @@ def ButtonDisplay(hand_view):
     #    hand_view.labelMedium(str(Meld_Threshold[hand_view.controller._state.round]) + "points to meld",
     #                          hand_view.round_indicator_xy[0], hand_view.round_indicator_xy[1])
     hand_view.sort_status_btn.draw(hand_view.display, hand_view.sort_status_btn.outline_color)
-    hand_view.sort_suit_btn.draw(hand_view.display, hand_view.sort_btn.outline_color)
-    hand_view.sort_btn.draw(hand_view.display, hand_view.sort_btn.outline_color)
+    hand_view.sort_suit_al_btn.draw(hand_view.display, hand_view.sort_suit_al_btn.outline_color)
+    hand_view.sort_al_btn.draw(hand_view.display, hand_view.sort_al_btn.outline_color)
+    hand_view.sort_suit_ah_btn.draw(hand_view.display, hand_view.sort_suit_ah_btn.outline_color)
+    hand_view.sort_ah_btn.draw(hand_view.display, hand_view.sort_ah_btn.outline_color)
     for btn_list in hand_view.assign_cards_btns:
         for button in btn_list:
             button.draw(hand_view.display, button.outline_color)
@@ -91,10 +95,16 @@ def ClickedButton(hand_view, pos):
             hand_view.controller.pickUpPile()
     if hand_view.draw_pile.isOver(pos):
         hand_view.controller.draw()
-    elif hand_view.sort_btn.isOver(pos):
+    elif hand_view.sort_al_btn.isOver(pos):
+        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[1])
+        hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
+    elif hand_view.sort_ah_btn.isOver(pos):
         hand_view.hand_info.sort(key=lambda wc: wc.key_LP[0])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
-    elif hand_view.sort_suit_btn.isOver(pos):
+    elif hand_view.sort_suit_al_btn.isOver(pos):
+        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[3])
+        hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
+    elif hand_view.sort_suit_ah_btn.isOver(pos):
         hand_view.hand_info.sort(key=lambda wc: wc.key_LP[2])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_status_btn.isOver(pos):
@@ -187,10 +197,23 @@ def MouseHiLight(hand_view, pos):
         hand_view.sort_status_btn.outline_color = UIC.Black  # set outline color
     else:
         hand_view.sort_status_btn.outline_color = UIC.Gray  # change outline
-    if hand_view.sort_btn.isOver(pos):
-        hand_view.sort_btn.outline_color = UIC.Black  # set outline color
+    if hand_view.sort_al_btn.isOver(pos):
+        hand_view.sort_al_btn.outline_color = UIC.Black  # set outline color
     else:
-        hand_view.sort_btn.outline_color = UIC.Gray  # remove highlighted outline
+        hand_view.sort_al_btn.outline_color = UIC.Gray  # remove highlighted outline
+    if hand_view.sort_ah_btn.isOver(pos):
+        hand_view.sort_ah_btn.outline_color = UIC.Black  # set outline color
+    else:
+        hand_view.sort_ah_btn.outline_color = UIC.Gray  # remove highlighted outline
+    if hand_view.sort_suit_al_btn.isOver(pos):
+        hand_view.sort_suit_al_btn.outline_color = UIC.Black  # set outline color
+    else:
+        hand_view.sort_suit_al_btn.outline_color = UIC.Gray  # remove highlighted outline
+    if hand_view.sort_suit_ah_btn.isOver(pos):
+        hand_view.sort_suit_ah_btn.outline_color = UIC.Black  # set outline color
+    else:
+        hand_view.sort_suit_ah_btn.outline_color = UIC.Gray  # remove highlighted outline
+
     #  loop through all the assign card buttons
     for oneplayer_assign_btns in hand_view.assign_cards_btns:
         for prepare_card_btn in oneplayer_assign_btns:

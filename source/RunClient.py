@@ -4,10 +4,12 @@ from PodSixNet.Connection import connection, ConnectionListener
 from client.ClientState import ClientState
 from client.Controller import Controller
 from client.CreateDisplay import CreateDisplay
-from client.TableView import TableView
-# File below is so can also support HandAndFoot.
-# in future may merge TableView files and have dedicated methods within each.
-from client.TableView_HF import TableView_HF
+# Currently import TableView methods for both HandAndFoot and Liverpool
+# (attempted using importlib, got it working with interpreter,
+# but could not create RunClient executable without further debugging).
+# # in future may merge TableView files and have dedicated methods within each.
+from client.TableView import TableView            # this is for Liverpool
+from client.TableView_HF import TableView_HF      # this is for HandAndFoot
 from client.HandView import HandView
 # imports below added so that can generate executable using pyinstaller.
 import common.HandAndFoot

@@ -35,14 +35,14 @@ class UICardWrapper:
     def sortKey(self, sort_option=0):
         """ Calculate score for sorting cards.
 
-        Calculates value for sorting cards. Option 1 optimized  for Hand & Foot game.
-        For Bridge or other games different sorting would probably be preferred, and
-        could create multiple buttons so that user could sort it how they wanted.
+        Calculates value for sorting cards. Option 0 optimized  for Hand & Foot game.
         """
         arank = self.card.number
         asuit = self.card.suit
         key4sorting = arank
         if sort_option == 0:            # by number, red, black together (used for Hand and Foot)
+            if arank == 1:
+                arank = 14
             if asuit=='Spades' or asuit == 'Clubs':
                 key4sorting = 2 * arank
             else:
@@ -70,5 +70,4 @@ class UICardWrapper:
                 key4sorting = 45 + arank
         else:
             print('only sorting option currently supported are 0 to 4')
-        # todo: figure out why cardwrapper is called non-stop after you discard the first time...
         return key4sorting
