@@ -35,7 +35,7 @@ def singleDeck(n):
 
 def isWild(card):
     """returns true if a card is a wild"""
-    if card.number in [0, 2]:
+    if card.number in [0]:
         return True
     else:
         return False
@@ -43,14 +43,16 @@ def isWild(card):
 
 # todo below is for checking on sets, but for liverpool will also have runs.
 # player will probably have to state which set a card goes with, so this may be extraneous.
+#  FOR LIVERPOOL KEY SHOULD NOT BE RANK, BUT POSSIBLE VALUE GIVEN
+#  INDEX OF BUTTON USED TO PREPARE CARD.  FOR SETS THIS WILL BE RANK CARD.NUMBER FOR
+#  EXISTING SET, AND FOR RUN IT WILL BE PLACE IN
+#  RUN=(NUMBER BETWEEN MIN-1 AND MAX+1) THAT HASN'T BEEN TAKEN.
 def getKeyOptions(card):
     """returns the possible keys for the groups the card can go in"""
     if not isWild(card):
-        if card.number == 3:
-            raise Exception("Cannot play 3s")
         return [card.number]
     else:
-        return [1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
 
 def canPlayGroup(key, card_group):
