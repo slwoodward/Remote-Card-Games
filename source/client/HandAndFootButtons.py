@@ -2,6 +2,7 @@ import pygame
 import client.Button as Btn
 from client.ClickableImage import ClickableImage as ClickImg
 from common.HandAndFoot import Meld_Threshold
+from common.HandAndFoot import notes
 import client.HandManagement as HandManagement
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
@@ -78,7 +79,7 @@ def ClickedButton(hand_view, pos):
     """  Carry out action after mouse clicked on button. """
     if hand_view.pickup_pile_sz > 0:
         if hand_view.pickup_pile.isOver(pos):
-            hand_view.controller.pickUpPile()
+            hand_view.controller.pickUpPile(notes[0])
     if hand_view.draw_pile.isOver(pos):
         hand_view.controller.draw()
     elif hand_view.sort_btn.isOver(pos):

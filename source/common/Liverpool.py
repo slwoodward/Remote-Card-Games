@@ -13,6 +13,7 @@ Game_Name = "Liverpool"
 Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
+play_pick_up = False # picking up the pile doesn't force cards to be played.
 
 # Meld_Threshold = [50, 90, 120, 150]  # from Hand and Foot example
 # first element below is for testing only.
@@ -21,6 +22,7 @@ Number_Rounds = len(Meld_Threshold)  # For convenience
 
 Deal_Size = 11
 Hands_Per_Player = 1
+notes = ["You can only pick up the pile at the start of your turn (buying not yet implemented)."]
 
 
 def numDecks(numPlayers):
@@ -97,31 +99,8 @@ def canMeld(prepared_cards, round_index):
 
 
 def canPickupPile(top_card, prepared_cards, played_cards, round_index):
-    """Determines if the player can pick up the pile with their suggested play"""
-    #todo: replace this with pick up discard and card purchasing methods.
-    top_key = None
-    try:
-        key_opts = getKeyOptions(top_card)
-    except:
-        raise Exception("Cannot pickup the pile on 3s because you cannot play 3s")
-    else:
-        if len(key_opts) > 1:
-            raise Exception("Cannot pickup the pile on wilds")
-        top_key = key_opts[0]
-    # check suggested play contains 2 cards matching the top card
-    top_group = prepared_cards.setdefault(top_key, [])
-    total = 0
-    for card in top_group:
-        if not isWild(card):
-            total += 1
-    # check suggested play is legal (using adjusted deep copy of prepared cards)
-    temp_prepared = {}
-    for key, card_group in prepared_cards.items():
-        temp_prepared[key] = [x for x in card_group]
-        if key == top_key:
-            temp_prepared[key].append(top_card)
-    return canPlay(temp_prepared, played_cards, round_index)
-
+    """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
+    return True
 
 def canPlay(prepared_cards, played_cards, round_index):
     """Confirms if playing the selected cards is legal"""
