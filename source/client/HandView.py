@@ -9,7 +9,8 @@ import client.HandManagement as HandManagement
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
-from common.Liverpool import Deal_Size
+from common.Liverpool import Deal_Size as Deal_Size_LP
+from common.HandAndFoot import Deal_Size as Deal_Size_HF
 from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
 from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
 
@@ -29,14 +30,15 @@ class HandView:
         if ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.RuleSetsButtons = RuleSetsButtons_LP
+            self.deal_size = Deal_Size_LP
         elif ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.RuleSetsButtons = RuleSetsButtons_HF
+            self.deal_size = Deal_Size_HF
         else:
-            self.Meld_Threshold = 'NO MELD THRESHOLD SET'
+            print(ruleset + ' is not supported')
         self.controller = controller
         self.display = display
-        self.deal_size = Deal_Size
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
         self.current_hand = []
         self.last_hand = []
@@ -59,8 +61,9 @@ class HandView:
         # Correct meld requirement will be written in lower right corner once play commences.
         # For Liverpool the correct "prepare cards" buttons must be created, so I don't think it will support a player
         # joining in the middle, unless they know what round they're joining in.
-        # Todo: implement solution where when you start game and enter liverpool, also asked to enter round number
-        #  May need to clarify that round 0 = round with 2 sets to meld.
+        # Todo: implement solution where when you start game and enter liverpool, you are also asked to enter
+        #  round number.  May need to clarify that round 0 = round with 2 sets to meld.
+        #
         # help_text is game specific.  May wish to move it to Ruleset.
         self.help_text = ['Welcome to a the game.  Meld requirement is: '
                           + str(self.Meld_Threshold[self.round_index]) + '.',

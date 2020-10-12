@@ -19,6 +19,7 @@ class Controller(ConnectionListener):
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
+        self.Meld_Threshold = self._state.rules.Meld_Threshold # useful for Liverpool
 
     ### Player Actions ###
     def setName(self):
@@ -101,18 +102,20 @@ class Controller(ConnectionListener):
             connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):
-        """Complete the required play for picking up the pile"""
+        """Complete the required play for picking up the pile, used in HandAndFoot but not Liverpool"""
         self.note = "Performing the play required to pick up the pile"
         #Get key for top_card (we know it can be auto-keyed), and then prepare it
         key = self._state.getValidKeys(top_card)[0]
-        self.prepared_cards.setdefault(key, []).append(top_card) #Can't just call prepared card b/c of turn phase checking
+        self.prepared_cards.setdefault(key, []).append(top_card)
+        #Can't just call prepared card b/c of turn phase checking
         #Set turn phase to allow play and then immediately make play
         self._state.turn_phase = Turn_Phases[3]
         self.play()
 
     def automaticallyPrepareCards(self, selected_cards):
-        """Prepare selected cards to be played
+        """HandAndFoot specific: Prepare selected cards to be played.
         
+        Assumes all groups are sets.
         Fully prepares natural cards
         Returns options for where to play wild cards
         Returns message that you can't play 3s
@@ -135,15 +138,43 @@ class Controller(ConnectionListener):
                 else:
                     user_input_cards.append([card, key_opts])
         return user_input_cards
-        
+
+    def assignCardsToKey(self, assigned_key, selected_cards):
+        """Liverpool Specific: Prepare selected cards to be played by assigning them to key based on button clicked.
+
+        Prepares card -- assigned_key is key of assignment button clicked.
+        If key is below Meld_Threshold[round][0] (set in rules) than it's a set, else it's a run.
+        (Key is tuple: (player no., group no.), Meld_Threshold[round] is tuple: (#sets, #runs).
+        Returns options for where to play wild cards.
+        """
+        #todo: edit so that it checks rules and properly returns options.
+        wilds_in_run = [] # this will be empty for sets and valid numbers for runs.
+        sets_runs = self.Meld_Threshold[self._state.round]
+        if assigned_key[1] < sets_runs[0]:
+            print('this should be a set')
+        else:
+            print('this should be a run')
+        for wrappedcard in selected_cards:
+            card = wrappedcard.card
+            self.prepareCard(assigned_key, card)
+            #todo: assign jokers if a run. (automatically if in the middle, choose if on end).
+            #todo: rule checking
+        return wilds_in_run
+
     def prepareCard(self, key, card):
         """Prepare the selected card with the specified key"""
         if self._state.turn_phase == Turn_Phases[2]:
             self.note = "You can't change prepared cards while waiting to finish picking up the pile"
             return
         self.prepared_cards.setdefault(key, []).append(card)
-        #self.note = "You have the following cards prepared to play: {0}".format(self.prepared_cards) #Is this format readable enough?
-        
+        #todo: remove following:
+        ''' following for debugging:
+        for key, card_group in self.prepared_cards.items():
+            print(key)
+            for card in card_group:
+                print(card)
+        '''
+
     def clearPreparedCards(self):
         """Clears prepared cards"""
         if self._state.turn_phase == Turn_Phases[2]:

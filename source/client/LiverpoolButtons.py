@@ -54,7 +54,7 @@ def newRound(hand_view, sets_runs_tuple, num_players=1):
     # it does not refresh if a player leaves mid-round.
     # todo: consider whether it should update if a player leaves mid-round.
 
-    print(sets_runs_tuple)
+    # todo: debugging - print(sets_runs_tuple)
     hand_view.assign_cards_btns = {} # []
     if num_players > 1:
         players_sp_w = UIC.Disp_Width / num_players
@@ -173,13 +173,13 @@ def ClickedButton(hand_view, pos):
         hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
     else:
         #  loop through all the buttons which prepare cards by assigning them to a particular run or set
-        #Todo: this currently only supports sets, need to expand to support runs, too.
+        #todo: this currently only supports sets, need to expand to support runs, too.
         for key in hand_view.btn_keys:
-            prepare_card_btn = hand_view.assign_cards_btns[key]
-            if prepare_card_btn.isOver(pos):
+            # prepare_card_btn = hand_view.assign_cards_btns[key]
+            if hand_view.assign_cards_btns[key].isOver(pos):
                 # put all selected cards in a list
                 hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
-                hand_view.wild_cards = hand_view.controller.automaticallyPrepareCards(hand_view.wrapped_cards_to_prep)
+                hand_view.wild_cards = hand_view.controller.assignCardsToKey(key, hand_view.wrapped_cards_to_prep)
                 # wild_cards contains a list of lists.
                 # The outer list contains [card that could not be automatically prepared,
                 # list of possible options for that card]

@@ -8,8 +8,8 @@ from client.CreateDisplay import CreateDisplay
 # (attempted using importlib, got it working with interpreter,
 # but could not create RunClient executable without further debugging).
 # # in future may merge TableView files and have dedicated methods within each.
-from client.TableView import TableView            # this is for Liverpool
-from client.TableView_HF import TableView_HF      # this is for HandAndFoot
+from client.TableView import TableView            # this should support both Liverpool and HandAndFoot
+# from client.TableView_HF import TableView_HF      # this is for HandAndFoot
 from client.HandView import HandView
 # imports below added so that can generate executable using pyinstaller.
 import common.HandAndFoot
@@ -39,10 +39,10 @@ def RunClient():
     gameControl = Controller(clientState)
     playername = gameControl.getName()
     gameboard = CreateDisplay(playername)
-    if ruleset == 'Liverpool':
-        tableView = TableView(gameboard.display)
-    elif ruleset == 'HandAndFoot':
-        tableView = TableView_HF(gameboard.display)
+    if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
+        tableView = TableView(gameboard.display, ruleset)
+    # elif ruleset == 'HandAndFoot':
+    #    tableView = TableView_HF(gameboard.display)
     else:
         print('that ruleset is not supported')
     handView = HandView(gameControl, gameboard.display, ruleset)

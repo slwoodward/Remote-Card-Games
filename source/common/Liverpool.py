@@ -14,6 +14,9 @@ Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
 play_pick_up = False # picking up the pile doesn't force cards to be played.
+# isWild method not working in TableView so added wildnumbers. this statement
+#todo: figure out issue with TableView.
+wild_numbers = [0]
 
 # Meld_Threshold = [50, 90, 120, 150]  # from Hand and Foot example
 # first element below is for testing only.
@@ -37,7 +40,7 @@ def singleDeck(n):
 
 def isWild(card):
     """returns true if a card is a wild"""
-    if card.number in [0]:
+    if card.number in wild_numbers:
         return True
     else:
         return False
@@ -104,7 +107,7 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
 
 def canPlay(prepared_cards, played_cards, round_index):
     """Confirms if playing the selected cards is legal"""
-    if not played_cards:   # empty dicts evaluate to false (as does None)
+    if not played_cards:   # empty dicts evaluate to false (as does None) in HandAndFoot
         return canMeld(prepared_cards, round_index)
     # Combine dictionaries to get the final played cards if suggest cards played
     combined_cards = combineCardDicts(prepared_cards, played_cards)
