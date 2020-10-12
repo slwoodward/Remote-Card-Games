@@ -14,7 +14,7 @@ class TableView(ConnectionListener):
 
     HandAndFoot specific version is in TableView_HF. This is Liverpool specific, but
     once it properly displays Liverpool, might wish to modify this so that it also supports
-     HAndAndFoot.  Either by having 2 versions of playerByPlayer or by making playerByPlayer
+    HandAndFoot.  Either by having 2 versions of playerByPlayer or by making playerByPlayer
     have options dependent on rule set.
     """
 
@@ -25,7 +25,7 @@ class TableView(ConnectionListener):
         self.visible_cards = []
         self.hand_status = []
         self.compressed_info = {}
-        self.playerByPlayer()
+        self.playerByPlayer(0)
         self.results = {}
         if ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
@@ -36,12 +36,12 @@ class TableView(ConnectionListener):
         else:
             print(ruleset + ' is not supported')
 
-    def playerByPlayer(self):
-        # For now assume that game is for liverpool only, but instead of deleting H&F lines, comment them out.
+    def playerByPlayer(self, round_index):
+        # Loop through players and display visible cards associated with each players' melded groups.
         if self.ruleset == 'HandAndFoot':
             self.compressSets(self.visible_cards)
         elif self.ruleset == 'Liverpool':
-            self.compressGroups(self.visible_cards)
+            self.compressGroups(self.visible_cards, round_index)
         num_players = len(self.player_names)
         # currently set-up with one player per column. May need to change that for more players.
         if num_players > 1:
@@ -126,26 +126,27 @@ class TableView(ConnectionListener):
                     summary[key] = (length_set, (length_set - wild_count), wild_count)
             self.compressed_info[key_player] = summary
 
-    def compressGroups(self, v_cards):
+    def compressGroups(self, v_cards, round_index):
         """ Liverpool specific: Don't have space to display every card. Summarize groups of cards here. """
 
         #todo: debugging and documentation.
         # v_cards are cards in serialized form. < explains problem with isWild??
         # Notes -- should move to documentation in future.
         # Prepared_cards have one key per button, and it is a tuple (player#, and set/run #)
-        # v_cards have two separate keys - first is player#, 2nd is set/run #.
+        # v_cards have two separate keys - first is player #, 2nd is set/run #.
         #
         self.compressed_info = {}
         for idx in range(len(v_cards)):
             summary = {}
             key_player = self.player_names[idx]
             melded = dict(v_cards[idx])
-            # print(melded)
             for key_button in melded:
-                if key_button < self.Meld_Threshold[1]:
-                    text = 'SET: '
+                i_kb = int(key_button[1])
+                i_mt = int(self.Meld_Threshold[round_index][0])
+                if i_kb < i_mt:
+                    text = 'SET'+ str(key_button) + ': '
                 else:
-                    text = 'RUN: '
+                    text = 'RUN'+ str(key_button) + ': '
                 group = melded[key_button]
                 length_group = len(group)
                 if length_group == 0:
@@ -226,7 +227,7 @@ class TableView(ConnectionListener):
         self.player_names = data["player_names"]
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
-        self.playerByPlayer()
+        self.playerByPlayer(0)
     
     def Network_scores(self, data):
         """Notification from the server of the scores, in turn order"""

@@ -46,6 +46,7 @@ def RunClient():
     else:
         print('that ruleset is not supported')
     handView = HandView(gameControl, gameboard.display, ruleset)
+    current_round = handView.round_index
     while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
         # Note that if two people join with the same name almost simultaneously, then both might be renamed.
         note = "waiting for updated list of player names"
@@ -53,7 +54,7 @@ def RunClient():
         connection.Pump()
         gameControl.Pump()
         tableView.Pump()
-        tableView.playerByPlayer()
+        tableView.playerByPlayer(current_round)
         note = "updating list of player names"
         gameboard.render(note)
         sleep(0.001)
@@ -64,12 +65,13 @@ def RunClient():
         # I do need separate primary loops in the future.
         while True:
             # Primary game loop.
+            this_round = handView.round_index
             gameboard.refresh()
             handView.nextEvent()
             connection.Pump()
             gameControl.Pump()
             tableView.Pump()
-            tableView.playerByPlayer() # for Liverpool need to put handView.update on TOP of playerByPlayer.
+            tableView.playerByPlayer(this_round) # for Liverpool need to put handView.update on TOP of playerByPlayer.
             handView.update(len(tableView.player_names))
             # added tableView.player_names because Liverpool needs # players (HandAndFoot did not).
             # tableView.playerByPlayer()
@@ -82,12 +84,13 @@ def RunClient():
         # I do need separate primary loops in the future.
         while True:
             # Primary game loop.
+            this_round = handView.round_index
             gameboard.refresh()
             handView.nextEvent()
             connection.Pump()
             gameControl.Pump()
             tableView.Pump()
-            tableView.playerByPlayer() # for Liverpool need to put handView.update on TOP of playerByPlayer.
+            tableView.playerByPlayer(this_round) # for Liverpool need to put handView.update on TOP of playerByPlayer.
             handView.update(len(tableView.player_names))
             # added tableView.player_names because Liverpool needs # players (HandAndFoot did not).
             # tableView.playerByPlayer()
