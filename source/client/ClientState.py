@@ -1,5 +1,6 @@
 import importlib
 from common.Card import Card
+from client.TableView import thisPlayerIndex
 
 
 class ClientState:
@@ -11,6 +12,7 @@ class ClientState:
 
     def __init__(self, ruleset = None):
         """Initialize a state tracker for a given client"""
+        self.ruleset = ruleset
         if ruleset is not None:
             rule_module = "common." + ruleset
         else:
@@ -24,6 +26,8 @@ class ClientState:
         self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
         self.reset()  # Start with state cleared for a fresh round
+        # Will need to know player index in Liverpool because prepare cards buttons shared.
+
 
     def dealtHands(self, hands):
         """Store the extra hands dealt to player for use after first hand is cleared"""
@@ -76,7 +80,11 @@ class ClientState:
                     tempHand.remove(card)
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
-        self.rules.canPlay(prepared_cards, self.played_cards, self.round)
+        if self.ruleset == 'HandAndFoot':
+            self.rules.canPlay(prepared_cards, self.played_cards, self.round)
+        elif self.ruleset == 'Liverpool':
+            player_index = TableView.thisPlayerIndex(self.name)
+            self.rules.canPlay(prepared_cards, self.played_cards, self.round, player_index)
         for key, card_group in prepared_cards.items():
             for card in card_group:
                 self.hand_cards.remove(card)

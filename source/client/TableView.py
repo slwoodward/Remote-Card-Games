@@ -12,10 +12,7 @@ from common.HandAndFoot import wild_numbers as wild_numbers_HF
 class TableView(ConnectionListener):
     """ This displays publicly available info on all the players.
 
-    HandAndFoot specific version is in TableView_HF. This is Liverpool specific, but
-    once it properly displays Liverpool, might wish to modify this so that it also supports
-    HandAndFoot.  Either by having 2 versions of playerByPlayer or by making playerByPlayer
-    have options dependent on rule set.
+    HandAndFoot specific version is in TableView_HF. This version ALSO supports Liverpool
     """
 
     def __init__(self, display, ruleset):
@@ -30,6 +27,7 @@ class TableView(ConnectionListener):
         if ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP
+            self.this_player_index = -1
         elif ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.wild_numbers = wild_numbers_HF
@@ -54,10 +52,11 @@ class TableView(ConnectionListener):
         bk_grd_rect = (0, players_sp_top, players_sp_w, players_sp_h)
         for idx in range(num_players):
             player_name = self.player_names[idx]
-            if self.ruleset == 'HandAndFoot':
-                melded_summary = self.compressed_info[player_name]     # compressed_info is calculated in compressSets
-            elif self.ruleset == 'Liverpool':
-                melded_summary =  self.compressed_info[player_name]  # compressed_info is calculated in compressGroups
+            if self.ruleset == 'HandAndFoot'or self.ruleset == 'Liverpool':
+                # compressed_info is calculated in compressSets for HandAndFoot and compressGroups for Liverpool.
+                melded_summary = self.compressed_info[player_name]
+            # elif self.ruleset == 'Liverpool':
+            #    melded_summary =  self.compressed_info[player_name]  # compressed_info is calculated in compressGroups
             pygame.draw.rect(self.display, UIC.table_grid_colors[color_index], bk_grd_rect, 0)
             if len(self.hand_status[idx]) > 1:
                 turnphase = self.hand_status[idx][0]
@@ -74,6 +73,7 @@ class TableView(ConnectionListener):
                     text_surface1, text_rect1 = self.textObjects(player_text1, UIC.Medium_Text, UIC.Black)
                     text_surface2, text_rect2 = self.textObjects(player_text2, UIC.Small_Text, UIC.Black)
                 else:
+                    #todo: underline surface1 below...
                     text_surface1, text_rect1 = self.textObjects(player_text1, UIC.Big_Text, UIC.Black)
                     text_surface2, text_rect2 = self.textObjects(player_text2, UIC.Small_Text, UIC.Black)
             else:
@@ -141,25 +141,35 @@ class TableView(ConnectionListener):
             key_player = self.player_names[idx]
             melded = dict(v_cards[idx])
             for key_button in melded:
+                text = ''
                 i_kb = int(key_button[1])
                 i_mt = int(self.Meld_Threshold[round_index][0])
                 if i_kb < i_mt:
-                    text = 'SET'+ str(key_button) + ': '
+                    this_set = melded[key_button]
+                    l_this_set = len(this_set)
+                    if l_this_set > 0:
+                        idx_c = 0
+                        card_number = int(this_set[idx_c][0])
+                        while card_number == 0 and idx_c < l_this_set:
+                            idx_c = idx_c + 1
+                            card_number = this_set[idx_c][0]
+                        text = 'SET of ' + str(card_number) + "'s: "
+                        for idx_c in range(l_this_set):
+                            text = text + this_set[idx_c][1] + ','
                 else:
-                    text = 'RUN'+ str(key_button) + ': '
-                group = melded[key_button]
-                length_group = len(group)
-                if length_group == 0:
-                    print('oops -- all groups should contain at least 3 elements, and runs should have 4 or more.')
-                if length_group > 0:
-                    wild_count = 0
-                    for s_card in group:
-                        text = text + str(s_card) + ', '
-                        # Need to change below to: if s_card.number in set of wilds...:
-                        if s_card[0] in self.wild_numbers:
-                            wild_count = wild_count + 1
+                    this_run = melded[key_button]
+                    l_this_run = len(this_run)
+                    if l_this_run > 0:
+                        idx_c = 0
+                        card_suit = this_run[idx_c][1]
+                        while card_suit == 'None' and idx_c < l_this_run:
+                            idx_c = idx_c + 1
+                            card_suit = this_run[idx_c][1]
+                        text = 'Run in ' + card_suit + ": "
+                        for idx_c in range(l_this_run):
+                            text = text + str(this_run[idx_c][0]) + ','
                     #todo: replace following line with something briefer.
-                    summary[key_button] = text # debugging(length_set, (length_set - wild_count), wild_count)
+                summary[key_button[1]] = text
             self.compressed_info[key_player] = summary
 
     def display_melded_summary_HF(self, screen_loc_info, melded_summary):
@@ -198,21 +208,23 @@ class TableView(ConnectionListener):
         # This section is used by Liverpool.  Each player has a different melded_summary.
 
         bk_grd_rect = screen_loc_info[0]
-        y_coord = screen_loc_info[1]
+        y_delta = UIC.Disp_Height / 8
+        y_coord = screen_loc_info[1] + (y_delta * 0.8)
         players_sp_w = bk_grd_rect[2]
-        for key_button in melded_summary:
-            if True:  #todo: do I need check on this >>> melded_summary[key_button] > 0:
-                # todo: position these on screen:
-                print(melded_summary[key_button])
-                '''
-                text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text, text_color)
+        for key in melded_summary:
+            if len(melded_summary[key]) > 0:
+                this_buttons_group = str(melded_summary[key])
+                ykey = y_coord + (y_delta * key)
+                text_surface, text_rect = self.textObjects(this_buttons_group, UIC.Small_Text, UIC.Black)
                 text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
                 self.display.blit(text_surface, text_rect)
-                '''
 
     def textObjects(self, text, font, color):
         text_surface = font.render(text, True, color)
         return text_surface, text_surface.get_rect()
+
+    def thisPlayerIndex(self, name):
+        return self.player_names.index(name)
 
     #######################################
     ### Network event/message callbacks ###
@@ -222,7 +234,8 @@ class TableView(ConnectionListener):
 
         '''
         example of data (json structure) with two players, 'hhh' and 'sss' : 
-        {'action': 'publicInfo', 'player_names': ['hhh', 'sss'], 'visible_cards': [{}, {}], 'hand_status': [['inactive', 12, 1], [True, 14, 1]]}
+        {'action': 'publicInfo', 'player_names': ['hhh', 'sss'], 'visible_cards': [{}, {}],
+           'hand_status': [['inactive', 12, 1], [True, 14, 1]]}
         where 'inactive' is an example of a play state (possible states: 'inactive', 'draw', 'forcedAction', 'play' '''
         self.player_names = data["player_names"]
         self.visible_cards = data["visible_cards"]

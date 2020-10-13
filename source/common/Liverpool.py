@@ -20,7 +20,7 @@ wild_numbers = [0]
 
 # Meld_Threshold = [50, 90, 120, 150]  # from Hand and Foot example
 # first element below is for testing only.
-Meld_Threshold = [(2,1), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]  # Liverpool need this to be number of sets and runs.
+Meld_Threshold = [(2,0), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]  # Liverpool need this to be number of sets and runs.
 Number_Rounds = len(Meld_Threshold)  # For convenience
 
 Deal_Size = 11
@@ -60,17 +60,36 @@ def getKeyOptions(card):
         return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
 
-def canPlayGroup(key, card_group):
+def canPlayGroup(key, card_group, this_round):
     """checks if a group can be played
     
     returns True if it can, otherwise raises an exception with an explanation
     """
     if len(card_group) == 0:
         return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
-    if key == 3:
-        raise Exception("Illegal key - cannot play 3s")
-    if len(card_group) < 3: 
-        raise Exception("Too few cards in group - minimum is 3")
+    if key < Meld_Threshold[this_round]:
+        # check if this is a valid set.
+        if len(card_group) < 3:
+            raise Exception("Too few cards in set - minimum is 3")
+        # check that group contains only wilds and one card_number.
+        unique_numbers = set()
+        for card in card_group:
+            if card[0] not in wild_numbers:
+                unique_numbers.append(card[0])
+            if len(unique_numbers) > 0:
+                raise Exception("Cards in a set must all have the same rank (except wilds).")
+
+        # check that have more naturals than wilds.
+        # typeDiff = 0
+        for card in card_group:
+            if isWild(card):
+                typeDiff -= 1
+            elif card.number == key:
+                typeDiff += 1
+    else:
+        # check that this is a valid run.
+        if len(card_group) < 4:
+            raise Exception("Too few cards in run - minimum is 4")
     typeDiff = 0
     for card in card_group:
         if isWild(card):
@@ -84,20 +103,17 @@ def canPlayGroup(key, card_group):
     raise Exception("Too many wilds in {0} group.".format(key))
 
 
-def canMeld(prepared_cards, round_index):
+def canMeld(prepared_cards, round_index, index_this_player):
     """Determines if a set of card groups is a legal meld"""
-    # todo: rewrite to see if have legal set/run for each one required in meld threshold.
-    print('Liverpool does not currently check that meld is legal.  Must edit Liverpool.canMeld')
-    '''
-    # This section is from HandAndFoot.
-    score = 0
+    #
+    # This section differs from HandAndFoot.
+    required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
+    valid_groups = 0
     for key, card_group in prepared_cards.items():
-        if canPlayGroup(key, card_group):
-            score += scoreGroup(card_group)
-    min_score = Meld_Threshold[round_index]
-    if score < min_score:
-        raise Exception("Meld does not meet round minimum score or {0}".format(min_score))
-    '''
+        if canPlayGroup(key, card_group) and key[0] == index_this_player:
+            valid_groups = valid_groups + 1
+    if required_groups > valid_groups :
+        raise Exception("Must have all the required sets and runs to meld")
     return True
 
 
@@ -105,15 +121,15 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
     return True
 
-def canPlay(prepared_cards, played_cards, round_index):
+def canPlay(prepared_cards, played_cards, round_index, player_name):
     """Confirms if playing the selected cards is legal"""
     if not played_cards:   # empty dicts evaluate to false (as does None) in HandAndFoot
-        return canMeld(prepared_cards, round_index)
+        return canMeld(prepared_cards, round_index, index_this_player)
     # Combine dictionaries to get the final played cards if suggest cards played
     combined_cards = combineCardDicts(prepared_cards, played_cards)
     # Confirm each combined group is playable
     for key, card_group in combined_cards.items():
-        canPlayGroup(key, card_group)
+        canPlayGroup(key, card_group, round_index)
     return True
 
 
