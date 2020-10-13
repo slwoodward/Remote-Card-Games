@@ -50,6 +50,7 @@ class HandView:
         self.wild_cards = []
         self.selected_list = []
         self.round_index = 0
+        self.player_index = 0
         self.round_advance = False
         # In liverpool: prepare cards buttons must be updated each round, after all players present
         self.need_updated_buttons = True
@@ -74,8 +75,9 @@ class HandView:
                               'When ready to start playing click on the YES button on the lower right.']
         self.RuleSetsButtons.CreateButtons(self)
 
-    def update(self, num_players=1):
+    def update(self, num_players=1, player_index=0):
         """This updates the view of the hand, between rounds it displays a message. """
+        self.player_index = player_index
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)
             if self.round_advance:
@@ -91,7 +93,7 @@ class HandView:
                 # Need this to true up round_index if a player joins mid-game.
                 skipped_rounds =  self.controller._state.round - self.round_index
                 for idx in range(skipped_rounds):
-                    # todo:  How to score latecomers should be moved to ruleset.
+                    #todo:  How to score latecomers should be moved to ruleset.
                     score = 0
                     self.controller.lateJoinScores(score)
                 self.round_index = self.controller._state.round

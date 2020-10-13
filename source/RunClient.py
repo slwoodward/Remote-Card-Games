@@ -66,6 +66,7 @@ def RunClient():
         while True:
             # Primary game loop.
             this_round = handView.round_index
+            player_index = tableView.player_names.index(playername)
             gameboard.refresh()
             handView.nextEvent()
             connection.Pump()
@@ -85,13 +86,15 @@ def RunClient():
         while True:
             # Primary game loop.
             this_round = handView.round_index
+            player_index = tableView.this_player_index
+            num_players = len(tableView.player_names)
             gameboard.refresh()
             handView.nextEvent()
             connection.Pump()
             gameControl.Pump()
             tableView.Pump()
             tableView.playerByPlayer(this_round) # for Liverpool need to put handView.update on TOP of playerByPlayer.
-            handView.update(len(tableView.player_names))
+            handView.update(num_players, player_index)
             # added tableView.player_names because Liverpool needs # players (HandAndFoot did not).
             # tableView.playerByPlayer()
             note = gameControl.note

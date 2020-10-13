@@ -15,11 +15,12 @@ class Controller(ConnectionListener):
 
     def __init__(self, clientState):
         self._state = clientState
-        self.prepared_cards = {} #This is the dict of cards prepared to be played
+        self.prepared_cards = {}     #This is the dict of cards prepared to be played
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
         self.Meld_Threshold = self._state.rules.Meld_Threshold # useful for Liverpool
+        self.player_index = 0
 
     ### Player Actions ###
     def setName(self):
@@ -183,8 +184,9 @@ class Controller(ConnectionListener):
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
         
-    def play(self):
+    def play(self, player_index=0):
         """Send the server the current set of visible cards"""
+        self.player_index = player_index
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return

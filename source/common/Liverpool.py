@@ -60,7 +60,7 @@ def getKeyOptions(card):
         return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
 
-def canPlayGroup(key, card_group, this_round):
+def canPlayGroup(key, card_group, this_round=0):
     """checks if a group can be played
     
     returns True if it can, otherwise raises an exception with an explanation
@@ -73,18 +73,26 @@ def canPlayGroup(key, card_group, this_round):
             raise Exception("Too few cards in set - minimum is 3")
         # check that group contains only wilds and one card_number.
         unique_numbers = set()
+        card_numbers = []
         for card in card_group:
-            if card[0] not in wild_numbers:
-                unique_numbers.append(card[0])
-            if len(unique_numbers) > 0:
+            print(card)
+            print(card.number)
+            print('in Liverpool.py')
+            if not isWild(card):
+                card_numbers = card_numbers.append(card.number)
+                unique_numbers = set(card_numbers)
+                print(card.number)
+                print(card_numbers)
+                print(unique_numbers)
+            if len(unique_numbers) > 1:
                 raise Exception("Cards in a set must all have the same rank (except wilds).")
-
         # check that have more naturals than wilds.
         # typeDiff = 0
+        unique_number = unique_numbers[0]
         for card in card_group:
             if isWild(card):
                 typeDiff -= 1
-            elif card.number == key:
+            elif card.number == unique_number:
                 typeDiff += 1
     else:
         # check that this is a valid run.
@@ -110,7 +118,7 @@ def canMeld(prepared_cards, round_index, index_this_player):
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():
-        if canPlayGroup(key, card_group) and key[0] == index_this_player:
+        if canPlayGroup(key, card_group, round_index) and key[0] == index_this_player:
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
@@ -121,7 +129,7 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
     return True
 
-def canPlay(prepared_cards, played_cards, round_index, player_name):
+def canPlay(prepared_cards, played_cards, round_index, index_this_player=0):
     """Confirms if playing the selected cards is legal"""
     if not played_cards:   # empty dicts evaluate to false (as does None) in HandAndFoot
         return canMeld(prepared_cards, round_index, index_this_player)

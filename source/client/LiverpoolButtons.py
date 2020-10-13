@@ -113,6 +113,9 @@ def ButtonDisplay(hand_view):
     hand_view.sort_al_btn.draw(hand_view.display, hand_view.sort_al_btn.outline_color)
     hand_view.sort_suit_ah_btn.draw(hand_view.display, hand_view.sort_suit_ah_btn.outline_color)
     hand_view.sort_ah_btn.draw(hand_view.display, hand_view.sort_ah_btn.outline_color)
+    # todo: when checking behavior for case when a player drops out, may discover that
+    # this 'for key in in hand_view.btn_keys' loop, should change
+    #  to 'for index in range(len(num_players))'  and then set key.
     for key in hand_view.btn_keys:
         prepare_card_btn = hand_view.assign_cards_btns[key]
         prepare_card_btn.draw(hand_view.display, prepare_card_btn.outline_color)

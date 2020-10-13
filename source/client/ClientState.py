@@ -1,6 +1,5 @@
 import importlib
 from common.Card import Card
-from client.TableView import thisPlayerIndex
 
 
 class ClientState:
@@ -70,7 +69,7 @@ class ClientState:
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards):
+    def playCards(self, prepared_cards, player_index=0):
         """Move cards from hand to visible"""
         # First check that all the cards are in your hand
         tempHand = [x for x in self.hand_cards]
@@ -83,7 +82,6 @@ class ClientState:
         if self.ruleset == 'HandAndFoot':
             self.rules.canPlay(prepared_cards, self.played_cards, self.round)
         elif self.ruleset == 'Liverpool':
-            player_index = TableView.thisPlayerIndex(self.name)
             self.rules.canPlay(prepared_cards, self.played_cards, self.round, player_index)
         for key, card_group in prepared_cards.items():
             for card in card_group:
