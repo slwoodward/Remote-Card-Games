@@ -72,22 +72,25 @@ def canPlayGroup(key, card_group, this_round=0):
         if len(card_group) < 3:
             raise Exception("Too few cards in set - minimum is 3")
         # check that group contains only wilds and one card_number.
-        unique_numbers = set()
         card_numbers = []
+        print('in Liverpool.py')
         for card in card_group:
             print(card)
             print(card.number)
-            print('in Liverpool.py')
             if not isWild(card):
-                card_numbers = card_numbers.append(card.number)
-                unique_numbers = set(card_numbers)
-                print(card.number)
+                print('debug - point A')
                 print(card_numbers)
-                print(unique_numbers)
-            if len(unique_numbers) > 1:
-                raise Exception("Cards in a set must all have the same rank (except wilds).")
+                card_numbers.append(card.number)
+                print(card_numbers)
+                print(card.number)
+            else:
+                print(card)
+                print('debug - at point B, thinks this card is Wild')
+        unique_numbers = list(set(card_numbers))
+        if len(unique_numbers) > 1:
+            raise Exception("Cards in a set must all have the same rank (except wilds).")
         # check that have more naturals than wilds.
-        # typeDiff = 0
+        typeDiff = 0
         unique_number = unique_numbers[0]
         for card in card_group:
             if isWild(card):
@@ -102,7 +105,7 @@ def canPlayGroup(key, card_group, this_round=0):
     for card in card_group:
         if isWild(card):
             typeDiff -= 1
-        elif card.number == key:
+        elif card.number == unique_number:
             typeDiff += 1
         else:
             raise Exception("Illegal card in group: {0} is not wild and is not part of the {1} group".format(card, key))

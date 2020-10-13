@@ -24,10 +24,10 @@ class TableView(ConnectionListener):
         self.compressed_info = {}
         self.playerByPlayer(0)
         self.results = {}
+        self.this_player_index = -1   # code review note -- this variable needed for Liverpool.
         if ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP
-            self.this_player_index = -1
         elif ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.wild_numbers = wild_numbers_HF
@@ -155,7 +155,10 @@ class TableView(ConnectionListener):
                             card_number = this_set[idx_c][0]
                         text = 'SET of ' + str(card_number) + "'s: "
                         for idx_c in range(l_this_set):
-                            text = text + this_set[idx_c][1] + ','
+                            if not this_set[idx_c][0] == 0:
+                                text = text + this_set[idx_c][1] + ','
+                            else:
+                                text = text + 'Joker' + ','
                 else:
                     this_run = melded[key_button]
                     l_this_run = len(this_run)
