@@ -75,9 +75,11 @@ class HandView:
                               'When ready to start playing click on the YES button on the lower right.']
         self.RuleSetsButtons.CreateButtons(self)
 
-    def update(self, num_players=1, player_index=0):
+    def update(self, player_index=0, player_names=[]):
         """This updates the view of the hand, between rounds it displays a message. """
+        self.player_names = player_names
         self.player_index = player_index
+        num_players = len(player_names)
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)
             if self.round_advance:
