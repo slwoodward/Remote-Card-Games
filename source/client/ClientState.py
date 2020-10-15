@@ -69,9 +69,10 @@ class ClientState:
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards, player_index=0):
+    def playCards(self, prepared_cards, player_name='debugHelp_in_ClientState', visible_cards={}):
         """Move cards from hand to visible"""
         # First check that all the cards are in your hand
+        print('in ClientState.py, playCards method')
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -79,14 +80,26 @@ class ClientState:
                     tempHand.remove(card)
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
+        #todo: put variable in rulesets regarding whether you can play on others groups.
+        # for HandAndFoot it would be false, and for Liverpool it would be true.
+        # that would determine whether self.played_cards = visible cards or cards that player played.
         if self.ruleset == 'HandAndFoot':
             self.rules.canPlay(prepared_cards, self.played_cards, self.round)
+            for key, card_group in prepared_cards.items():
+                for card in card_group:
+                    self.hand_cards.remove(card)
+                    self.played_cards.setdefault(key, []).append(card)
         elif self.ruleset == 'Liverpool':
-            self.rules.canPlay(prepared_cards, self.played_cards, self.round, player_index)
-        for key, card_group in prepared_cards.items():
-            for card in card_group:
-                self.hand_cards.remove(card)
+            self.rules.canPlay(prepared_cards, self.played_cards, self.round, player_name)
+            for key, card_group in prepared_cards.items():
+                for card in card_group:
+                    self.hand_cards.remove(card)
+                    # self.played_cards.setdefault(key, []).append(card)
+                    # todo:  Need to replace local record of played_cards with visible cards.
+                    # This will have ripple effects in rules when merging played cards with visible cards.
+                self.played_cards = visible_card[key0][key1]
                 self.played_cards.setdefault(key, []).append(card)
+        print(self.played_cards)
     
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""

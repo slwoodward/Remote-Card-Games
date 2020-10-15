@@ -63,11 +63,14 @@ def getKeyOptions(card):
 def canPlayGroup(key, card_group, this_round=0):
     """checks if a group can be played
     
-    returns True if it can, otherwise raises an exception with an explanation
+    returns True if it can, otherwise raises an exception with an explanation.
+    In Liverpool key of prepared (=assigned) cards = key of button = (name, button #)
     """
     if len(card_group) == 0:
         return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
-    if key < Meld_Threshold[this_round]:
+    if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
+        print('in canPlayGroup')
+        print(key)
         # check if this is a valid set.
         if len(card_group) < 3:
             raise Exception("Too few cards in set - minimum is 3")
@@ -114,14 +117,14 @@ def canPlayGroup(key, card_group, this_round=0):
     raise Exception("Too many wilds in {0} group.".format(key))
 
 
-def canMeld(prepared_cards, round_index, index_this_player):
+def canMeld(prepared_cards, round_index, this_players_name):
     """Determines if a set of card groups is a legal meld"""
     #
     # This section differs from HandAndFoot.
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():
-        if canPlayGroup(key, card_group, round_index) and key[0] == index_this_player:
+        if canPlayGroup(key, card_group, round_index) and key[0] == this_players_name:
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
@@ -132,11 +135,17 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
     return True
 
-def canPlay(prepared_cards, played_cards, round_index, index_this_player=0):
+def canPlay(prepared_cards, played_cards, round_index, this_players_name='debugHelp_in_ruleset'):
     """Confirms if playing the selected cards is legal"""
-    if not played_cards:   # empty dicts evaluate to false (as does None) in HandAndFoot
-        return canMeld(prepared_cards, round_index, index_this_player)
+    print('in canPlay')
+    print(played_cards)
+    print(this_players_name)
+    if not played_cards:   # empty dicts evaluate to false (as does None)
+        return canMeld(prepared_cards, round_index, this_players_name)
     # Combine dictionaries to get the final played cards if suggest cards played
+    # 15oct
+    print(prepared_cards)
+    print(played_cards)
     combined_cards = combineCardDicts(prepared_cards, played_cards)
     # Confirm each combined group is playable
     for key, card_group in combined_cards.items():

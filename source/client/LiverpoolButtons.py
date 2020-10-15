@@ -12,7 +12,7 @@ If a button is clicked, then typically 1 or 2 methods are called. The first init
 and when necessary a 2nd updates the display to reflect the action taken.  
 Discards are confirmed within the GUI, and that code is currently split between this file and HandView.
 
-This file is Liverpool specific because different games may need additional buttons, and may need them arranged
+This file is game specific because different games need different buttons, and may need them arranged
  differently, but most of this code should be useful for other games.
 """
 
@@ -50,9 +50,10 @@ def CreateButtons(hand_view):
 def newRound(hand_view, sets_runs_tuple, num_players=1):
     """ At start of each round this creates buttons used to assign cards."""
 
+    # Currently
     # Unlike columns for players (found in TableView.playerByPlayer)
     # it does not refresh if a player leaves mid-round.
-    # todo: consider whether it should update if a player leaves mid-round.
+    # Hope to fix that.
 
     # todo: debugging - print(sets_runs_tuple)
     hand_view.assign_cards_btns = {} # []
@@ -63,6 +64,7 @@ def newRound(hand_view, sets_runs_tuple, num_players=1):
     players_sp_h = UIC.Disp_Height / 8
     players_sp_top = (UIC.Disp_Height / 5) + players_sp_h
     for idx in range(num_players):
+        name = hand_view.player_names[idx]
         w = 75  # width of following buttons
         h = 25  # height of following buttons
         for setnum in range(sets_runs_tuple[0]):
@@ -70,7 +72,7 @@ def newRound(hand_view, sets_runs_tuple, num_players=1):
             x = 100 + (players_sp_w*idx)
             y = players_sp_top + (players_sp_h*setnum)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
-            btn_key = (idx, setnum)
+            btn_key = (name, setnum)
             hand_view.btn_keys.append(btn_key)
             hand_view.assign_cards_btns[btn_key] = prepare_card_btn
             hand_view.assigned_cards[btn_key] = []  # this list will contain cards in a set.
@@ -80,7 +82,7 @@ def newRound(hand_view, sets_runs_tuple, num_players=1):
             x = 100 + (players_sp_w * idx)
             y = players_sp_top + (players_sp_h * jdx)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
-            btn_key = (idx, jdx)
+            btn_key = (name, jdx)
             hand_view.btn_keys.append(btn_key)
             hand_view.assign_cards_btns[btn_key] = prepare_card_btn
             hand_view.assigned_cards[btn_key] = []  # this list will contain cards in a run.
@@ -151,7 +153,7 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
-        hand_view.controller.play()
+        hand_view.controller.play(hand_view.this_player_name, hand_view.visible_cards)
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)
@@ -183,9 +185,11 @@ def ClickedButton(hand_view, pos):
                 # put all selected cards in a list
                 hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
                 hand_view.wild_cards = hand_view.controller.assignCardsToKey(key, hand_view.wrapped_cards_to_prep)
-                # wild_cards contains a list of lists.
-                # The outer list contains [card that could not be automatically prepared,
-                # list of possible options for that card]
+                # wild_cards contains wild_cards that could not be automatically assigned. Wilds assigned to sets
+                # automatically assigned the value of the card.numbers of the naturals in that set.
+                # Runs are trickier.  hand_view.wild_cards is a list of lists --
+                #       The outer list contains [card that could not be automatically prepared,
+                #       list of possible options for that card]
                 #       wild_cards[k][0] rank should be 0 (a joker)) for all k.
                 #       wild_cards[k][1] is list of playable card values (might be anything in list of 1 to 13).
                 #       Might make wild_cards[k][1] more sophisticated, so to add to a run of spades = [2,3,4,5]

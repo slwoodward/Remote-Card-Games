@@ -172,12 +172,12 @@ class Controller(ConnectionListener):
             return
         self.prepared_cards.setdefault(key, []).append(card)
         #todo: remove following:
-        ''' following for debugging:
+        #''' following for debugging:
         for key, card_group in self.prepared_cards.items():
             print(key)
             for card in card_group:
                 print(card)
-        '''
+        # '''
 
     def clearPreparedCards(self):
         """Clears prepared cards"""
@@ -187,14 +187,14 @@ class Controller(ConnectionListener):
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
         
-    def play(self, player_index=0):
+    def play(self, player_name='debugHelp_in_Controller', visible_cards={}):
         """Send the server the current set of visible cards"""
-        self.player_index = player_index
+        # player_name needed for liverpool rules checking.
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
         try:
-            self._state.playCards(self.prepared_cards)
+            self._state.playCards(self.prepared_cards, player_name, visible_cards={})
             self.clearPreparedCards()
             self.handleEmptyHand(False)
             self.sendPublicInfo()
