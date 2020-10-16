@@ -35,11 +35,13 @@ class TableView(ConnectionListener):
             print(ruleset + ' is not supported')
 
     def playerByPlayer(self, round_index):
+        self.round_index = round_index
         # Loop through players and display visible cards associated with each players' melded groups.
         if self.ruleset == 'HandAndFoot':
             self.compressSets(self.visible_cards)
         elif self.ruleset == 'Liverpool':
-            self.compressGroups(self.visible_cards, round_index)
+            # self.compressGroups(self.visible_cards, self.round_index)
+            self.compressGroups(self.visible_cards)
         num_players = len(self.player_names)
         # currently set-up with one player per column. May need to change that for more players.
         if num_players > 1:
@@ -126,13 +128,13 @@ class TableView(ConnectionListener):
                     summary[key] = (length_set, (length_set - wild_count), wild_count)
             self.compressed_info[key_player] = summary
 
-    def compressGroups(self, v_cards, round_index):
+    def compressGroups(self, v_cards):
         """ Liverpool specific: Don't have space to display every card. Summarize groups of cards here. """
 
         #todo: debugging and documentation.
         # v_cards are cards in serialized form. < explains problem with isWild??
         # Notes -- should move to documentation in future.
-        # Prepared_cards have one key per button, and it is a tuple (player#, and set/run #)
+        # OBSOLETE -- Prepared_cards have one key per button, and it is a tuple (player#, and set/run #)
         # v_cards have two separate keys - first is player #, 2nd is set/run #.
         #
         self.compressed_info = {}
@@ -143,7 +145,7 @@ class TableView(ConnectionListener):
             for key_button in melded:
                 text = ''
                 i_kb = int(key_button[1])
-                i_mt = int(self.Meld_Threshold[round_index][0])
+                i_mt = int(self.Meld_Threshold[self.round_index][0])
                 if i_kb < i_mt:
                     this_set = melded[key_button]
                     l_this_set = len(this_set)
@@ -226,8 +228,10 @@ class TableView(ConnectionListener):
         text_surface = font.render(text, True, color)
         return text_surface, text_surface.get_rect()
 
+    ''' superfluous?
     def thisPlayerIndex(self, name):
         return self.player_names.index(name)
+    '''
 
     #######################################
     ### Network event/message callbacks ###
@@ -243,6 +247,7 @@ class TableView(ConnectionListener):
         self.player_names = data["player_names"]
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
+        # todo: do I need next line?
         self.playerByPlayer(0)
     
     def Network_scores(self, data):

@@ -51,33 +51,11 @@ def RunClient():
         note = "adding your name to list of player names"
         gameboard.render(note)
         playername = gameControl.checkNames(tableView.player_names)
-        # Liverpool needs every player name to be unique, and those names must be reflected accurately
-        # in player_names from the beginning.
-        # This is because buttons are keyed on tuple that includes player_name.
-        # while - loop below continues until this player's name is in tableView.player_names.
-        # Game won't begin until all users hit OK button, and the last player cannot do that until their
-        # name is properly registered.
-        # note for code review -- I checked using remove server, ruleset=HandAndFoot, and the name checking below works.
-        safeguard = 1  # avoid an infinite loop.
-        while playername not in tableView.player_names and safeguard < 1000:
-            print(tableView.player_names)
-            sleep(.01)
-            gameboard.refresh()
-            connection.Pump()
-            gameControl.Pump()
-            tableView.Pump()
-            tableView.playerByPlayer(current_round)
-            if safeguard % 100 == 1:
-                note = note + ' .'
-                gameboard.render(note)
-            safeguard = safeguard + 1
-        if safeguard > 999:
-            print('problem with connection -- your name was not updated on server.')
     if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
         while True:
             # Primary game loop.
             this_round = handView.round_index
-            # player_index = tableView.player_names.index(playername)
+            player_index = tableView.player_names.index(playername)
             gameboard.refresh()
             handView.nextEvent()
             connection.Pump()
@@ -86,37 +64,18 @@ def RunClient():
             tableView.playerByPlayer(this_round)
             # note for code review:
             # - for Liverpool need to put handView.update on TOP of playerByPlayer.
-            # added tableView.player_names and visible_cards
-            # because Liverpool needs info on other players (HandAndFoot did not).
+            # Might also need to add visible_cards to playerByPlayer (?)
+            # because Liverpool handView needs info on other players (HandAndFoot did not).
             if ruleset == 'Liverpool':
-                handView.update(playername, tableView.player_names, tableView.visible_cards)
+                visible_cards = tableView.visible_cards
+                handView.update(player_index, len(tableView.player_names), visible_cards)
             else:
-                handView.update(playername, tableView.player_names)
+                handView.update()
             note = gameControl.note
             gameboard.render(note)
             sleep(0.001)
-    elif ruleset =='':
-        # note for code review:
-        # Thought I would need different primary loops for 2 games, so put in if statement, then
-        # realized I didn't need to do that YET.  The while loop below is from old version. Will delete
-        # it once I'm confident that I won't want to revert.
-        while True:
-            # Primary game loop.
-            this_round = handView.round_index
-            player_index = tableView.this_player_index
-            num_players = len(tableView.player_names)
-            gameboard.refresh()
-            handView.nextEvent()
-            connection.Pump()
-            gameControl.Pump()
-            tableView.Pump()
-            tableView.playerByPlayer(this_round) # for Liverpool need to put handView.update on TOP of playerByPlayer.
-            handView.update(num_players, player_index)
-            # added tableView.player_names because Liverpool needs # players (HandAndFoot did not).
-            # tableView.playerByPlayer()
-            note = gameControl.note
-            gameboard.render(note)
-            sleep(0.001)
+    else:
+        print('that ruleset is not supported.')
 
 if __name__ == "__main__":
     if len(sys.argv) != 1:

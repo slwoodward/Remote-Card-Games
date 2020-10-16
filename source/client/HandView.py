@@ -31,6 +31,7 @@ class HandView:
             self.Meld_Threshold = Meld_Threshold_LP
             self.RuleSetsButtons = RuleSetsButtons_LP
             self.deal_size = Deal_Size_LP
+            self.buttons_per_player = self.Meld_Threshold[0][0] +  self.Meld_Threshold[0][1]
         elif ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.RuleSetsButtons = RuleSetsButtons_HF
@@ -52,7 +53,8 @@ class HandView:
         self.round_index = 0
         self.player_index = 0
         self.round_advance = False
-        # In liverpool: prepare cards buttons must be updated each round, after all players present
+        # In liverpool: prepare cards buttons must be updated each round
+        self.num_players = 1
         self.need_updated_buttons = True
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
@@ -75,13 +77,18 @@ class HandView:
                               'When ready to start playing click on the YES button on the lower right.']
         self.RuleSetsButtons.CreateButtons(self)
 
-    def update(self, this_player_name = '', player_names=[''], visible_cards={}):
+    def update(self, player_index=0, num_players=1, visible_cards = []):
         """This updates the view of the hand, between rounds it displays a message. """
+        '''
+        player_index and num_players needed for Liverpool.
         self.this_player_name = this_player_name
         self.player_names = player_names
-        self.visible_cards = visible_cards
         self.player_index = player_names.index(this_player_name)
-        num_players = len(player_names)
+        '''
+        self.visible_cards = visible_cards
+        # this is a list (one per player) of dictionaries (one key per player button)
+        self.player_index = player_index
+        self.num_players = num_players # len(player_names)
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)
             if self.round_advance:
@@ -103,7 +110,7 @@ class HandView:
                 self.round_index = self.controller._state.round
             # For Liverpool need to recreate 'prepare cards' buttons when commence each round.
             if self.ruleset == 'Liverpool' and self.need_updated_buttons:
-                self.RuleSetsButtons.newRound(self, self.Meld_Threshold[self.round_index], num_players)
+                self.RuleSetsButtons.newRound(self, self.Meld_Threshold[self.round_index])
                 self.need_updated_buttons = False
             self.round_advance = True
             # reset outline colors on ready buttons to what they need to be at the start of the "between rounds" state.

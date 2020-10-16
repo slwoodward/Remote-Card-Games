@@ -16,10 +16,12 @@ class Controller(ConnectionListener):
     def __init__(self, clientState):
         self._state = clientState
         self.prepared_cards = {}     #This is the dict of cards prepared to be played
+        self.prepared_cards_list =[] # liverpool needs list instead of a single dictionary.
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
-        self.Meld_Threshold = self._state.rules.Meld_Threshold # useful for Liverpool
+        # needed for Liverpool:
+        self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
 
     ### Player Actions ###
@@ -143,13 +145,14 @@ class Controller(ConnectionListener):
                     user_input_cards.append([card, key_opts])
         return user_input_cards
 
-    def assignCardsToKey(self, assigned_key, selected_cards):
+    def assignCardsToGroup(self, assigned_key, selected_cards):
         """Liverpool Specific: Prepare selected cards to be played by assigning them to key based on button clicked.
 
         Prepares card -- assigned_key is key of assignment button clicked.
         If key is below Meld_Threshold[round][0] (set in rules) than it's a set, else it's a run.
-        (Key is tuple: (player no., group no.), Meld_Threshold[round] is tuple: (#sets, #runs).
-        Returns options for where to play wild cards.
+        (Key is integer corresponding to set or run needed for that round,
+         Meld_Threshold[round] is a tuple: (#sets, #runs) required for that round.
+        Returns options for where to play wild cards if cannot be automatically assigned.
         """
         #todo: edit so that it checks rules and properly returns options.
         wilds_in_run = [] # this will be empty for sets and valid numbers for runs.
@@ -187,14 +190,14 @@ class Controller(ConnectionListener):
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
 
-    def play(self, player_name='debugHelp_in_Controller', visible_cards=[{}]):
+    def play(self, player_index=0, visible_cards=[{}]):
         """Send the server the current set of visible cards"""
-        # player_name needed for liverpool rules checking.
+        # player_index needed for liverpool rules checking.
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
         try:
-            self._state.playCards(self.prepared_cards, player_name, visible_cards=[{}])
+            self._state.playCards(self.prepared_cards, player_index, visible_cards=[{}])
             self.clearPreparedCards()
             self.handleEmptyHand(False)
             self.sendPublicInfo()

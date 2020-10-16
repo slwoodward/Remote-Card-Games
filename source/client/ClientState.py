@@ -24,9 +24,13 @@ class ClientState:
         self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
         self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
+        self.player_index = 0 # needed for Liverpool.
         self.reset()  # Start with state cleared for a fresh round
         # Will need to know player index in Liverpool because prepare cards buttons shared.
 
+    def getPlayerIndex(self, player_names):
+        """Store the extra hands dealt to player for use after first hand is cleared"""
+        self.player_index = player_names.index(self.name)
 
     def dealtHands(self, hands):
         """Store the extra hands dealt to player for use after first hand is cleared"""
@@ -69,9 +73,10 @@ class ClientState:
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards, player_name='debugHelp_in_ClientState', visible_cards=[{}]):
+    def playCards(self, prepared_cards, player_index = 0, visible_cards=[{}]):
         """Move cards from hand to visible"""
-        # First check that all the cards are in your hand
+        #todo: in this method should I rename visible_cards to cards_on_board ?
+        # First check that all the cards are in your hand.
         print('in ClientState.py, playCards method')
         tempHand = [x for x in self.hand_cards]
         try:
@@ -90,7 +95,7 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.ruleset == 'Liverpool':
-            self.rules.canPlay(prepared_cards, visible_cards, self.round, player_name)
+            self.rules.canPlay(prepared_cards, visible_cards, self.round, player_index)
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
