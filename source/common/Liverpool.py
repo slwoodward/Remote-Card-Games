@@ -140,13 +140,24 @@ def canPlay(prepared_cards, played_cards, round_index, this_players_name='debugH
     print('in canPlay')
     print(played_cards)
     print(this_players_name)
+    # in Liverpool played_cards = list of dictionaries -- each entry corresponds to one player, and each
+    # dictionary entry corresponds to one group (set or run) on that player's board.
+    for played_card_dictionary in played_cards:
+        combined_cards = combineCardDicts(prepared_cards, played_cards)
+        print(combined_cards)
+        '''
+        # in Liverpool key corresponds to player and button on that player's board
+        for key2 in prepared_cards:
+            if key2 == key:
+                combined_cards = combineCardDicts(prepared_cards, played_cards)
+        '''
     if not played_cards:   # empty dicts evaluate to false (as does None)
         return canMeld(prepared_cards, round_index, this_players_name)
     # Combine dictionaries to get the final played cards if suggest cards played
     # 15oct
     print(prepared_cards)
     print(played_cards)
-    combined_cards = combineCardDicts(prepared_cards, played_cards)
+    # combined_cards = combineCardDicts(prepared_cards, played_cards)
     # Confirm each combined group is playable
     for key, card_group in combined_cards.items():
         canPlayGroup(key, card_group, round_index)

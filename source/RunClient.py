@@ -86,7 +86,8 @@ def RunClient():
             tableView.playerByPlayer(this_round)
             # note for code review:
             # - for Liverpool need to put handView.update on TOP of playerByPlayer.
-            # added tableView.player_names because Liverpool needs info on other players (HandAndFoot did not).
+            # added tableView.player_names and visible_cards
+            # because Liverpool needs info on other players (HandAndFoot did not).
             if ruleset == 'Liverpool':
                 handView.update(playername, tableView.player_names, tableView.visible_cards)
             else:
