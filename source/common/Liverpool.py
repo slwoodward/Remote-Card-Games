@@ -126,7 +126,10 @@ def canMeld(prepared_cards, round_index, player_index):
     """Determines if a set of card groups is a legal meld"""
     #
     # This section differs from HandAndFoot.
-    print('canMeld')
+    print('canMeld--return True no matter what.')
+    # debugging - still need to debug canMeld routine, but want to get past it for now....
+    if True:
+        return True
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     print(prepared_cards)
@@ -151,11 +154,14 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     print('in canPlay')
     print(visible_cards)
     print(player_index)
-    # Has player already melded?
-    if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
+    print(prepared_cards)
+    # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
+    # don't need to call canMeld.
+    print ('For now skip next two lines...')
+    '''if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
         return canMeld(prepared_cards, round_index, player_index)
+    '''
     # Combine dictionaries to get the final played cards if suggest cards played
-    combined_cards = combineCardDicts(prepared_cards, played_cards)
     # in Liverpool  prepared cards is a dictionary where key - tuple.
     # ( player index, group number)
     # (where a group is a set or run) on that player's board.
@@ -164,22 +170,41 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     combined_cards = []
     i_tot = len(visible_cards)
     print('i_tot ' + str(i_tot))
+    print(prepared_cards)
     for idx in range(i_tot):
         temp_dictionary = {}
         for key in prepared_cards:
+            print(str(idx)+' '+str(key))
+            print('line above idx, key, next lines idx , temp_dictionary(k1),prepared_cards, union')
+            print('key[0]'+ str(key[0]))
             if key[0] == idx:
-                temp_dictionary[key[1]] = prepared_cards[key]
+                print(prepared_cards[key])
+                print('should be here.....')
+                print(idx)
                 print(temp_dictionary)
-            combined_cards.append(combineCardDicts(temp_dictionary, visible_cards[idx]))
+                print(prepared_cards[key])
+                temp_combined_cards.append(combineCardDicts(temp_dictionary, prepared_cards))
+
+                print(temp_dictionary)
+            combined_cards.append(combineCardDicts(temp_combined_cards, visible_cards))
             # Confirm each combined group is playable
+
+            ''''
             for key, card_group in combined_cards.items():
                 canPlayGroup(key, card_group)
+                print('should check groups -- temporarily commented out')
+                print(key)
+                print(card_group)
             return True
+            '''
 
 
 def combineCardDicts(dict1, dict2):
     """Combine two dictionaries of cards, such as played and to be played cards"""
     combined_cards = {}
+    print('in combineCardDicts')
+    print(dict1)
+    print(dict2)
     for key in set(dict1).union(dict2):
         combo_list = []
         for card in dict1.setdefault(key, []):
@@ -187,6 +212,8 @@ def combineCardDicts(dict1, dict2):
         for card in dict2.setdefault(key, []):
             combo_list.append(card)
         combined_cards[key] = combo_list
+        print('at line215')
+        print(combined_cards)
     return combined_cards
 
 
