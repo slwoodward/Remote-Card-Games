@@ -137,22 +137,21 @@ class TableView(ConnectionListener):
     def compressGroups(self, v_cards):
         """ Liverpool specific: Don't have space to display every card. Summarize groups of cards here. """
 
-        #todo: debugging and documentation.
         # In Liverpool:
         # visible cards structure:
-        # a list of dictionaries where each entry in list corresponds to dictionary of cards
-        # played by THAT player and key =( player, group) tuple.
-        # Note this will make compressGroups more complex than complessSets used in HandAndFoot.
-        # This simplifies key structure enormously and avoids making server game specific (beyond Ruleset).
+        # a list of dictionaries where each entry in list corresponds to dictionary of serialized cards
+        # played by THAT player with key =(player, group) tuple.
+        # Note this makes compressGroups more complex than complessSets used in HandAndFoot.
+        # It simplifies key structure enormously and avoids making server game specific (beyond Ruleset).
         # Probable unintentional side effect:
         #   -- if a player drops out his plays on other groups will disappear.
-        i_mt = 1 #todo: figure out error here: int(self.Meld_Threshold[self.round_index][0])
+        i_mt = 1 #todo: figure out error here: int(self.Meld_Threshold[self.round_index][0]) probably due to line 32 mess
         self.compressed_info = {}
         for player_name in self.player_names:
             self.compressed_info[player_name]=[]
         all_visible_one_dictionary = {}
         i_tot = len(v_cards)
-        #  for each key need to gather cards from all players (all idx).
+        #  for each key need to gather s_cards from all players (all idx).  s_card=card.serialize
         for idx in range(i_tot):
             temp_dictionary_v = v_cards[idx]
             temp_dictionary = all_visible_one_dictionary
@@ -164,29 +163,31 @@ class TableView(ConnectionListener):
                 text = ''
                 if key[0] == idx:
                     if key[1] < i_mt:
-                        this_set = card_group
-                        l_this_set = len(this_set)
-                        if l_this_set > 0:
-                            idx_c = 0
-                            card_number = int(this_set[idx_c][0])
-                            while card_number == 0 and idx_c < l_this_set:
-                                idx_c = idx_c + 1
-                                card_number = this_set[idx_c][0]
-                            text = 'SET of ' + str(card_number) + "'s: "
-                            for idx_c in range(l_this_set):
-                                if not this_set[idx_c][0] == 0:
-                                    text = text + this_set[idx_c][1] + ','
-                                else:
-                                    text = text + 'Joker' + ','
+                        # this is a set
+                        card_numbers = []
+                        for s_card in card_group:
+                            if not s_card[0] in self.wild_numbers:
+                                card_numbers.append(s_card[0])
+                        unique_numbers = list(set(card_numbers))
+                        if len(unique_numbers) > 0:
+                            unique_number = int(unique_numbers[0])
+                        else:
+                            unique_number = 666 # this should never happen.
+                        text = 'SET of ' + str(unique_number) + "'s: "
+                        for s_card in card_group:
+                            if not s_card[0] in self.wild_numbers:
+                                text = text + str(s_card[1]) +  ','
+                            else:
+                                text = text + 'Wild' + ','
                     else:
+                        # rewrite stuff below with structure more like what's used above.
                         this_run = card_group
                         l_this_run = len(this_run)
                         if l_this_run > 0:
                             idx_c = 0
-                            card_suit = this_run[idx_c][1]
-                            while card_suit == 'None' and idx_c < l_this_run:
+                            while this_run[idx_c] in self.wild_numbers and idx_c < l_this_run:
                                 idx_c = idx_c + 1
-                                card_suit = str(this_run[idx_c][1])
+                            card_suit = str(this_run[idx_c][1])
                             text = 'Run in ' + card_suit + ": "
                             for idx_c in range(l_this_run):
                                 text = text + str(this_run[idx_c][0]) + ','
