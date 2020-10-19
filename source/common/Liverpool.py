@@ -82,6 +82,7 @@ def canPlayGroup(key, card_group, this_round=0):
         num_naturals = len(card_numbers)
         unique_numbers = list(set(card_numbers))
         if len(unique_numbers) > 1:
+            print(card_group)
             raise Exception("Cards in a set must all have the same rank (except wilds).")
         # check that have more naturals than wilds.
         unique_number = unique_numbers[0]
@@ -126,6 +127,7 @@ def canMeld(prepared_cards, round_index, player_index):
         print('in liverpool.py canMeld')
         print(key)
         print(card_group)
+        print(player_index)
         if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
             print('in if canPlayGroup indent')
             valid_groups = valid_groups + 1

@@ -96,7 +96,7 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.ruleset == 'Liverpool':
-            self.rules.canPlay(prepared_cards, visible_cards, self.round, player_index)
+            self.rules.canPlay(prepared_cards, visible_cards, player_index, self.round)
             # unlike self.played_cards used in HandAndFoot, visible_cards is obtained
             # from controller, and contains serialized cards.
             for key, card_group in prepared_cards.items():

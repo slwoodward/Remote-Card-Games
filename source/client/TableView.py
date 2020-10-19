@@ -19,28 +19,26 @@ class TableView(ConnectionListener):
     def __init__(self, display, ruleset):
         self.display = display
         self.ruleset = ruleset
-        print('ruleset '+self.ruleset)
+        print('in Tableview: ruleset '+ self.ruleset)
         self.player_names = []
         self.visible_cards = []
         self.hand_status = []
         self.compressed_info = {}
-        self.playerByPlayer(0)
-        self.results = {}
-        self.this_player_index = -1   # code review note -- this variable needed for Liverpool
+        # self.this_player_index = -1   # code review note -- this variable needed for Liverpool
         # todo: check if still need variable above.
-        self.Meld_Threshold = (1,1) # Meld_Threshold_LP  # todo: this is a cheat because next if statement not working.
-        if ruleset == 'Liverpool':
+        if self.ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP
-            # todo figure out why it wasn't getting to this section. print('at line 32')
             print(self.Meld_Threshold)
-        elif ruleset == 'HandAndFoot':
+            print(self.wild_numbers)
+        elif self.ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.wild_numbers = wild_numbers_HF
-            print('at line 38')
-            print(self.Meld_Threshold)
+            print('thinks ruleset is HandAndFoot')
         else:
-            print(ruleset + ' is not supported')
+            print(self.ruleset + ' is not supported')
+        self.playerByPlayer(0)
+        self.results = {}
 
     def playerByPlayer(self, round_index):
         self.round_index = round_index
@@ -145,7 +143,7 @@ class TableView(ConnectionListener):
         # It simplifies key structure enormously and avoids making server game specific (beyond Ruleset).
         # Probable unintentional side effect:
         #   -- if a player drops out his plays on other groups will disappear.
-        i_mt = 1 #todo: figure out error here: int(self.Meld_Threshold[self.round_index][0]) probably due to line 32 mess
+        i_mt = int(self.Meld_Threshold[self.round_index][0])
         self.compressed_info = {}
         for player_name in self.player_names:
             self.compressed_info[player_name]=[]
