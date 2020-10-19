@@ -26,8 +26,9 @@ class TableView(ConnectionListener):
         self.compressed_info = {}
         self.playerByPlayer(0)
         self.results = {}
-        self.this_player_index = -1   # code review note -- this variable needed for Liverpool.
-        self.Meld_Threshold = 0 # Meld_Threshold_LP  # todo: this is a cheat because next if statement not working.
+        self.this_player_index = -1   # code review note -- this variable needed for Liverpool
+        # todo: check if still need variable above.
+        self.Meld_Threshold = (1,1) # Meld_Threshold_LP  # todo: this is a cheat because next if statement not working.
         if ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP
@@ -62,7 +63,7 @@ class TableView(ConnectionListener):
             player_name = self.player_names[idx]
             if self.ruleset == 'HandAndFoot'or self.ruleset == 'Liverpool':
                 # compressed_info is calculated in compressSets for HandAndFoot and compressGroups for Liverpool.
-                melded_summary = self.compressed_info[idx]
+                melded_summary = self.compressed_info[player_name]
             # elif self.ruleset == 'Liverpool':
             #    melded_summary =  self.compressed_info[player_name]  # compressed_info is calculated in compressGroups
             pygame.draw.rect(self.display, UIC.table_grid_colors[color_index], bk_grd_rect, 0)
@@ -81,7 +82,7 @@ class TableView(ConnectionListener):
                     text_surface1, text_rect1 = self.textObjects(player_text1, UIC.Medium_Text, UIC.Black)
                     text_surface2, text_rect2 = self.textObjects(player_text2, UIC.Small_Text, UIC.Black)
                 else:
-                    #todo: underline surface1 below...
+                    #todo: make Big_Text, UIC.Black -> Big_Text, UIC.Red
                     text_surface1, text_rect1 = self.textObjects(player_text1, UIC.Big_Text, UIC.Black)
                     text_surface2, text_rect2 = self.textObjects(player_text2, UIC.Small_Text, UIC.Black)
             else:
@@ -148,15 +149,21 @@ class TableView(ConnectionListener):
         #   -- if a player drops out his plays on other groups will disappear.
         i_mt = 1 #todo: figure out error here: int(self.Meld_Threshold[self.round_index][0])
         self.compressed_info = {}
+        for player_name in self.player_names:
+            self.compressed_info[player_name]=[]
         all_visible_one_dictionary = {}
         i_tot = len(v_cards)
+        print(i_tot)
+        #  for each key need to gather cards from all players (all idx).
         for idx in range(i_tot):
             temp_dictionary_v = v_cards[idx]
-            #  for each key need to gather cards from all players (all idx).
             temp_dictionary = all_visible_one_dictionary
             all_visible_one_dictionary = (combineCardDicts(temp_dictionary, temp_dictionary_v))
+        # print('in TableView, line 164, visible_one_dictionary:  ')
+        # print(all_visible_one_dictionary)
         for idx in range(i_tot):
             summary = {}
+            key_player = self.player_names[idx]
             # key_player = self.player_names[idx]
             for key, card_group in all_visible_one_dictionary.items():
                 text = ''
@@ -189,10 +196,8 @@ class TableView(ConnectionListener):
                             for idx_c in range(l_this_run):
                                 text = text + str(this_run[idx_c][0]) + ','
                         #todo: replace text above with something prettier.
-                    summary[key[1]] = text.default(key, [])
-                    # stopped here on 10/18.
-                self.compressed_info[idx] = summary
-                print(summary)
+                    summary[key[1]] = text
+                self.compressed_info[key_player] = summary
 
     def display_melded_summary_HF(self, screen_loc_info, melded_summary):
         # This section is for HandAndFoot, where key is index of player
@@ -227,7 +232,7 @@ class TableView(ConnectionListener):
                 self.display.blit(text_surface, text_rect)
 
     def display_melded_summary_LP(self, screen_loc_info, melded_summary):
-        # This section is used by Liverpool.  Each player has a different melded_summary.
+        # This section is used by Liverpool.
 
         bk_grd_rect = screen_loc_info[0]
         y_delta = UIC.Disp_Height / 8
