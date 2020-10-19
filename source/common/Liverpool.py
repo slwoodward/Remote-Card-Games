@@ -152,10 +152,6 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
 
 def canPlay(prepared_cards, visible_cards, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
-    print('in canPlay')
-    print(visible_cards)
-    print(player_index)
-    print(prepared_cards)
     # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
     #
     print('current state: rules are not checked, '
@@ -170,26 +166,16 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     # (where a group is a set or run) on that player's board.
     # visible cards is a list of dictionaries. List index is player index
     # and key in dictionary is group number.
-    combined_cards = []
     i_tot = len(visible_cards)
-    print('length of visible cards (=i_tot):   ' + str(i_tot))
-    print('prepared_cards')
-    print(prepared_cards)
     all_visible_one_dictionary = {}
     for idx in range(i_tot):
-        print('visible cards[idx]: ')
-        print(visible_cards[idx])
         temp_dictionary_v = visible_cards[idx]
-        # should have gathered all of prepared_cards for player idx's groups into single dictionary.
-        print('visible cards[idx='+str(idx)+'] ')
-        print(temp_dictionary_v)
+        # gathering all of prepared_cards for player idx's groups into single dictionary.
         temp_dictionary = all_visible_one_dictionary
-        print(temp_dictionary)
         all_visible_one_dictionary = (combineCardDicts(temp_dictionary, temp_dictionary_v))
-        print('all_visible_one_dictionary...')
-        print(all_visible_one_dictionary)
     combined_cards = combineCardDicts(all_visible_one_dictionary, prepared_cards)
-    print(combined_cards)
+    for key, card_group in combined_cards.items():
+        canPlayGroup(key, card_group)
     return True
 
 def combineCardDicts(dict1, dict2):
@@ -202,9 +188,6 @@ def combineCardDicts(dict1, dict2):
         for card in dict2.setdefault(key, []):
             combo_list.append(card)
         combined_cards[key] = combo_list
-        print('at line215')
-    print(combined_cards)
-    print('')
     return combined_cards
 
 

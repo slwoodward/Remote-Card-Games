@@ -118,7 +118,6 @@ class TableView(ConnectionListener):
         """ HandAndFoot specific: Don't have space to display every card. Summarize sets of cards here. """
 
         self.compressed_info = {}
-        # print(v_cards)
         for idx in range(len(v_cards)):
             summary = {}
             key_player = self.player_names[idx]
@@ -153,18 +152,14 @@ class TableView(ConnectionListener):
             self.compressed_info[player_name]=[]
         all_visible_one_dictionary = {}
         i_tot = len(v_cards)
-        print(i_tot)
         #  for each key need to gather cards from all players (all idx).
         for idx in range(i_tot):
             temp_dictionary_v = v_cards[idx]
             temp_dictionary = all_visible_one_dictionary
             all_visible_one_dictionary = (combineCardDicts(temp_dictionary, temp_dictionary_v))
-        # print('in TableView, line 164, visible_one_dictionary:  ')
-        # print(all_visible_one_dictionary)
         for idx in range(i_tot):
             summary = {}
             key_player = self.player_names[idx]
-            # key_player = self.player_names[idx]
             for key, card_group in all_visible_one_dictionary.items():
                 text = ''
                 if key[0] == idx:
