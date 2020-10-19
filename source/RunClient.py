@@ -37,6 +37,7 @@ def RunClient():
     gameboard = CreateDisplay(playername)
     if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
         tableView = TableView(gameboard.display, ruleset)
+        print('at this point in runClient.')
     else:
         print('that ruleset is not supported')
     handView = HandView(gameControl, gameboard.display, ruleset)

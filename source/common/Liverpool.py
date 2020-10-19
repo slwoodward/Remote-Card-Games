@@ -18,8 +18,9 @@ play_pick_up = False # picking up the pile doesn't force cards to be played.
 #todo: figure out issue with TableView.
 wild_numbers = [0]
 
+# Liverpool: number of sets and runs required to meld.
 # first element below is temporary (for testing).
-Meld_Threshold = [(1,1), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]  # Liverpool need this to be number of sets and runs.
+Meld_Threshold = [(1,1), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
 Number_Rounds = len(Meld_Threshold)  # For convenience
 
 Deal_Size = 11
@@ -174,49 +175,26 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     print('length of visible cards (=i_tot):   ' + str(i_tot))
     print('prepared_cards')
     print(prepared_cards)
+    all_visible_one_dictionary = {}
     for idx in range(i_tot):
         print('visible cards[idx]: ')
         print(visible_cards[idx])
         temp_dictionary_v = visible_cards[idx]
-        temp_dictionary = {}
-        previous_and_current_cards = {}
-        for key, card_group in prepared_cards.items():
-            if key[0] == idx:
-                print('idx, key: ' + str(idx)+' '+str(key))
-                temp_dictionary[key[1]] = card_group
-                print('temp_dictionary - should include key= ' + str(key[1]))
-                print(temp_dictionary)
         # should have gathered all of prepared_cards for player idx's groups into single dictionary.
         print('visible cards[idx='+str(idx)+'] ')
         print(temp_dictionary_v)
-        print('temp_dictionary (prepared cards for that column: ')
+        temp_dictionary = all_visible_one_dictionary
         print(temp_dictionary)
-        previous_and_current_cards = (combineCardDicts(temp_dictionary, temp_dictionary_v))
-        print('previous_and_current_cards...')
-        print(previous_and_current_cards)
-        combined_cards.append(previous_and_current_cards)
-        print('combined_cards (should be list of dictionaries with index corresponding to player) ')
-        print(combined_cards)
-
-        # combined_cards.append(combineCardDicts(temp_combined_cards, visible_cards))
-        # combined_cards recalculated for each value of idx= player index.
-        # Check that cards to be played on that player's groups are playable
-        '''
-        for key, card_group in combined_cards.items():
-            # canPlayGroup(key, card_group)
-            print('should check groups -- temporarily commented out')
-            print(key)
-            print(card_group)
-        # return True
-        '''
-        return True
+        all_visible_one_dictionary = (combineCardDicts(temp_dictionary, temp_dictionary_v))
+        print('all_visible_one_dictionary...')
+        print(all_visible_one_dictionary)
+    combined_cards = combineCardDicts(all_visible_one_dictionary, prepared_cards)
+    print(combined_cards)
+    return True
 
 def combineCardDicts(dict1, dict2):
     """Combine two dictionaries of cards, such as played and to be played cards"""
     combined_cards = {}
-    print('in combineCardDicts')
-    print(dict1)
-    print(dict2)
     for key in set(dict1).union(dict2):
         combo_list = []
         for card in dict1.setdefault(key, []):
@@ -225,7 +203,8 @@ def combineCardDicts(dict1, dict2):
             combo_list.append(card)
         combined_cards[key] = combo_list
         print('at line215')
-        print(combined_cards)
+    print(combined_cards)
+    print('')
     return combined_cards
 
 
