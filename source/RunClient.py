@@ -66,8 +66,9 @@ def RunClient():
             # - for Liverpool need to put handView.update on TOP of playerByPlayer.
             # Might also need to add visible_cards to playerByPlayer (?)
             # because Liverpool handView needs info on other players (HandAndFoot did not).
-            if ruleset == 'Liverpool':
+            if  ruleset == 'Liverpool':
                 visible_cards = tableView.visible_cards
+                # debug: print(visible_cards)
                 handView.update(player_index, len(tableView.player_names), visible_cards)
             else:
                 handView.update()

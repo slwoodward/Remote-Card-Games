@@ -99,12 +99,13 @@ class ClientState:
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
-                    # self.played_cards.setdefault(key, []).append(card)
+                    self.played_cards.setdefault(key, []).append(card)
                     # todo:  Need to replace local record of played_cards with visible cards.
                     # This will have ripple effects in rules when merging played cards with visible cards.
                 #TODO: debug THE NEXT 2 LINES!!!
                 #  self.played_cards = visible_card[key0][key1]
-                self.played_cards.setdefault(key, []).append(card)
+                # self.played_cards.setdefault(key[1], []).append(card)
+        print('at line 108 in clientState, played_cards: ')
         print(self.played_cards)
     
     def getValidKeys(self, card):

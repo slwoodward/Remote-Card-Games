@@ -40,6 +40,8 @@ class TableView(ConnectionListener):
         if self.ruleset == 'HandAndFoot':
             self.compressSets(self.visible_cards)
         elif self.ruleset == 'Liverpool':
+            # print('Tableview, line 45')
+            # print(self.visible_cards)
             # self.compressGroups(self.visible_cards, self.round_index)
             self.compressGroups(self.visible_cards)
         num_players = len(self.player_names)
@@ -138,10 +140,14 @@ class TableView(ConnectionListener):
         # v_cards have two separate keys - first is player #, 2nd is set/run #.
         #
         self.compressed_info = {}
+        # print('Tableview, line 143')
+        # print(v_cards)
         for idx in range(len(v_cards)):
             summary = {}
             key_player = self.player_names[idx]
             melded = dict(v_cards[idx])
+            # print('in Tableview, line 145, melded for player idx:')
+            # print(melded)
             for key_button in melded:
                 text = ''
                 i_kb = int(key_button[1])
@@ -174,7 +180,7 @@ class TableView(ConnectionListener):
                         for idx_c in range(l_this_run):
                             text = text + str(this_run[idx_c][0]) + ','
                     #todo: replace following line with something briefer.
-                summary[key_button[1]] = text
+                summary[i_kb] = text
             self.compressed_info[key_player] = summary
 
     def display_melded_summary_HF(self, screen_loc_info, melded_summary):

@@ -197,7 +197,7 @@ class Controller(ConnectionListener):
             self.note = "You can only play on your turn after you draw"
             return
         try:
-            self._state.playCards(self.prepared_cards, player_index, visible_cards=[{}])
+            self._state.playCards(self.prepared_cards, player_index, visible_cards)
             self.clearPreparedCards()
             self.handleEmptyHand(False)
             self.sendPublicInfo()

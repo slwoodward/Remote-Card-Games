@@ -161,8 +161,8 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
           'but cards are played, disappear from hand, but only first one is displayed on board.'
           'Unfortunately, when you try to play on another player the cards appear on your board'
           ' (need to fix indexing bug)')
-    if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
-        return canMeld(prepared_cards, round_index, player_index)
+    # if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
+    #     return canMeld(prepared_cards, round_index, player_index)
     # Combine dictionaries to get the final played cards if suggest cards played
     # in Liverpool.
     # prepared cards is a dictionary where key = tuple. ( player index, group number)
@@ -172,28 +172,35 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     combined_cards = []
     i_tot = len(visible_cards)
     print('length of visible cards (=i_tot):   ' + str(i_tot))
+    print('prepared_cards')
     print(prepared_cards)
     for idx in range(i_tot):
-        print('visible cards idx: ')
+        print('visible cards[idx]: ')
         print(visible_cards[idx])
+        temp_dictionary_v = visible_cards[idx]
         temp_dictionary = {}
-        # temp_dictionary = visible_cards[idx]
-        for key in prepared_cards:
-            print(str(idx)+' '+str(key))
-            print('line above idx, key, next lines idx , temp_dictionary(k1),prepared_cards, union')
-            print('key[0]'+ str(key[0]))
+        previous_and_current_cards = {}
+        for key, card_group in prepared_cards.items():
             if key[0] == idx:
-                print('idx, key: '+ str(idx)+ ' '+ str(key))
-                print('prepared_cards[key]: ')
-                print(prepared_cards[key])
-                print('temp_dictionary: ')
+                print('idx, key: ' + str(idx)+' '+str(key))
+                temp_dictionary[key[1]] = card_group
+                print('temp_dictionary - should include key= ' + str(key[1]))
                 print(temp_dictionary)
-                combined_cards.append(combineCardDicts(temp_dictionary, prepared_cards))
-                print('combined_cards...')
-                print(combined_cards)
-            # combined_cards.append(combineCardDicts(temp_combined_cards, visible_cards))
-            # combined_cards recalculated for each value of idx= player index.
-            # Check that cards to be played on that player's groups are playable
+        # should have gathered all of prepared_cards for player idx's groups into single dictionary.
+        print('visible cards[idx='+str(idx)+'] ')
+        print(temp_dictionary_v)
+        print('temp_dictionary (prepared cards for that column: ')
+        print(temp_dictionary)
+        previous_and_current_cards = (combineCardDicts(temp_dictionary, temp_dictionary_v))
+        print('previous_and_current_cards...')
+        print(previous_and_current_cards)
+        combined_cards.append(previous_and_current_cards)
+        print('combined_cards (should be list of dictionaries with index corresponding to player) ')
+        print(combined_cards)
+
+        # combined_cards.append(combineCardDicts(temp_combined_cards, visible_cards))
+        # combined_cards recalculated for each value of idx= player index.
+        # Check that cards to be played on that player's groups are playable
         '''
         for key, card_group in combined_cards.items():
             # canPlayGroup(key, card_group)
@@ -202,6 +209,7 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
             print(card_group)
         # return True
         '''
+        return True
 
 def combineCardDicts(dict1, dict2):
     """Combine two dictionaries of cards, such as played and to be played cards"""
