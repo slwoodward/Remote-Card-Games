@@ -244,10 +244,6 @@ class TableView(ConnectionListener):
         text_surface = font.render(text, True, color)
         return text_surface, text_surface.get_rect()
 
-    ''' superfluous?
-    def thisPlayerIndex(self, name):
-        return self.player_names.index(name)
-    '''
 
     #######################################
     ### Network event/message callbacks ###

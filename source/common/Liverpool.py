@@ -82,7 +82,6 @@ def canPlayGroup(key, card_group, this_round=0):
         num_naturals = len(card_numbers)
         unique_numbers = list(set(card_numbers))
         if len(unique_numbers) > 1:
-            print(card_group)
             raise Exception("Cards in a set must all have the same rank (except wilds).")
         # check that have more naturals than wilds.
         unique_number = unique_numbers[0]
@@ -117,9 +116,6 @@ def canMeld(prepared_cards, round_index, player_index):
     #
     # This section differs from HandAndFoot.
     # debugging - still need to debug canMeld routine, but want to get past it for now....
-    #if True:
-    #    print('canMeld--return True no matter what.')
-    #    return True
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     print(prepared_cards)
@@ -129,9 +125,7 @@ def canMeld(prepared_cards, round_index, player_index):
         print(card_group)
         print(player_index)
         if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
-            print('in if canPlayGroup indent')
             valid_groups = valid_groups + 1
-            print(key, required_groups, valid_groups)
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
     return True
@@ -145,8 +139,14 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
     # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
     #
+    print('In canPlay -- noticed that Meld wasnot working properly in 2nd round')
+    print(' visible_cards[1] was:  {(0, 1): [], (0, 0): []}')
+    print(' I thought server would have reset this to {} ')
+    print(' Might be able to create work around, but fixing in server would be better.')
+    print(visible_cards)
+    print(player_index)
     if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
-         return canMeld(prepared_cards, round_index, player_index)
+        return canMeld(prepared_cards, round_index, player_index)
     # Combine dictionaries to get the final played cards if suggest cards played
     # in Liverpool.
     # prepared cards is a dictionary where key = tuple. ( player index, group number)
