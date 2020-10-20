@@ -46,12 +46,10 @@ def isWild(card):
         return False
 
 
-# todo below is for checking on sets, but for liverpool will also have runs.
+# todo: below is for checking on sets in HandAndFoot (not used for Liverpool sets)
+#  for Liverpool will need this for runs.
 # player will probably have to state which set a card goes with, so this may be extraneous.
-#  FOR LIVERPOOL KEY SHOULD NOT BE RANK, BUT POSSIBLE VALUE GIVEN
-#  INDEX OF BUTTON USED TO PREPARE CARD.  FOR SETS THIS WILL BE RANK CARD.NUMBER FOR
-#  EXISTING SET, AND FOR RUN IT WILL BE PLACE IN
-#  RUN=(NUMBER BETWEEN MIN-1 AND MAX+1) THAT HASN'T BEEN TAKEN.
+#  In Liverpool wild will need to be (NUMBER BETWEEN MIN-1 AND MAX+1) THAT HASN'T BEEN TAKEN.
 def getKeyOptions(card):
     """returns the possible keys for the groups the card can go in"""
     if not isWild(card):
@@ -70,6 +68,7 @@ def canPlayGroup(key, card_group, this_round=0):
         return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
     if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
         #todo: fix required length of set!
+
         # check if this is a valid set.
         if len(card_group) < 1:
             raise Exception("Too few cards in set - minimum is 1")
@@ -89,13 +88,25 @@ def canPlayGroup(key, card_group, this_round=0):
             text = "Too many wilds in set of " + str(unique_number) + "'s"
             raise Exception(text)
     else:
-        print('in canPlayGroup, not checking runs')
+        print('in canPlayGroup, now checking runs')
         print(key)
-    '''
         # check that this is a valid run.
-        if len(card_group) < 4:
-            raise Exception("Too few cards in run - minimum is 4")
-    typeDiff = 0
+        if len(card_group) < 2:
+            #todo:  for debugging only require  < 2, will need to change that to 4 later.
+            raise Exception("Too few cards in run - minimum is 2 (for now) 4 (final version)")
+        suits_in_run = []
+        numbers_in_run = []
+        for card in card_group:
+            if not isWild(card):
+                suits_in_run.append(card.suit)
+                numbers_in_run.append(card.number)
+        num_naturals = len(suits_in_run)
+        unique_suits = list(set(card_numbers))
+        if len(unique_suits) > 1:
+            raise Exception("Cards in a run must all have the same suit (except wilds).")
+        numbers_in_run.sort # stopped here at 6:30 on 10/19.
+
+    '''
     for card in card_group:
         if isWild(card):
             typeDiff -= 1
