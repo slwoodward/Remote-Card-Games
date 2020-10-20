@@ -139,10 +139,19 @@ class TableView(ConnectionListener):
         # visible cards structure:
         # a list of dictionaries where each entry in list corresponds to dictionary of serialized cards
         # played by THAT player with key =(player, group) tuple.
-        # Note this makes compressGroups more complex than complessSets used in HandAndFoot.
+        # This is the same as the structure used for HandAndFoot EXCEPT the keys are different.
+        # Note this makes compressGroups more complex than compressSets used in HandAndFoot.
         # It simplifies key structure enormously and avoids making server game specific (beyond Ruleset).
-        # Probable unintentional side effect:
-        #   -- if a player drops out his plays on other groups will disappear.
+        #  BUT HAS unintentional side effects.
+        #  - if a player drops out his plays on other groups will disappear.
+        # AND round should probably end as any runs they've contributed to might no longer work...
+        # ---just tested this with 2 players, player 1 had just melded and played on both boards.
+        # when player 1 dropped out ALL cards disappeared (not just player 1's)
+        # --- repeated test but had player 2 drop out.  In this case player 2's cards disappeared.
+        #
+        # todo: reconsider this structure.  Also - with this structure you have can't preserve what spot jokers have in
+        # runs.  If runs are kept together than can use order of cards to preserve values of runs.
+        #
         i_mt = int(self.Meld_Threshold[self.round_index][0])
         self.compressed_info = {}
         for player_name in self.player_names:

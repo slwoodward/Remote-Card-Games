@@ -47,7 +47,7 @@ def isWild(card):
 
 
 # todo: below is for checking on sets in HandAndFoot (not used for Liverpool sets)
-#  for Liverpool will need this for runs.
+#  for Liverpool runs will need this (though might be able to use something more sophisticated).
 # player will probably have to state which set a card goes with, so this may be extraneous.
 #  In Liverpool wild will need to be (NUMBER BETWEEN MIN-1 AND MAX+1) THAT HASN'T BEEN TAKEN.
 def getKeyOptions(card):
@@ -64,8 +64,13 @@ def canPlayGroup(key, card_group, this_round=0):
     returns True if it can, otherwise raises an exception with an explanation.
     In Liverpool key of prepared (=assigned) cards = key of button = (name, button #)
     """
+    '''
+    Next 2 lines from HandAndFoot.py, but in Liverpool don't want to allow empty sets!! Makes calculating
+    meld_threshold more difficult.  Not certain what the side-effects were...
     if len(card_group) == 0:
         return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
+    '''
+    print('in canPlayGroup, now checking sets and runs, but eased required length for faster testing.')
     if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
         #todo: fix required length of set!
 
@@ -88,8 +93,6 @@ def canPlayGroup(key, card_group, this_round=0):
             text = "Too many wilds in set of " + str(unique_number) + "'s"
             raise Exception(text)
     else:
-        print('in canPlayGroup, now checking runs')
-        print(key)
         # check that this is a valid run.
         if len(card_group) < 2:
             #todo:  for debugging only require  < 2, will need to change that to 4 later.
@@ -100,24 +103,28 @@ def canPlayGroup(key, card_group, this_round=0):
             if not isWild(card):
                 suits_in_run.append(card.suit)
                 numbers_in_run.append(card.number)
-        num_naturals = len(suits_in_run)
-        unique_suits = list(set(card_numbers))
+        # num_naturals = len(suits_in_run)
+        unique_suits = list(set(suits_in_run))
         if len(unique_suits) > 1:
             raise Exception("Cards in a run must all have the same suit (except wilds).")
-        numbers_in_run.sort # stopped here at 6:30 on 10/19.
-
-    '''
-    for card in card_group:
-        if isWild(card):
-            typeDiff -= 1
-        elif card.number == unique_number: # < not used for runs
-            typeDiff += 1
-        else:
-            raise Exception("Illegal card in group: {0} is not wild and is not part of the {1} group".format(card, key))
-    if typeDiff > 0:
-        return True
-    raise Exception("Too many wilds in {0} group.".format(key))
-    '''
+        print(numbers_in_run)
+        numbers_in_run.sort()
+        print(numbers_in_run)
+        '''
+        pseudeo code:
+        for idx in range range(len(numbers_in_run)-1)
+            if card(index+1)-card(index) > 1:
+                num_wilds = num_wilds - 1
+                if num_wilds < 0
+                raise exception -- cards are not continous and you don't have enough wilds to fix it.
+        
+            This should work for both cards and serialized cards."""
+            
+        WANT TO PRESERVE ORDERING OF SET SO THAT WILDS ARE IN PROPER POSITION -- THIS IS ANOTHER ARGUMENT FOR CHANGING
+        STRUCTURE OF VISIBLE_CARDS ON SERVER WHEN PLAYING LIVERPOOL.  (MAKE A variable: 
+        ruleset.rummy  = True/False, and use one structure for visible_cards for True (Liverpool) 
+        and another for Rummy=False (HandAndFoot).
+        '''
     return True
 
 
@@ -150,7 +157,7 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
     # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
     #
-    print('In canPlay -- noticed that Meld wasnot working properly in 2nd round')
+    print('In canPlay -- noticed that Meld was not working properly in 2nd round')
     print(' visible_cards[1] was:  {(0, 1): [], (0, 0): []}')
     print(' I thought server would have reset this to {} ')
     print(' Might be able to create work around, but fixing in server would be better.')
@@ -178,7 +185,7 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
     combined_cards = combineCardDicts(all_visible_one_dictionary, prepared_cards)
     for key, card_group in combined_cards.items():
-        canPlayGroup(key, card_group)
+        canPlayGroup(key, card_group, round_index)
     return True
 
 def combineCardDicts(dict1, dict2):
