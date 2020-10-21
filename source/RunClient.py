@@ -67,8 +67,8 @@ def RunClient():
             # Might also need to add visible_cards to playerByPlayer (?)
             # because Liverpool handView needs info on other players (HandAndFoot did not).
             if  ruleset == 'Liverpool':
-                visible_cards = tableView.visible_cards
-                handView.update(player_index, len(tableView.player_names), visible_cards)
+                visible_scards = tableView.visible_scards
+                handView.update(player_index, len(tableView.player_names), visible_scards)
             else:
                 handView.update()
             note = gameControl.note

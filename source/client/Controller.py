@@ -182,14 +182,15 @@ class Controller(ConnectionListener):
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
 
-    def play(self, player_index=0, visible_cards=[{}]):
-        """Send the server the current set of visible cards"""
-        # player_index and visible_cards needed for liverpool rules checking.
+    def play(self, player_index=0, visible_scards=[{}]):
+        """Send the server the current set of played cards"""
+        # player_index and visible_scards needed for liverpool rules checking.
+        #
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
         try:
-            self._state.playCards(self.prepared_cards, player_index, visible_cards)
+            self._state.playCards(self.prepared_cards, player_index, visible_scards)
             self.clearPreparedCards()
             self.handleEmptyHand(False)
             self.sendPublicInfo()

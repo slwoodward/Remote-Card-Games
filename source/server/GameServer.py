@@ -16,8 +16,9 @@ class GameServer(Server, ServerState):
         self.players = []
         self.in_round = False
         self.game_over = False
+        #todo: Shared_Board should be set in Ruleset.py, not here.
         if ruleset == "Liverpool":
-            self.cards_on_board = [{}]  # used for games with Shared_Board=True...
+            self.cards_on_board = {}  # used for games with Shared_Board=True...
             self.Shared_Board = True
             print('Shared_Board is True')
         else:
@@ -87,13 +88,20 @@ class GameServer(Server, ServerState):
         if self.turn_index == player_index and self.in_round:
             self.turn_index = self.turn_index % len(self.players) 
             self.players[self.turn_index].Send({"action": "startTurn"})
+        # todo: verify that losing player[0] does not crash Liverpool (because len(visible_scards)=0)
 
 
     def nextTurn(self):
-        """Advance to the next trun"""
+        """Advance to the next turn"""
+
         if self.Shared_Board:
+            print('in nexTurn method-make certain board updated with play at end of turn.')
+            print(' this might not be necessary...')
+            print(self.players[self.turn_index])
             # with a shared board every player sees the same board.
-            self.cards_on_board = self.players[self.turn_index].visible_cards  # used for games with Shared_Board=True...
+            self.cards_on_board = self.players[self.turn_index].visible_scards
+            # used for games with Shared_Board=True
+            print(self.cards_on_board)
         newIndex = (self.turn_index + 1) % len(self.players)
         self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
@@ -115,17 +123,23 @@ class GameServer(Server, ServerState):
 
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
-        #NOTE: visible_cards needs to be serialized.
-        #Current plan: never deserialize them, the client sends them in serialized and
-        #we leave them serialized in the channel during storage and thus when they go out again
+
+        #NOTE: visible_cards needs to be serialized form to be transmitted.
+        # On server keep them in serialized form, and call variable visible_scards.
+
         if self.Shared_Board:
+            # with a shared board every player plays on the entire board. visible_scards contains just 1 dictionary.
+            # self.cards_on_board is the most recent update to p.visible_scards.
+            print('in Send_publicInfo method')
+            print(self.players[self.turn_index])
+            self.cards_on_board = self.players[self.turn_index].visible_scards
+            print(self.cards_on_board)
             # Liverpool has a shared board.  visible cards is a list of dictionaries with just 1 entry.
-            # self.cards_on_board = this needs to be most recent update to p.visible_cards and is updated in
             # method nextTurn
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [self.cards_on_board], "hand_status": [p.hand_status for p in self.players]})
         else:
             # HandAndFoot -- each player can only play on their own cards.
-            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_scards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
 
     def Send_discardInfo(self):

@@ -73,11 +73,11 @@ class ClientState:
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards, player_index = 0, visible_cards=[{}]):
-        """Move cards from hand to visible"""
+    def playCards(self, prepared_cards, player_index = 0, visible_scards=[{}]):
+        """Move cards from hand to board"""
 
-        # cards in visible_cards are serialized, cards in prepared_cards are not.
         # First check that all the cards are in your hand.
+        visible_cards = [{}]
         print('in ClientState.py, playCards method')
         tempHand = [x for x in self.hand_cards]
         try:
@@ -86,9 +86,8 @@ class ClientState:
                     tempHand.remove(card)
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
-        #todo: put variable in rulesets regarding whether you can play on others groups.
-        # for HandAndFoot it would be false, and for Liverpool it would be true.
-        # that would determine whether self.played_cards = visible cards or cards that player played.
+        # Check ruleset to determine whether self.played_cards = visible cards or cards that player played.
+        # Alternatively could check if Shared_Board == True or False.
         if self.ruleset == 'HandAndFoot':
             self.rules.canPlay(prepared_cards, self.played_cards, self.round)
             for key, card_group in prepared_cards.items():
@@ -96,20 +95,34 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.ruleset == 'Liverpool':
-            self.rules.canPlay(prepared_cards, visible_cards, player_index, self.round)
-            # unlike self.played_cards used in HandAndFoot, visible_cards is obtained
+            # unlike in HandAndFoot, where self.played_cards was used to check rules.
+            # in Liverpool need to consider all of the played cards.
+            # This will be true for all games with Shared_Board == True
+            # Played cards are in visible_scards, which is obtained
             # from controller, and contains serialized cards.
+            # To reduce computations, don't deserialize them until click on play cards button.
+            print('debugging -- at line 104 in client state')
+            visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
+                               visible_scards[0].items()}
+            print('debugging in client state method playCards:')
+            print(visible_cards)
+            print(prepared_cards)
+            self.rules.canPlay(prepared_cards, visible_cards, player_index, self.round)
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
-                    # 19oct - don't think liverpool really uses played_cards other than in my print statement...
-                    self.played_cards.setdefault(key, []).append(card)
-                    # todo:  Need to replace local record of played_cards with visible cards.
-                    # This will have ripple effects in rules when merging played cards with visible cards.
-                #TODO: debug THE NEXT 2 LINES!!!
-                #  self.played_cards = visible_card[key0][key1]
-                # self.played_cards.setdefault(key[1], []).append(card)
-        print('at line 108 in clientState, played_cards: ')
+                    # Rather than deserialize and serialize visible
+                    # cards will serialize prepared cards prior to constructing union with visible cards.
+                    print(visible_cards)
+                    visible_cards[0].setdefault(key, []).append(card)
+                    print('will append card: ')
+                    print(visible_cards)
+                    # todo: need to sort cards here -- have to figure out how to designate wilds nominal value.
+                    # if its in the middle that's easy but Aces and wilds need to be set high or low.
+                    # can do that in a separate method...
+            self.played_cards = visible_cards[0]
+            # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+        print('at line 120 in clientState, played_cards: ')
         print(self.played_cards)
 
     def getValidKeys(self, card):
