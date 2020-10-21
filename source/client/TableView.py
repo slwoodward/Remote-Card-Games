@@ -45,6 +45,7 @@ class TableView(ConnectionListener):
         if self.ruleset == 'HandAndFoot':
             self.compressSets(self.visible_scards)
         elif self.ruleset == 'Liverpool':
+            print(self.visible_scards)
             self.compressGroups(self.visible_scards)
         num_players = len(self.player_names)
         # currently set-up with one player per column. May need to change that for more players.

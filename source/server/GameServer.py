@@ -95,15 +95,30 @@ class GameServer(Server, ServerState):
         """Advance to the next turn"""
 
         if self.Shared_Board:
-            print('in nexTurn method-make certain board updated with play at end of turn.')
-            print(' this might not be necessary...')
+            print('in GameServer.nexTurn method--- have bug with how its written below.')
+            print('possible fix would be to use combineDict method to take union of groups in dicionaries....')
+            print('will need to go through step to make certain that same card doesnt appear 2x in dictionary.')
+            print('first make certain its not another bug causing played cards to be lost.')
+            print('next player is not getting self.cards_on_board!!!')
             print(self.players[self.turn_index])
             # with a shared board every player sees the same board.
+            print(self.turn_index)
+            print('self.players[self.turn_index].visible_scards')
+            print(self.players[self.turn_index].visible_scards)
+            print(self.players[self.turn_index])
             self.cards_on_board = self.players[self.turn_index].visible_scards
             # used for games with Shared_Board=True
+            print('SELF.CARDS_on_board in GameServer.py')
             print(self.cards_on_board)
-        newIndex = (self.turn_index + 1) % len(self.players)
-        self.turn_index = newIndex
+            #
+            newIndex = (self.turn_index + 1) % len(self.players)
+            self.turn_index = newIndex
+            # next user has not yet had a chance to fetch these cards, so update his visible_scards in the server.
+            # this didn't fix it -- probably it gets updated and self.cards_on_board gets overwritten.
+            self.players[self.turn_index].visible_scards = self.cards_on_board
+        else:
+            newIndex = (self.turn_index + 1) % len(self.players)
+            self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
         
     def Send_broadcast(self, data):
