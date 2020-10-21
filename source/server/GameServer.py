@@ -16,6 +16,14 @@ class GameServer(Server, ServerState):
         self.players = []
         self.in_round = False
         self.game_over = False
+        if ruleset == "Liverpool":
+            self.cards_on_board = [{}]  # used for games with Shared_Board=True...
+            self.Shared_Board = True
+            print('Shared_Board is True')
+        else:
+            self.Shared_Board = False
+            print('Shared_Board is False')
+
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -83,6 +91,9 @@ class GameServer(Server, ServerState):
 
     def nextTurn(self):
         """Advance to the next trun"""
+        if self.Shared_Board:
+            # with a shared board every player sees the same board.
+            self.cards_on_board = self.players[self.turn_index].visible_cards  # used for games with Shared_Board=True...
         newIndex = (self.turn_index + 1) % len(self.players)
         self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
@@ -107,7 +118,15 @@ class GameServer(Server, ServerState):
         #NOTE: visible_cards needs to be serialized.
         #Current plan: never deserialize them, the client sends them in serialized and
         #we leave them serialized in the channel during storage and thus when they go out again
-        self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+        if self.Shared_Board:
+            # Liverpool has a shared board.  visible cards is a list of dictionaries with just 1 entry.
+            # self.cards_on_board = this needs to be most recent update to p.visible_cards and is updated in
+            # method nextTurn
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [self.cards_on_board], "hand_status": [p.hand_status for p in self.players]})
+        else:
+            # HandAndFoot -- each player can only play on their own cards.
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""
