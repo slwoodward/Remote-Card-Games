@@ -24,7 +24,7 @@ class TableView(ConnectionListener):
         self.visible_scards = []        # contains list of serialized cards (from server)
         self.hand_status = []
         self.compressed_info = {}
-        # self.this_player_index = -1   # code review note -- this variable needed for Liverpool
+        # self.this_player_index = -1   # code review note --is this variable needed for Liverpool?
         if self.ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP

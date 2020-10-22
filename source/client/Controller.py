@@ -23,7 +23,7 @@ class Controller(ConnectionListener):
         # needed for Liverpool:
         self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
-        self.visible_sscards = [{}] # in Liverpool both HandView and TableView use data:visible cards.
+        self.visible_scards = [{}] # in Liverpool both HandView and TableView use data:visible cards.
 
     ### Player Actions ###
     def setName(self):
@@ -301,9 +301,12 @@ class Controller(ConnectionListener):
         self.note = "Your turn has started. You may draw or attempt to pick up the pile"
         #
         # if playing with a shared board, then need to update played cards played.
-        #todo: need to find most effective way to get
-        # data:visible cards from TableView to controller or HandView, and
-        # from controller to server.
+        if self._state.rules == 'Liverpool':
+            _state.first_play_this_turn = True  # must serialize visible_cards one time at beginning of turn.
+            # todo: get rid of _state.first_play_this_turn and perform serializaiton below.
+            # todo: have Network_startTurn send visible_cards for previous player's turn.
+            # send played_cards back to server, so that visible_cards[active player] is up to date.
+            _state.played_cards = visible_cards[0]  # in Liverpool all players' cards are included.
 
         self.sendPublicInfo() #Let everyone know its your turn.
 

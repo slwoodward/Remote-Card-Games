@@ -67,7 +67,8 @@ class ClientState:
         self.played_cards = {}
         self.went_out = False
         self.discard_info = [None, 0]
-        
+        self.first_play_this_turn = True
+
     def newCards(self, card_list):
         """Update the cards in hand"""
         for card in card_list:
@@ -86,7 +87,8 @@ class ClientState:
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
         # Check ruleset to determine whether self.played_cards = visible cards or cards that player played.
-        # Alternatively could check if Shared_Board == True or False.
+        # todo: Create rule:  Shared_Board == True or False, it would be False for HandAndFoot, Canasta, etc...
+        # but True for Liverpool and other Rummy games.
         if self.ruleset == 'HandAndFoot':
             self.rules.canPlay(prepared_cards, self.played_cards, self.round)
             for key, card_group in prepared_cards.items():
@@ -100,21 +102,25 @@ class ClientState:
             # Played cards are in visible_scards, which is obtained
             # from controller, and contains serialized cards.
             # To reduce computations, don't deserialize them until click on play cards button.
-            visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
-                               visible_scards[0].items()}
+            if self.first_play_this_turn:
+                visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
+                                   visible_scards[0].items()}
+                print("visible_cards[0]: ")
+                for key, card in visible_cards[0].items():
+                    print(card)
+                self.first_play_this_turn = False
+            self.played_cards = visible_cards[0]  # in Liverpool all players' cards are included.
+            print("played_cards: ")
+            for key, card in self.played_cards.items():
+                print(card)
             self.rules.canPlay(prepared_cards, visible_cards, player_index, self.round)
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
-                    # Rather than deserialize and serialize visible
-                    # cards will serialize prepared cards prior to constructing union with visible cards.
-                    visible_cards[0].setdefault(key, []).append(card)
-                    #todo:
-                    # print(visible_cards)
+                    self.played_cards.setdefault(key, []).append(card)
                     # todo: need to sort cards here -- have to figure out how to designate wilds nominal value.
                     # if its in the middle that's easy but Aces and wilds need to be set high or low.
                     # can do that in a separate method...
-            self.played_cards = visible_cards[0]
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
         # todo: debug- this might be - print(self.played_cards)
 
