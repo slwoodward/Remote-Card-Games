@@ -16,6 +16,12 @@ class GameServer(Server, ServerState):
         self.players = []
         self.in_round = False
         self.game_over = False
+        #todo: Shared_Board should probably be set in Ruleset.py, not here.
+        # probably don't need it.
+        if ruleset == "Liverpool":
+            self.Shared_Board = True
+        else:
+            self.Shared_Board = False
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -59,7 +65,7 @@ class GameServer(Server, ServerState):
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
         self.Send_scores()              # need to retransmit all the scores in case a player has joined between rounds
-        self.turn_index = self.round
+        self.turn_index = self.round    # define which player starts the next round.
         self.nextTurn()
 
     def delPlayer(self, player):
@@ -82,10 +88,52 @@ class GameServer(Server, ServerState):
 
 
     def nextTurn(self):
-        """Advance to the next trun"""
+        """Advance to the next turn"""
+
+        '''
+        if self.Shared_Board:
+            print('in GameServer.nexTurn method--- have bug with how its written below.')
+            print('possible fix would be to use combineDict method to take union of groups in dicionaries....')
+            print('will need to go through step to make certain that same card doesnt appear 2x in dictionary.')
+            print('first make certain its not another bug causing played cards to be lost.')
+            print('next player is not getting self.cards_on_board!!!')
+            print(self.players[self.turn_index])
+            # with a shared board every player sees the same board.
+            #todo: remove debugging print statements
+            print(self.turn_index)
+            print('self.players[self.turn_index].visible_cards')
+            print(self.players[self.turn_index].visible_cards)
+            print(self.players[self.turn_index])
+            self.cards_on_board = self.players[self.turn_index].visible_cards
+            # above are debugging print statements
+            #
+            # used for games with Shared_Board=True, need to update visible cards immediately, before next turn begins.
+            # todo: fix bug --
+            # Observed with 2 players :
+            # played cards are disappearing when discard button is hit.
+            # they reappear the next time it is that player's turn.
+            # Next 2 lines are effort to fix bug, but they didn't work.
+            self.players[self.turn_index].visible_cards = self.cards_on_board # this probably is done.
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [self.cards_on_board], "hand_status": [p.hand_status for p in self.players]})
+            print('in GameServer, line 121, cards_on_board:')
+            print( [self.cards_on_board])
+            #
+        '''
+        # note for review: want to send visible_cards one more time before next player starts, so there
+        # is time for the active players played_cards variable to be updated, and transmitted back to
+        # server.
+        if self.Shared_Board:
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],
+                             "visible_cards": [self.cards_on_board],
+                             "hand_status": [p.hand_status for p in self.players]})
         newIndex = (self.turn_index + 1) % len(self.players)
         self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
+        if self.Shared_Board:
+            sleep(1.0)
+        # prevent out of date version of visible cards from being broadcast.
+        #  Hopefully 1.0 sec is adequate time.
+        #  todo: Note that this should not be hardcoded here, move to a more obvious location.
         
     def Send_broadcast(self, data):
         """Send data to every connected player"""
@@ -104,14 +152,26 @@ class GameServer(Server, ServerState):
 
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
-        #NOTE: visible_cards needs to be serialized.
-        #Current plan: never deserialize them, the client sends them in serialized and
-        #we leave them serialized in the channel during storage and thus when they go out again
-        self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+
+        #NOTE: visible_cards needs to be serialized form to be transmitted.
+        # On server keep them in serialized form.
+
+        if self.Shared_Board:
+            # Liverpool -- each player can play on any players cards.
+            v_cards = [p.visible_cards for p in self.players]
+            #todo: double check that this doesn't wipe out the last players plays.
+            # There should be delay due to discard.
+            visible_cards_now = v_cards[self.turn_index]
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],
+                                 "visible_cards": [visible_cards_now],
+                                 "hand_status": [p.hand_status for p in self.players]})
+        else:
+            # HandAndFoot -- each player can only play on their own cards.
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""
         info = self.getDiscardInfo()
         self.Send_broadcast({"action": "discardInfo", "top_card": info[0].serialize(), "size": info[1]})
-
 

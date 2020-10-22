@@ -10,6 +10,8 @@ import math
 
 Game_Name = "Liverpool"
 
+#todo: move Shared_Board from GamerServer.py to this file.
+# currently in GamerServer.py Shared_Board = True for ruleset == Liverpool.
 Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
@@ -64,19 +66,13 @@ def canPlayGroup(key, card_group, this_round=0):
     returns True if it can, otherwise raises an exception with an explanation.
     In Liverpool key of prepared (=assigned) cards = key of button = (name, button #)
     """
-    '''
-    Next 2 lines from HandAndFoot.py, but in Liverpool don't want to allow empty sets!! Makes calculating
-    meld_threshold more difficult.  Not certain what the side-effects were...
+    print('in canPlayGroup, now checking sets and runs, but eased required length for faster testing.')
     if len(card_group) == 0:
         return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
-    '''
-    print('in canPlayGroup, now checking sets and runs, but eased required length for faster testing.')
     if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
-        #todo: fix required length of set!
-
         # check if this is a valid set.
         if len(card_group) < 1:
-            raise Exception("Too few cards in set - minimum is 1")
+            raise Exception("Too few cards in set - minimum is 1 (will change to 3 later)")
         # check that group contains only wilds and one card_number.
         card_numbers = []
         num_cards = len(card_group)
@@ -136,18 +132,12 @@ def canMeld(prepared_cards, round_index, player_index):
     # debugging - still need to debug canMeld routine, but want to get past it for now....
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
-    print(prepared_cards)
     for key, card_group in prepared_cards.items():
-        print('in liverpool.py canMeld')
-        print(key)
-        print(card_group)
-        print(player_index)
         if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
     return True
-
 
 def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
@@ -157,23 +147,16 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
     # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
     #
-    print('In canPlay -- noticed that Meld was not working properly in 2nd round')
-    print(' visible_cards[1] was:  {(0, 1): [], (0, 0): []}')
-    print(' I thought server would have reset this to {} ')
-    print(' Might be able to create work around, but fixing in server would be better.')
-    print(visible_cards)
-    print(player_index)
-    if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
+    played_groups = []
+    for key, s_cards in visible_cards[0].items():
+        if len(s_cards) > 0:
+            played_groups.append(key)
+    if (player_index,0) not in played_groups:
+        # if a player has already melded than (player_index,0) will have dictionary entry with cards.
         return canMeld(prepared_cards, round_index, player_index)
-    # Combine dictionaries to get the final played cards if suggest cards played
-    # in Liverpool.
-    # prepared cards is a dictionary where key = tuple. ( player index, group number)
-    # (where a group is a set or run) on that player's board.
-    # visible cards is a list of dictionaries. List index is player index
-    # and key in dictionary is group number.
     all_visible_one_dictionary = {}
     for temp_dict_v_s in visible_cards:
-        # temp_dict_v_s is a dictionary with keys = tuple and elements= list of serialzied cards from one player.
+        # temp_dict_v_s is a dictionary with keys = tuple and elements= list of serialized cards from one player.
         # temp_dictionary_v is same dictionary EXCEPT the serialized cards have been deserialized.
         temp_dictionary_v = {}
         for key, s_cards in temp_dict_v_s.items():
