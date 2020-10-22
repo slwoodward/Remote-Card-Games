@@ -78,7 +78,6 @@ class ClientState:
 
         # First check that all the cards are in your hand.
         visible_cards = [{}]
-        print('in ClientState.py, playCards method')
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -101,29 +100,23 @@ class ClientState:
             # Played cards are in visible_scards, which is obtained
             # from controller, and contains serialized cards.
             # To reduce computations, don't deserialize them until click on play cards button.
-            print('debugging -- at line 104 in client state')
             visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
                                visible_scards[0].items()}
-            print('debugging in client state method playCards:')
-            print(visible_cards)
-            print(prepared_cards)
             self.rules.canPlay(prepared_cards, visible_cards, player_index, self.round)
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
                     # Rather than deserialize and serialize visible
                     # cards will serialize prepared cards prior to constructing union with visible cards.
-                    print(visible_cards)
                     visible_cards[0].setdefault(key, []).append(card)
-                    print('will append card: ')
-                    print(visible_cards)
+                    #todo:
+                    # print(visible_cards)
                     # todo: need to sort cards here -- have to figure out how to designate wilds nominal value.
                     # if its in the middle that's easy but Aces and wilds need to be set high or low.
                     # can do that in a separate method...
             self.played_cards = visible_cards[0]
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
-        print('at line 120 in clientState, played_cards: ')
-        print(self.played_cards)
+        # todo: debug- this might be - print(self.played_cards)
 
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""

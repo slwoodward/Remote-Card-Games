@@ -23,6 +23,7 @@ class Controller(ConnectionListener):
         # needed for Liverpool:
         self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
+        self.visible_sscards = [{}] # in Liverpool both HandView and TableView use data:visible cards.
 
     ### Player Actions ###
     def setName(self):
@@ -157,10 +158,12 @@ class Controller(ConnectionListener):
         """
         wilds_in_run = [] # this will be empty for sets and valid numbers for runs.
         sets_runs = self.Meld_Threshold[self._state.round]
+        '''
         if assigned_key[1] < sets_runs[0]:
             print('this should be a set')
         else:
             print('this should be a run')
+        '''
         for wrappedcard in selected_cards:
             card = wrappedcard.card
             self.prepareCard(assigned_key, card)
@@ -296,6 +299,12 @@ class Controller(ConnectionListener):
             return
         self._state.turn_phase = Turn_Phases[1]
         self.note = "Your turn has started. You may draw or attempt to pick up the pile"
+        #
+        # if playing with a shared board, then need to update played cards played.
+        #todo: need to find most effective way to get
+        # data:visible cards from TableView to controller or HandView, and
+        # from controller to server.
+
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_newCards(self, data):
@@ -311,7 +320,7 @@ class Controller(ConnectionListener):
         self._state.round = data["round"]
         self._state.reset()
         hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
-        #TODO: we want to allow the player to choose the order of the hands eventually
+        #TODO: in HandAndFoot we want to allow the player to choose the order of the hands eventually
         self._state.dealtHands(hand_list)
         self.sendPublicInfo() #More cards in hand now, need to update public information
 

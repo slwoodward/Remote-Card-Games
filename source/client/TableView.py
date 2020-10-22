@@ -33,7 +33,6 @@ class TableView(ConnectionListener):
         elif self.ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.wild_numbers = wild_numbers_HF
-            print('thinks ruleset is HandAndFoot')
         else:
             print(self.ruleset + ' is not supported')
         self.playerByPlayer(0)
@@ -45,7 +44,7 @@ class TableView(ConnectionListener):
         if self.ruleset == 'HandAndFoot':
             self.compressSets(self.visible_scards)
         elif self.ruleset == 'Liverpool':
-            print(self.visible_scards)
+            #todo: debug - print(self.visible_scards)
             self.compressGroups(self.visible_scards)
         num_players = len(self.player_names)
         # currently set-up with one player per column. May need to change that for more players.

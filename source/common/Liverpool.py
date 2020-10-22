@@ -132,18 +132,12 @@ def canMeld(prepared_cards, round_index, player_index):
     # debugging - still need to debug canMeld routine, but want to get past it for now....
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
-    print(prepared_cards)
     for key, card_group in prepared_cards.items():
-        print('in liverpool.py canMeld')
-        print(key)
-        print(card_group)
-        print(player_index)
         if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
     return True
-
 
 def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
@@ -153,21 +147,16 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
     # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
     #
-    print('debugging -- in liverpool.py canPlay:')
-    print(visible_cards)
-    print(player_index)
     played_groups = []
     for key, s_cards in visible_cards[0].items():
         if len(s_cards) > 0:
             played_groups.append(key)
-    print(played_groups)
     if (player_index,0) not in played_groups:
         # if a player has already melded than (player_index,0) will have dictionary entry with cards.
         return canMeld(prepared_cards, round_index, player_index)
     all_visible_one_dictionary = {}
     for temp_dict_v_s in visible_cards:
         # temp_dict_v_s is a dictionary with keys = tuple and elements= list of serialized cards from one player.
-        # as of 10/21/2000 visible cards should have just one dictionary.
         # temp_dictionary_v is same dictionary EXCEPT the serialized cards have been deserialized.
         temp_dictionary_v = {}
         for key, s_cards in temp_dict_v_s.items():

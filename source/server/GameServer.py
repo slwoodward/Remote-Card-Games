@@ -102,23 +102,25 @@ class GameServer(Server, ServerState):
             print('next player is not getting self.cards_on_board!!!')
             print(self.players[self.turn_index])
             # with a shared board every player sees the same board.
+            #todo: remove debugging print statements
+            '''
             print(self.turn_index)
             print('self.players[self.turn_index].visible_scards')
             print(self.players[self.turn_index].visible_scards)
             print(self.players[self.turn_index])
+            '''
             self.cards_on_board = self.players[self.turn_index].visible_scards
-            # used for games with Shared_Board=True
-            print('SELF.CARDS_on_board in GameServer.py')
-            print(self.cards_on_board)
+            # used for games with Shared_Board=True, need to update visible cards immediately, before next turn begins.
+            # todo: fix bug --
+            # Observed with 2 players :
+            # played cards are disappearing when discard button is hit.
+            # they reappear the next time it is that player's turn.
+            # Next 2 lines are effort to fix bug, but they didn't work.
+            self.players[self.turn_index].visible_scards = self.cards_on_board # this probably is done.
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [self.cards_on_board], "hand_status": [p.hand_status for p in self.players]})
             #
-            newIndex = (self.turn_index + 1) % len(self.players)
-            self.turn_index = newIndex
-            # next user has not yet had a chance to fetch these cards, so update his visible_scards in the server.
-            # this didn't fix it -- probably it gets updated and self.cards_on_board gets overwritten.
-            self.players[self.turn_index].visible_scards = self.cards_on_board
-        else:
-            newIndex = (self.turn_index + 1) % len(self.players)
-            self.turn_index = newIndex
+        newIndex = (self.turn_index + 1) % len(self.players)
+        self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
         
     def Send_broadcast(self, data):
@@ -149,8 +151,7 @@ class GameServer(Server, ServerState):
             print(self.players[self.turn_index])
             self.cards_on_board = self.players[self.turn_index].visible_scards
             print(self.cards_on_board)
-            # Liverpool has a shared board.  visible cards is a list of dictionaries with just 1 entry.
-            # method nextTurn
+            # Liverpool has a shared board.  In it visible cards is a list of dictionaries with just 1 entry.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [self.cards_on_board], "hand_status": [p.hand_status for p in self.players]})
         else:
             # HandAndFoot -- each player can only play on their own cards.
@@ -161,5 +162,4 @@ class GameServer(Server, ServerState):
         """Send the update to the discard pile"""
         info = self.getDiscardInfo()
         self.Send_broadcast({"action": "discardInfo", "top_card": info[0].serialize(), "size": info[1]})
-
 
