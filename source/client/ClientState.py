@@ -78,7 +78,6 @@ class ClientState:
         """Move cards from hand to board"""
 
         # First check that all the cards are in your hand.
-        visible_cards = [{}]
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -86,7 +85,7 @@ class ClientState:
                     tempHand.remove(card)
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
-        # Check ruleset to determine whether self.played_cards = visible cards or cards that player played.
+        # Check ruleset to determine whether self.played_cards = all visible cards or cards that this client played.
         # todo: Create rule:  Shared_Board == True or False, it would be False for HandAndFoot, Canasta, etc...
         # but True for Liverpool and other Rummy games.
         if self.ruleset == 'HandAndFoot':
@@ -102,6 +101,7 @@ class ClientState:
             # Played cards are in visible_scards, which is obtained
             # from controller, and contains serialized cards.
             # To reduce computations, don't deserialize them until click on play cards button.
+            visible_cards = [{}]
             if self.first_play_this_turn:
                 visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
                                    visible_scards[0].items()}

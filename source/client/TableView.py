@@ -28,8 +28,6 @@ class TableView(ConnectionListener):
         if self.ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP
-            print(self.Meld_Threshold)
-            print(self.wild_numbers)
         elif self.ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.wild_numbers = wild_numbers_HF
@@ -44,9 +42,6 @@ class TableView(ConnectionListener):
         if self.ruleset == 'HandAndFoot':
             self.compressSets(self.visible_scards)
         elif self.ruleset == 'Liverpool':
-            #todo: debug -
-            print('line 48 in TableView')
-            print(self.visible_scards)
             self.compressGroups(self.visible_scards)
         num_players = len(self.player_names)
         # currently set-up with one player per column. May need to change that for more players.
@@ -113,14 +108,14 @@ class TableView(ConnectionListener):
             bk_grd_rect = (bk_grd_rect[0] + players_sp_w, bk_grd_rect[1], bk_grd_rect[2], bk_grd_rect[3])
             color_index = (color_index + 1) % len(UIC.table_grid_colors)
 
-    def compressSets(self, v_cards):
+    def compressSets(self, v_scards):
         """ HandAndFoot specific: Don't have space to display every card. Summarize sets of cards here. """
 
         self.compressed_info = {}
-        for idx in range(len(v_cards)):
+        for idx in range(len(v_scards)):
             summary = {}
             key_player = self.player_names[idx]
-            melded = dict(v_cards[idx])
+            melded = dict(v_scards[idx])
             for key in melded:
                 set = melded[key]
                 length_set = len(set)
@@ -133,7 +128,7 @@ class TableView(ConnectionListener):
                     summary[key] = (length_set, (length_set - wild_count), wild_count)
             self.compressed_info[key_player] = summary
 
-    def compressGroups(self, v_cards):
+    def compressGroups(self, v_scards):
         """ Liverpool specific: Don't have space to display every card. Summarize groups of cards here. """
 
         # In Liverpool:
@@ -145,21 +140,14 @@ class TableView(ConnectionListener):
         i_num_sets = int(self.Meld_Threshold[self.round_index][0])
         self.compressed_info = {}
         i_tot = len(self.player_names)
-        for idx in range(i_tot):
-            player_name = self.player_names[idx]
-            print(player_name)
+        for player_name in self.player_names:
             self.compressed_info[player_name] = {}
-            print(self.compressed_info)
         #  for each key need to gather s_cards from all players (all idx).  s_card=card.serialize
         for idx in range(i_tot):
             summary = {}
             key_player = self.player_names[idx]
-            print('line 153 in tableview')
-            print(v_cards)
-            # v_cards has different format when Shared_Baord==True (i.e. in Liverpool).
-            # it's [] until connected to the server, and there it's [{dictionary containing info on entire board}]
-            if len(v_cards) > 0:
-                all_visible_one_dictionary = v_cards[0]
+            if len(v_scards) > 0:
+                all_visible_one_dictionary = v_scards[0]
                 for key, card_group in all_visible_one_dictionary.items():
                     text = ''
                     if key[0] == idx:
