@@ -306,7 +306,10 @@ class Controller(ConnectionListener):
             # todo: get rid of _state.first_play_this_turn and perform serializaiton below.
             # todo: have Network_startTurn send visible_cards for previous player's turn.
             # send played_cards back to server, so that visible_cards[active player] is up to date.
-            _state.played_cards = visible_cards[0]  # in Liverpool all players' cards are included.
+            _state.played_cards = visible_scards[0]  # in Liverpool all players' cards are included.
+            print('at line 310 in controller.py')
+            for key, vc in _state.played_cards():
+                print(vc)
 
         self.sendPublicInfo() #Let everyone know its your turn.
 

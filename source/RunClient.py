@@ -5,7 +5,6 @@ from client.ClientState import ClientState
 from client.Controller import Controller
 from client.CreateDisplay import CreateDisplay
 from client.TableView import TableView            # this should support both Liverpool and HandAndFoot
-# from client.TableView_HF import TableView_HF      # this is for HandAndFoot
 from client.HandView import HandView
 # imports below added so that can generate executable using pyinstaller.
 import common.HandAndFoot
