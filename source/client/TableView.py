@@ -44,7 +44,9 @@ class TableView(ConnectionListener):
         if self.ruleset == 'HandAndFoot':
             self.compressSets(self.visible_scards)
         elif self.ruleset == 'Liverpool':
-            #todo: debug - print(self.visible_scards)
+            #todo: debug -
+            print('line 48 in TableView')
+            print(self.visible_scards)
             self.compressGroups(self.visible_scards)
         num_players = len(self.player_names)
         # currently set-up with one player per column. May need to change that for more players.
@@ -140,18 +142,22 @@ class TableView(ConnectionListener):
         # played with key =(player, group) tuple.  Cards are sorted with wilds in runs appearing where the
         # card they represent would have appeared.
         #
-        # debug - print(v_cards)
         i_num_sets = int(self.Meld_Threshold[self.round_index][0])
         self.compressed_info = {}
-        for player_name in self.player_names:
-            self.compressed_info[player_name]=[]
         i_tot = len(self.player_names)
+        for idx in range(i_tot):
+            player_name = self.player_names[idx]
+            print(player_name)
+            self.compressed_info[player_name] = {}
+            print(self.compressed_info)
         #  for each key need to gather s_cards from all players (all idx).  s_card=card.serialize
         for idx in range(i_tot):
             summary = {}
             key_player = self.player_names[idx]
+            print('line 153 in tableview')
+            print(v_cards)
             # v_cards has different format when Shared_Baord==True (i.e. in Liverpool).
-            # it's [] until connected to the server, and then it's [{dictionary containing info on entire board}]
+            # it's [] until connected to the server, and there it's [{dictionary containing info on entire board}]
             if len(v_cards) > 0:
                 all_visible_one_dictionary = v_cards[0]
                 for key, card_group in all_visible_one_dictionary.items():

@@ -22,7 +22,7 @@ class GameServer(Server, ServerState):
         # todo: but might not need it (jury still out).
         if ruleset == "Liverpool":
             self.Shared_Board = True
-            #  self.v_cards = [{}]
+            self.visible_cards_now = {}
         else:
             self.Shared_Board = False
         print('Server launched')
@@ -172,18 +172,45 @@ class GameServer(Server, ServerState):
 
         if self.Shared_Board:
             # Liverpool -- each player can play on any players cards.
-            debuggingFlag = False
+            debuggingFlag = True
             if debuggingFlag:
                 print('at line 173')
                 print(self.players)
                 self.v_cards = [p.visible_cards for p in self.players]
+                if len(self.v_cards) == 0:
+                    self.v_cards = [{}]
+                print('at line 180')
                 print(self.v_cards)
+                # brainstorm -- set self.visible_cards_now to the element in v_cards with the most cards.
+                max_len = -1
+                self.visible_cards_now = {}
+                print('at line 187 in gameserver')
+                for v_cards_dict in self.v_cards:
+                    print('line 188 in gameserver')
+                    print(v_cards_dict)
+                    temp_length = 0
+                    for key, scard_group in v_cards_dict.items():
+                        print(key)
+                        print(scard_group)
+                        print(len(scard_group))
+                        temp_length = temp_length + len(scard_group)
+                        print(temp_length)
+                    if temp_length > max_len:
+                        self.visible_cards_now = v_cards_dict
+                        print('at line 190 in gameserver.py')
+                        print(temp_length)
+                        print(self.visible_cards_now)
+                self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players]})
+
+                '''
+                earlier attempt --
                 #todo: double check that this doesn't wipe out the last players plays.
                 # There should be delay due to discard.
                 # visible_cards_now = self.v_cards[self.turn_index]
                 if len(self.v_cards) > 0:
                     visible_cards_now = self.v_cards[0]
                     self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": visible_cards_now,"hand_status": [p.hand_status for p in self.players]})
+                '''
             else:
                 self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [p.visible_cards for p in self.players],"hand_status": [p.hand_status for p in self.players]})
         else:
