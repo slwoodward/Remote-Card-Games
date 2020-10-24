@@ -145,28 +145,28 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
 
 def canPlay(prepared_cards, visible_cards, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
-    # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
-    #
+
+    # what groups have already been played?
     played_groups = []
-    for key, s_cards in visible_cards[0].items():
-        if len(s_cards) > 0:
+    for key, cards in visible_cards[0].items():
+        if len(cards) > 0:
             played_groups.append(key)
+    print('line 154 in Liverpool.py, canPlay method - played_groups:')
+    print(played_groups)
+    # does player attempt to play on another player's groups before that player has melded ?
+    for key, cards in prepared_cards.items():
+        if len(cards) > 0:
+            group_key = key
+            if not group_key[0] == player_index and group_key not in played_groups:
+                raise Exception("You are not allowed to begin another player's sets or runs.")
+                print('line 162 of Liverpool.py, group_key')
+                print(group_key)
+    # Has player already melded? -- if so visible_cards[player_index] will NOT be empty.
     if (player_index,0) not in played_groups:
         # if a player has already melded than (player_index,0) will have dictionary entry with cards.
         return canMeld(prepared_cards, round_index, player_index)
-    all_visible_one_dictionary = {}
-    for temp_dict_v_s in visible_cards:
-        # temp_dict_v_s is a dictionary with keys = tuple and elements= list of serialized cards from one player.
-        # temp_dictionary_v is same dictionary EXCEPT the serialized cards have been deserialized.
-        temp_dictionary_v = {}
-        for key, s_cards in temp_dict_v_s.items():
-            card_list = [Card.deserialize(c) for c in s_cards]
-            temp_dictionary_v[key] = card_list
-        # gathering all played cards from all players into single dictionary.
-        temp_dictionary = all_visible_one_dictionary
-        all_visible_one_dictionary = (combineCardDicts(temp_dictionary, temp_dictionary_v))
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
-    combined_cards = combineCardDicts(all_visible_one_dictionary, prepared_cards)
+    combined_cards = combineCardDicts(visible_cards[0], prepared_cards)
     for key, card_group in combined_cards.items():
         canPlayGroup(key, card_group, round_index)
     return True

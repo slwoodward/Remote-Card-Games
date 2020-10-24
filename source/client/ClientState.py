@@ -67,7 +67,6 @@ class ClientState:
         self.played_cards = {}
         self.went_out = False
         self.discard_info = [None, 0]
-        self.first_play_this_turn = True
 
     def newCards(self, card_list):
         """Update the cards in hand"""
@@ -102,27 +101,36 @@ class ClientState:
             # from controller, and contains serialized cards.
             # To reduce computations, don't deserialize them until click on play cards button.
             visible_cards = [{}]
-            if self.first_play_this_turn:
-                visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
-                                   visible_scards[0].items()}
-                print("visible_cards[0]: ")
-                for key, card in visible_cards[0].items():
-                    print(card)
-                self.first_play_this_turn = False
+            print('in ClientState, line 104')
+            for key, scard_group in visible_scards[0].items():
+                card_group=[]
+                for scard in scard_group:
+                    # card = scard.deserialize()
+                    card = Card(scard[0], scard[1], scard[2])
+                    # card = 'debugging'
+                    print(scard)
+                    card_group.append(card)
+                visible_cards[0][key]=card_group
+                print(visible_cards)
+
+            #visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
+            #                    visible_scards[0].items()}
             self.played_cards = visible_cards[0]  # in Liverpool all players' cards are included.
-            print("played_cards: ")
-            for key, card in self.played_cards.items():
-                print(card)
+            print("line 108 in ClientState.py, played_cards: ")
+            for key, card_group in self.played_cards.items():
+                for card in card_group:
+                    print(card)
             self.rules.canPlay(prepared_cards, visible_cards, player_index, self.round)
+            print("line 112 in ClientState.py, prepared cards: ")
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
-                    # todo: need to sort cards here -- have to figure out how to designate wilds nominal value.
+                    # todo: need to sort cards here (or in Liverpool.;py)
+                    #  -- have to figure out how to designate wilds nominal value.
                     # if its in the middle that's easy but Aces and wilds need to be set high or low.
                     # can do that in a separate method...
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
-        # todo: debug- this might be - print(self.played_cards)
 
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""
