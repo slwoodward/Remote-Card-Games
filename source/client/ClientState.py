@@ -105,16 +105,10 @@ class ClientState:
             for key, scard_group in visible_scards[0].items():
                 card_group=[]
                 for scard in scard_group:
-                    # card = scard.deserialize()
                     card = Card(scard[0], scard[1], scard[2])
-                    # card = 'debugging'
-                    print(scard)
                     card_group.append(card)
                 visible_cards[0][key]=card_group
                 print(visible_cards)
-
-            #visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
-            #                    visible_scards[0].items()}
             self.played_cards = visible_cards[0]  # in Liverpool all players' cards are included.
             print("line 108 in ClientState.py, played_cards: ")
             for key, card_group in self.played_cards.items():

@@ -91,39 +91,61 @@ def canPlayGroup(key, card_group, this_round=0):
     else:
         # check that this is a valid run.
         if len(card_group) < 2:
-            #todo:  for debugging only require  < 2, will need to change that to 4 later.
+            # todo:  for debugging only require  < 2, will need to change that to 4 later.
             raise Exception("Too few cards in run - minimum is 2 (for now) 4 (final version)")
         suits_in_run = []
-        numbers_in_run = []
         for card in card_group:
             if not isWild(card):
                 suits_in_run.append(card.suit)
-                numbers_in_run.append(card.number)
-        # num_naturals = len(suits_in_run)
         unique_suits = list(set(suits_in_run))
         if len(unique_suits) > 1:
             raise Exception("Cards in a run must all have the same suit (except wilds).")
-        print(numbers_in_run)
-        numbers_in_run.sort()
-        print(numbers_in_run)
-        '''
-        pseudeo code:
-        for idx in range range(len(numbers_in_run)-1)
-            if card(index+1)-card(index) > 1:
-                num_wilds = num_wilds - 1
-                if num_wilds < 0
-                raise exception -- cards are not continous and you don't have enough wilds to fix it.
-        
-            This should work for both cards and serialized cards."""
-            
-        WANT TO PRESERVE ORDERING OF SET SO THAT WILDS ARE IN PROPER POSITION -- THIS IS ANOTHER ARGUMENT FOR CHANGING
-        STRUCTURE OF VISIBLE_CARDS ON SERVER WHEN PLAYING LIVERPOOL.  (MAKE A variable: 
-        ruleset.rummy  = True/False, and use one structure for visible_cards for True (Liverpool) 
-        and another for Rummy=False (HandAndFoot).
-        '''
+        print('-- run -----')
+
+    print('-------')
     return True
 
-
+def processRuns(card_group):
+        # handle sorting of run, including placement of jokers.
+        for card in card_group:
+            print(card)
+        card_group.sort(key=lambda wc: wc.tempnumber)
+        print('--sorted-----')
+        first_card = True
+        groups_jokers = []
+        temp_run_group = []
+        for card in card_group:
+            print(temp_run_group)
+            print(card)
+            if card.tempnumber == 0:
+                print('there is an unassigned joker in this group, will try to automatically assign it')
+                groups_jokers.append(card)
+                for joker in groups_jokers:
+                    print(joker)
+            elif first_card:
+                first_card = False
+                temp_run_group.append(card)
+            else:
+                if card.tempnumber == (temp_run_group[-1].tempnumber + 1):
+                    temp_run_group.append(card)
+                elif card.tempnumber == (temp_run_group[-1].tempnumber + 2) and len(groups_jokers) > 1:
+                    this_joker = groups_jokers[0]
+                    groups_jokers.remove(this_joker)
+                    this_joker.tempnumber = temp_run_group[-1].tempnumber + 1
+                    temp_run_group.append(this_joker)
+                    temp_run_group.append(card)
+                else:
+                    raise Exception('too big a gap between numbers')
+        print('at line 139, next is groups_jokers, then temp_run_group')
+        print(groups_jokers)
+        print(temp_run_group)
+        if len(groups_jokers) > 0:
+            for this_joker in groups_jokers:
+                this_joker.tempnumber = temp_run_group[-1].tempnumber + 1
+                temp_run_group.append[joker]
+                # todo: handle jokers properly -- this does not.
+        card_group = temp_run_group
+        return card_group
 
 def canMeld(prepared_cards, round_index, player_index):
     """Determines if a set of card groups is a legal meld, called from canPlay."""
@@ -159,16 +181,41 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
             group_key = key
             if not group_key[0] == player_index and group_key not in played_groups:
                 raise Exception("You are not allowed to begin another player's sets or runs.")
-                print('line 162 of Liverpool.py, group_key')
-                print(group_key)
     # Has player already melded? -- if so visible_cards[player_index] will NOT be empty.
     if (player_index,0) not in played_groups:
-        # if a player has already melded than (player_index,0) will have dictionary entry with cards.
+        # if a player has already melded than key = (player_index,0) will have dictionary entry with cards.
         return canMeld(prepared_cards, round_index, player_index)
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
+    # For Runs:
+    #     for visible_cards, must first check if either an Ace is high or if a Joker is on either end of the run,
+    #     before combining dictionaries, so that the values do not change (unless a joker is replaced).
+    #     if so, then set their card.tempnumber so that they will be in correct position when sorting.
+    for k_group, card_group in visible_cards[0].items():       # pre-process visible_cards
+        if k_group[1] >= Meld_Threshold[round_index][0]:       # then this is a run.
+            if card_group[-1].number == 1:            # reset tempnumber for Aces/jokers if they are at the end
+                card_group[-1].tempnumber = 14
+            elif card_group[-1].number == 0:
+                card_group[-1].tempnumber = card_group[-2].tempnumber + 1
+                print('last card in visible cards run is a joker. tempnumber is' )
+                print(card_group[-1].tempnumber)
+            if card_group[0].number ==0 :            # reset tempnumber for jokers if they are at the beginning.
+                card_group[0].tempnumber = card_group[1].tempnumber - 1
     combined_cards = combineCardDicts(visible_cards[0], prepared_cards)
-    for key, card_group in combined_cards.items():
-        canPlayGroup(key, card_group, round_index)
+    #  -- debug print statements below
+    print('visible cards should be sorted, prepared cards appended to the end:')
+    for k_group, card_group in combined_cards.items():
+        print('--just prior to calling processRuns---')
+        for eachcard in card_group:
+            print(eachcard)
+    # -- debug print statements above--
+    for k_group, card_group in combined_cards.items():
+        if k_group[1] >= Meld_Threshold[round_index][0]:
+            processed_group = processRuns(card_group)               # process runs from combined_cards
+            canPlayGroup(k_group, processed_group, round_index)
+            card_group = processed_group
+        print('--just after calling processRuns---')
+        for eachcard in card_group:
+            print(eachcard)
     return True
 
 def combineCardDicts(dict1, dict2):
