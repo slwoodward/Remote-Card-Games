@@ -101,9 +101,10 @@ def canPlayGroup(key, card_group, this_round=0):
         if len(unique_suits) > 1:
             raise Exception("Cards in a run must all have the same suit (except wilds).")
         print('-- run -----')
+        card_group = processRuns(card_group)
 
-    print('-------')
-    return True
+    print('--line 106  in liverpool.py-----')
+    return card_group
 
 def processRuns(card_group):
         # handle sorting of run, including placement of jokers.
@@ -145,7 +146,7 @@ def processRuns(card_group):
                 temp_run_group.append[joker]
                 # todo: handle jokers properly -- this does not.
         card_group = temp_run_group
-        return card_group
+        return True
 
 def canMeld(prepared_cards, round_index, player_index):
     """Determines if a set of card groups is a legal meld, called from canPlay."""
@@ -190,16 +191,6 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     #     for visible_cards, must first check if either an Ace is high or if a Joker is on either end of the run,
     #     before combining dictionaries, so that the values do not change (unless a joker is replaced).
     #     if so, then set their card.tempnumber so that they will be in correct position when sorting.
-    for k_group, card_group in visible_cards[0].items():       # pre-process visible_cards
-        if k_group[1] >= Meld_Threshold[round_index][0]:       # then this is a run.
-            if card_group[-1].number == 1:            # reset tempnumber for Aces/jokers if they are at the end
-                card_group[-1].tempnumber = 14
-            elif card_group[-1].number == 0:
-                card_group[-1].tempnumber = card_group[-2].tempnumber + 1
-                print('last card in visible cards run is a joker. tempnumber is' )
-                print(card_group[-1].tempnumber)
-            if card_group[0].number ==0 :            # reset tempnumber for jokers if they are at the beginning.
-                card_group[0].tempnumber = card_group[1].tempnumber - 1
     combined_cards = combineCardDicts(visible_cards[0], prepared_cards)
     #  -- debug print statements below
     print('visible cards should be sorted, prepared cards appended to the end:')
@@ -213,7 +204,9 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
             processed_group = processRuns(card_group)               # process runs from combined_cards
             canPlayGroup(k_group, processed_group, round_index)
             card_group = processed_group
-        print('--just after calling processRuns---')
+        print('--just after calling processRuns, need to sit down with paper and pencil and figure out how'
+              'to get this back to prepared cards or visible cards in the main flow.--')
+        print('most recent failure is second time I play cards: built in function or function is not subscriptable ')
         for eachcard in card_group:
             print(eachcard)
     return True
@@ -245,6 +238,23 @@ def cardValue(card):
         return 20
     raise ValueError("Card submitted is not a legal playing card option")
 
+def visibleRuns(visible_cards, round_index):
+    """ assign tempnumber to cards in runs from server.
+
+    Needed to maintain integrity of jokers values in runs.  Server does not maintain tempnumbers """
+    if len(visible_cards[0]) == 0:
+        return(visible_cards)
+    for k_group, card_group in visible_cards[0].items():
+        if k_group[1] >= Meld_Threshold[round_index][0]:       # this is a run.
+            if card_group[-1].number == 1:            # reset tempnumber for Aces/jokers if they are at the end
+                card_group[-1].tempnumber = 14
+            elif card_group[-1].number == 0:
+                card_group[-1].tempnumber = card_group[-2].tempnumber + 1
+                print('last card in visible cards run is a joker. tempnumber is' )
+                print(card_group[-1].tempnumber)
+            if card_group[0].number ==0 :            # reset tempnumber for jokers if they are at the beginning.
+                card_group[0].tempnumber = card_group[1].tempnumber - 1
+        return visible_cards
 
 def goneOut(played_cards):
     """Returns true if the played set of cards meets the requirements to go out

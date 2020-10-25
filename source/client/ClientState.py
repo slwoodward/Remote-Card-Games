@@ -107,10 +107,18 @@ class ClientState:
                 for scard in scard_group:
                     card = Card(scard[0], scard[1], scard[2])
                     card_group.append(card)
-                visible_cards[0][key]=card_group
+                visible_cards[0][key] = card_group
                 print(visible_cards)
+            print('line line 112 in clientstate')
+            if self.rules.Meld_Threshold[self.round][1] > 0:
+                print('line line 114 in clientstate')
+                for k, c in visible_cards[0].items():
+                    print(c)
+                    print('at line 117')
+                visible_cards = self.rules.visibleRuns(visible_cards,self.round)
+                # this method insures jokers and Aces maintain their place.
             self.played_cards = visible_cards[0]  # in Liverpool all players' cards are included.
-            print("line 108 in ClientState.py, played_cards: ")
+            print('line line 120 in clientstate')
             for key, card_group in self.played_cards.items():
                 for card in card_group:
                     print(card)
