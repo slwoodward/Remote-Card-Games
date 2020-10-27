@@ -11,7 +11,8 @@ import math
 Game_Name = "Liverpool"
 
 #todo: move Shared_Board from GamerServer.py to this file.
-# currently in GamerServer.py Shared_Board = True for ruleset == Liverpool.
+# currently in GamerServer.py
+# Shared_Board = True for ruleset == Liverpool.
 Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
@@ -98,7 +99,8 @@ def canPlayGroup(key, card_group, this_round=0):
             if not isWild(card):
                 suits_in_run.append(card.suit)
         unique_suits = list(set(suits_in_run))
-        if len(unique_suits) > 1:
+        if len(unique_suits) > 4:
+            #todo: for testing not requiring one suit.  Fix this later.
             raise Exception("Cards in a run must all have the same suit (except wilds).")
         print('-- run -----')
         card_group = processRuns(card_group)
@@ -107,46 +109,60 @@ def canPlayGroup(key, card_group, this_round=0):
     return card_group
 
 def processRuns(card_group):
-        # handle sorting of run, including placement of jokers.
-        for card in card_group:
-            print(card)
-        card_group.sort(key=lambda wc: wc.tempnumber)
-        print('--sorted-----')
-        first_card = True
-        groups_jokers = []
-        temp_run_group = []
-        for card in card_group:
-            print(temp_run_group)
-            print(card)
-            if card.tempnumber == 0:
-                print('there is an unassigned joker in this group, will try to automatically assign it')
-                groups_jokers.append(card)
-                for joker in groups_jokers:
-                    print(joker)
-            elif first_card:
-                first_card = False
-                temp_run_group.append(card)
-            else:
-                if card.tempnumber == (temp_run_group[-1].tempnumber + 1):
-                    temp_run_group.append(card)
-                elif card.tempnumber == (temp_run_group[-1].tempnumber + 2) and len(groups_jokers) > 1:
-                    this_joker = groups_jokers[0]
-                    groups_jokers.remove(this_joker)
-                    this_joker.tempnumber = temp_run_group[-1].tempnumber + 1
-                    temp_run_group.append(this_joker)
-                    temp_run_group.append(card)
-                else:
-                    raise Exception('too big a gap between numbers')
-        print('at line 139, next is groups_jokers, then temp_run_group')
-        print(groups_jokers)
+    # handle sorting of run, including placement of wilds.
+    print('line 112 in Liverpool.py')
+    card_group.sort(key=lambda wc: wc.tempnumber)
+    print('--sorted-----')
+    for card in card_group:
+        print(card)
+    first_card = True
+    groups_wilds = []
+    temp_run_group = []
+    for card in card_group:
         print(temp_run_group)
-        if len(groups_jokers) > 0:
-            for this_joker in groups_jokers:
-                this_joker.tempnumber = temp_run_group[-1].tempnumber + 1
-                temp_run_group.append[joker]
-                # todo: handle jokers properly -- this does not.
-        card_group = temp_run_group
-        return True
+        print(card)
+        print('at line 124: print(card.tempnumber)')
+        print(card.tempnumber)
+        if isWild(card): # number in wild_numbers:
+            # todo: change line above to card.tempnumber
+            print('while debugging error about built in function or method is not subscriptable have '
+                  'tested for isWild, rather than if tempnumber in wilds. ')
+            groups_wilds.append(card)
+            for joker in groups_wilds:
+                print(joker)
+            print('there is an unassigned Wild card in this group, will try to automatically assign it.')
+        elif first_card:
+            first_card = False
+            temp_run_group.append(card)
+        else:
+            # todo: must write code that checks for jokers too close togehter.
+            print('next line is last card in temp_run_group:')
+            print(temp_run_group[-1])
+            print('next line is tempnumber of that card + 1:')
+            print(temp_run_group[-1].tempnumber + 1)
+            if card.tempnumber == (temp_run_group[-1].tempnumber + 1):
+                temp_run_group.append(card)
+            elif card.tempnumber == (temp_run_group[-1].tempnumber + 2) and len(groups_wilds) > 1:
+                this_wild = groups_wilds[0]
+                groups_wilds.remove(this_wild)
+                this_wild.tempnumber = temp_run_group[-1].tempnumber + 1
+                temp_run_group.append(this_wild)
+                temp_run_group.append(card)
+            elif card.tempnumber == temp_run_group[-1].tempnumber:
+                print('must write code to check whether one of the cards is an Ace or Joker')
+                raise Exception('Card value already in the run.')
+            else:
+                raise Exception('too big a gap between numbers')
+    print('at line 146, next is groups_jokers, then temp_run_group')
+    print(groups_wilds)
+    print(temp_run_group)
+    if len(groups_wilds) > 0:
+        for this_wild in groups_wilds:
+            # test if this is where it errs: this_wild.tempnumber = temp_run_group[-1].tempnumber + 1
+            temp_run_group.append[this_wild]
+            # todo: handle jokers properly -- above does not, it simply tacks them on the end w/o assigning them.
+    return temp_run_group
+    # return True
 
 def canMeld(prepared_cards, round_index, player_index):
     """Determines if a set of card groups is a legal meld, called from canPlay."""
@@ -166,12 +182,13 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
     return True
 
-def canPlay(prepared_cards, visible_cards, player_index, round_index):
+def canPlay(prepared_cards, played_cards_dictionary, player_index, round_index):
+
     """Confirms if playing the selected cards is legal"""
 
     # what groups have already been played?
     played_groups = []
-    for key, cards in visible_cards[0].items():
+    for key, cards in played_cards_dictionary.items():
         if len(cards) > 0:
             played_groups.append(key)
     print('line 154 in Liverpool.py, canPlay method - played_groups:')
@@ -188,12 +205,9 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
         return canMeld(prepared_cards, round_index, player_index)
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
     # For Runs:
-    #     for visible_cards, must first check if either an Ace is high or if a Joker is on either end of the run,
-    #     before combining dictionaries, so that the values do not change (unless a joker is replaced).
-    #     if so, then set their card.tempnumber so that they will be in correct position when sorting.
-    combined_cards = combineCardDicts(visible_cards[0], prepared_cards)
+    combined_cards = combineCardDicts (played_cards_dictionary, prepared_cards)
     #  -- debug print statements below
-    print('visible cards should be sorted, prepared cards appended to the end:')
+    print('played_cards should be sorted, prepared cards appended to the end:')
     for k_group, card_group in combined_cards.items():
         print('--just prior to calling processRuns---')
         for eachcard in card_group:
@@ -202,9 +216,10 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     for k_group, card_group in combined_cards.items():
         if k_group[1] >= Meld_Threshold[round_index][0]:
             processed_group = processRuns(card_group)               # process runs from combined_cards
-            canPlayGroup(k_group, processed_group, round_index)
-            card_group = processed_group
-        print('--just after calling processRuns, need to sit down with paper and pencil and figure out how'
+        else:
+            processed_group = card_group                            # this run is a set, add process to sort them.
+        canPlayGroup(k_group, processed_group, round_index)
+        print('--just after calling canPlayGroup, need to sit down with paper and pencil and figure out how'
               'to get this back to prepared cards or visible cards in the main flow.--')
         print('most recent failure is second time I play cards: built in function or function is not subscriptable ')
         for eachcard in card_group:
@@ -238,23 +253,24 @@ def cardValue(card):
         return 20
     raise ValueError("Card submitted is not a legal playing card option")
 
-def visibleRuns(visible_cards, round_index):
+def restoreRunAssignment(cardgroup_dictionary, round_index):
     """ assign tempnumber to cards in runs from server.
 
-    Needed to maintain integrity of jokers values in runs.  Server does not maintain tempnumbers """
-    if len(visible_cards[0]) == 0:
-        return(visible_cards)
-    for k_group, card_group in visible_cards[0].items():
+    Needed to maintain integrity of Wilds' values in runs.  Server does not know tempnumbers """
+    if len(cardgroup_dictionary) == 0:
+        return(cardgroup_dictionary)
+    for k_group, card_group in cardgroup_dictionary.items():
         if k_group[1] >= Meld_Threshold[round_index][0]:       # this is a run.
-            if card_group[-1].number == 1:            # reset tempnumber for Aces/jokers if they are at the end
-                card_group[-1].tempnumber = 14
-            elif card_group[-1].number == 0:
-                card_group[-1].tempnumber = card_group[-2].tempnumber + 1
-                print('last card in visible cards run is a joker. tempnumber is' )
+            if card_group[-1].number in wild_numbers:    # reset tempnumber for Wilds/Aces if they are at the end.
+                card_group[-1].tempnumber = (card_group[-2].tempnumber) + 1
+                print('last card in this run is Wild. tempnumber is')
                 print(card_group[-1].tempnumber)
-            if card_group[0].number ==0 :            # reset tempnumber for jokers if they are at the beginning.
+            elif card_group[-1].number == 1:
+                card_group[-1].tempnumber = 14
+            if card_group[0].number in wild_numbers:    # reset tempnumber for wild cards if they are at the beginning.
                 card_group[0].tempnumber = card_group[1].tempnumber - 1
-        return visible_cards
+                print('first card in this run is a wild card. tempnumber is' )
+        return cardgroup_dictionary
 
 def goneOut(played_cards):
     """Returns true if the played set of cards meets the requirements to go out
