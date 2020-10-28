@@ -68,6 +68,7 @@ class ClientState:
         self.played_cards = {}    # in HandAndFoot this is dictionary of cards played by this client.
         #                           in Liverpool it is a dictionary containing cards played by all cards, hence
         #                           it is derived by processing data: visible cards in visible_scards[{...}]
+        # self.visible_scards = [{}]  # Liverpool:  reset this so it won't cause server to be out of date.
         self.went_out = False
         self.discard_info = [None, 0]
 

@@ -150,7 +150,16 @@ def processRuns(card_group):
                 raise Exception('Card value already in the run.')
             else:
                 raise Exception('too big a gap between numbers')
-    print('at line 146 in liverpool.py, next is groups_jokers, then temp_run_group')
+    if len(aces_list) > 0 and card_group[-1].tempnumber == 13:
+        print('at line 154')
+        print(card_group[-1].tempnumber)
+        this_ace = aces_list.pop(0)
+        this_ace.tempnumber = 14
+        card_group.append(this_ace)
+    if len(aces_list) > 0:
+        raise Exception('Cannot play Ace in designated run')
+    print('at line 159 in liverpool.py, next is aces_list, groups_jokers, then temp_run_group')
+    print(aces_list)
     print(groups_wilds)
     print(card_group)
     if len(groups_wilds) > 0:
@@ -167,8 +176,15 @@ def canMeld(prepared_cards, round_index, player_index):
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():
-        # todo: replace canPlayGroup with processRuns and processSets.
-        if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
+        if key[1] >= Meld_Threshold[round_index][0]:
+            processed_group = processRuns(card_group)  # process runs from combined_cards
+        else:
+            processed_group = card_group  # no need to sort sets here, do that when actually play cards.
+        if canPlayGroup(key, processed_group, round_index) and key[0] == player_index:
+            print('in canMeld')
+            for eachcard in card_group:
+                print(eachcard)
+                print('assigned  to: '+ str(eachcard.tempnumber))
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
