@@ -173,7 +173,6 @@ def canMeld(prepared_cards, round_index, player_index):
     """Determines if a set of card groups is a legal meld, called from canPlay."""
     #
     # This section differs from HandAndFoot.
-    # debugging - still need to debug canMeld routine, but want to get past it for now....
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     print('in canMeld')
