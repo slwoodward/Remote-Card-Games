@@ -107,6 +107,9 @@ def canPlayGroup(key, card_group, this_round):
 
 def processRuns(card_group):
     # handle sorting of run, including placement of wilds.
+
+    # processRuns does not presume length requirement or that all cards are in same suit.
+    # it DOES presume that if Aces are not wild, then they are hi or low, but not both.
     card_group.sort(key=lambda wc: wc.tempnumber)
     for card in card_group:
         print(card)
@@ -134,19 +137,24 @@ def processRuns(card_group):
                 card_group.append(this_ace)
             card_group.append(card)
         else:
-            # todo: must write code that checks for jokers too close together.
             print('next line is last card in card_group:')
             print(card_group[-1])
             print(card_group[-1].tempnumber + 1)
             if card.tempnumber == (card_group[-1].tempnumber + 1):
                 card_group.append(card)
-            elif card.tempnumber == (card_group[-1].tempnumber + 2) and len(groups_wilds) > 1:
+            elif card.tempnumber == (card_group[-1].tempnumber + 2) and len(groups_wilds) > 0:
                 this_wild = groups_wilds.pop(0)
                 this_wild.tempnumber = card_group[-1].tempnumber + 1
                 card_group.append(this_wild)
                 card_group.append(card)
             elif card.tempnumber == card_group[-1].tempnumber:
-                print('must write code to check whether one of the cards is an Ace or Joker')
+                if isWild(card):
+                    card.tempnumber = card.number
+                    groups_wilds.append(card)
+                elif isWild(card_group[-1]):
+                    this_wild = card_group.pop(-1)
+                    this_wild.tempnumber = this_wild.number
+                    groups_wilds.append(card)
                 raise Exception('Card value already in the run.')
             else:
                 raise Exception('too big a gap between numbers')
@@ -162,11 +170,26 @@ def processRuns(card_group):
     print(aces_list)
     print(groups_wilds)
     print(card_group)
-    if len(groups_wilds) > 0:
-        for this_wild in groups_wilds:
-            # test if this is where it errs: this_wild.tempnumber = temp_run_group[-1].tempnumber + 1
-            card_group.append[this_wild]
-            # todo: handle jokers properly -- above does not, it simply tacks them on the end w/o assigning them.
+    last_card_wild = False
+    second2last_card_wild = False
+    while len(groups_wilds) > 0 :
+        # todo: handle jokers properly -- ask if high or low when both are an option.
+        # currently presumes that first wild on end is high and second is low.
+        this_wild = groups_wilds.pop(0)
+        if card_group[-1].tempnumber < 14 and not isWild(card_group[-1]):
+            this_wild.tempnumber = card_group[-1].tempnumber + 1
+            card_group.append(this_wild)
+        elif card_group[0].tempnumber > 1 and not isWild(card_group[0]):
+            this_wild.tempnumber = card_group[0].tempnumber - 1
+            card_group.insert(0, this_wild)
+        else:
+            raise Exception('you have too many jokers in a single Run')
+        print('program does not currently let you choose whether joker goes at beginning or ending of run')
+    for card in card_group:
+        if (isWild(card) and last_card_wild) or (isWild(card) and second2last_card_wild):
+            raise Exception('Must have two natural cards between wild cards in runs')
+        second2last_card_wild = last_card_wild
+        last_card_wild = isWild(card)
     return card_group
 
 def canMeld(prepared_cards, round_index, player_index):
