@@ -28,6 +28,10 @@ class Card:
             return 'Red'
         return None  # For jokers
 
+    def assignWild(self, value):
+        self.tempnumber = int(value)
+        return self
+
     def serialize(self):
         """translate into a format podsixnet can translate"""
         return (self.number, self.suit, self.deck)

@@ -123,23 +123,28 @@ class ClientState:
             # Wilds and Aces are maintained.
             # This is done in rules because it will be specific to Liverpool (other shared_board games
             # will have different rules, such as whether Aces can be both high and low...)
-
             print('line line 120 in clientstate')
             for key, card_group in self.played_cards.items():
                 for card in card_group:
                     print(card)
                     print(card.tempnumber)
             self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
-            print("line 112 in ClientState.py, prepared cards: ")
+            # If no exception raised, then must put cards in order prior to transmitting them to server.
+            combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
+            for k_group, card_group in combined_cards.items():
+                if k_group[1] >= self.rules.Meld_Threshold[self.round][0]:
+                    card_group.sort(key=lambda wc: wc.tempnumber)
+                else:
+                    print('need to sort sets')
+                    # card_group.sort(key=lambda wc: wc.suit)  < jokers don't sort this way, need to remove
+                    # jokers, sort the rest and then add jokers to the end.
+            # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+            self.played_cards = combined_cards
+            print("line 141 in ClientState.py, prepared cards: ")
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
-                    self.played_cards.setdefault(key, []).append(card)
-                    # todo: need to sort cards here (or in Liverpool.;py)
-                    #  -- have to figure out how to designate wilds nominal value.
-                    # if its in the middle that's easy but Aces and wilds need to be set high or low.
-                    # can do that in a separate method...
-            # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+
 
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""
