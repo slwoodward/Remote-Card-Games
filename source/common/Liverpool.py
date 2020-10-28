@@ -17,8 +17,6 @@ Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
 play_pick_up = False # picking up the pile doesn't force cards to be played.
-# isWild method not working in TableView so added wildnumbers. this statement
-#todo: figure out issue with TableView.
 wild_numbers = [0]
 
 # Liverpool: number of sets and runs required to meld.
@@ -51,8 +49,7 @@ def isWild(card):
 
 # todo: below is for checking on sets in HandAndFoot (not used for Liverpool sets)
 #  for Liverpool runs will need this (though might be able to use something more sophisticated).
-# player will probably have to state which set a card goes with, so this may be extraneous.
-#  In Liverpool wild will need to be (NUMBER BETWEEN MIN-1 AND MAX+1) THAT HASN'T BEEN TAKEN.
+#  In Liverpool wild will need to be (MIN-1 or MAX+1).
 def getKeyOptions(card):
     """returns the possible keys for the groups the card can go in"""
     if not isWild(card):
@@ -67,8 +64,9 @@ def canPlayGroup(key, card_group, this_round):
     In Liverpool key of prepared (=assigned) cards = key of button = (name, button #)
     """
     print('in canPlayGroup, now checking sets and runs, but eased required length for faster testing.')
-# not for Liverpool:    if len(card_group) == 0:
-    # not for Liverpool:        return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
+# don't do this for Liverpool because meld requirement is so different.:
+    #   if len(card_group) == 0:
+    #       return True  # In liverpool do NOT want to count empty groups.
     if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
         # check if this is a valid set.
         if len(card_group) < 1:
@@ -102,11 +100,10 @@ def canPlayGroup(key, card_group, this_round):
             #todo: for testing not requiring one suit.  Fix this later.
             raise Exception("Cards in a run must all have the same suit (except wilds).")
         # print('-- run -----')
-        print('not sure why I am returning card_group')
-        #todo figure out why I am returning card_group and if no need edit next 3 lines.
         card_group = processRuns(card_group)
-    print('--line 106  in liverpool.py-----')
-    return True # card_group
+        print(card_group)
+    print('--line 105  in liverpool.py-----')
+    return True
 
 def processRuns(card_group):
     # handle sorting of run, including placement of wilds.
@@ -116,57 +113,61 @@ def processRuns(card_group):
     first_card = True
     groups_wilds = []
     temp_run_group = []
-    for card in card_group:                    # separate unassigned wilds from rest of run.
+    aces_list =[]
+    for card in card_group:                    # separate unassigned wilds and Aces from rest of run.
         if card.tempnumber in wild_numbers:
             groups_wilds.append(card)
+        elif card.tempnumber == 1:
+            aces_list.append(card)
         else:
             temp_run_group.append(card)
     card_group  = []                         # rebuild card_group below
-    #todo NEXT -- 10/27/5:33 <<  rewrite code below so build up run from temp_run_group and groups_wilds.
     print('No. of unassigned wilds is:'+str(len(groups_wilds)))
     for card in temp_run_group:
         print(card)
         print('at line 124: print(card.tempnumber)')
         print(card.tempnumber)
-            if first_card:
-                first_card = False
+        if first_card:
+            first_card = False
+            if card.tempnumber == 2 and len(aces_list) > 0:
+                this_ace = aces_list.pop(0)
+                card_group.append(this_ace)
+            card_group.append(card)
+        else:
+            # todo: must write code that checks for jokers too close together.
+            print('next line is last card in card_group:')
+            print(card_group[-1])
+            print(card_group[-1].tempnumber + 1)
+            if card.tempnumber == (card_group[-1].tempnumber + 1):
                 card_group.append(card)
+            elif card.tempnumber == (card_group[-1].tempnumber + 2) and len(groups_wilds) > 1:
+                this_wild = groups_wilds.pop(0)
+                this_wild.tempnumber = card_group[-1].tempnumber + 1
+                card_group.append(this_wild)
+                card_group.append(card)
+            elif card.tempnumber == card_group[-1].tempnumber:
+                print('must write code to check whether one of the cards is an Ace or Joker')
+                raise Exception('Card value already in the run.')
             else:
-                # todo: must write code that checks for jokers too close together.
-                print('next line is last card in temp_run_group:')
-                print(temp_run_group[-1])
-                print(temp_run_group[-1].tempnumber + 1)
-                if card.tempnumber == (temp_run_group[-1].tempnumber + 1):
-                    temp_run_group.append(card)
-                elif card.tempnumber == (temp_run_group[-1].tempnumber + 2) and len(groups_wilds) > 1:
-                    this_wild = groups_wilds.pop(0)
-                    this_wild.tempnumber = temp_run_group[-1].tempnumber + 1
-                    temp_run_group.append(this_wild)
-                    temp_run_group.append(card)
-                elif card.tempnumber == temp_run_group[-1].tempnumber:
-                    print('must write code to check whether one of the cards is an Ace or Joker')
-                    raise Exception('Card value already in the run.')
-                else:
-                    raise Exception('too big a gap between numbers')
+                raise Exception('too big a gap between numbers')
     print('at line 146 in liverpool.py, next is groups_jokers, then temp_run_group')
     print(groups_wilds)
-    print(temp_run_group)
+    print(card_group)
     if len(groups_wilds) > 0:
         for this_wild in groups_wilds:
             # test if this is where it errs: this_wild.tempnumber = temp_run_group[-1].tempnumber + 1
-            temp_run_group.append[this_wild]
+            card_group.append[this_wild]
             # todo: handle jokers properly -- above does not, it simply tacks them on the end w/o assigning them.
-    return temp_run_group
-    # return True
+    return card_group
 
 def canMeld(prepared_cards, round_index, player_index):
     """Determines if a set of card groups is a legal meld, called from canPlay."""
     #
     # This section differs from HandAndFoot.
-    # debugging - still need to debug canMeld routine, but want to get past it for now....
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():
+        # todo: replace canPlayGroup with processRuns and processSets.
         if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
