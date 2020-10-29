@@ -36,15 +36,12 @@ def CreateButtons(hand_view, num_players=1):
     #  For liverpool need multiple buttons to assign cards to appropriate set/run.
     #  and need to do this at beginning of each round, so those buttons are in separate method: newRound
     # btns = a list  of lists. Index of outer list = player_index for each player, index of inner list = # of group.
-    hand_view.assign_cards_btns = [[]]
-    # assigned cards is a list of dictionaries.
-    # Index of list = player_index for each player, key of dictionary= # of button (set or run).
-    hand_view.assigned_cards = [] # this will be a list of dictionaries. Key inside dictionaries will be set/run no.
+    hand_view.assign_cards_btns = [[]]  # list of card groups (each group is a set or run) for each player.
     hand_view.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 53, 225, 25, text='Clear prepared cards')
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
     hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
     hand_view.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
-    # for HandAndFoot do not need discard pile at beginning of game, but do need initialize pickup_pile_sz and _outline
+    # do not need discard pile at beginning of game, but do need initialize pickup_pile_sz and _outline
     hand_view.pickup_pile_sz = 0
     hand_view.pickup_pile_outline = UIC.outline_colors[0]
     return
@@ -53,21 +50,13 @@ def CreateButtons(hand_view, num_players=1):
 def newRound(hand_view, sets_runs_tuple):
     """ At start of each round this creates buttons used to assign cards."""
 
-    # Currently
-    # Unlike columns for players (found in TableView.playerByPlayer)
-    # it does not refresh if a player leaves mid-round.
-    # Hope to fix that.
-
     #  For liverpool need multiple buttons to assign cards to appropriate set/run.
-    #  and need to do this at beginning of each round, so those buttons are in separate method: newRound
+    #  and need to do this at beginning of each round, so those buttons are in this separate method.
     # btns = a list  of lists. Index of outer list = player_index for each player, index of inner list = # of group.
     hand_view.buttons_per_player = sets_runs_tuple[0] + sets_runs_tuple[1]
     hand_view.assign_cards_btns = [[]]
     w = 75  # width of following buttons
     h = 25  # height of following buttons
-    # assigned cards is a list of dictionaries.
-    # Index of list = player_index for each player, key of dictionary= # of group.
-    hand_view.assigned_cards = [] # [{}]
     if hand_view.num_players > 1:
         players_sp_w = UIC.Disp_Width / hand_view.num_players
     else:
@@ -76,8 +65,6 @@ def newRound(hand_view, sets_runs_tuple):
     players_sp_top = (UIC.Disp_Height / 5) + players_sp_h
     for idx in range(hand_view.num_players):
         hand_view.assign_cards_btns.append([])
-        hand_view.assigned_cards.append({})
-        # hand_view.assigned_cards[idx] = a dictionary with an entry for each set/run (for each button).
         for setnum in range(sets_runs_tuple[0]):
             hand_view.assign_cards_btns[idx].append([])
             txt = "set " + str(setnum+1)
@@ -85,9 +72,6 @@ def newRound(hand_view, sets_runs_tuple):
             y = players_sp_top + (players_sp_h*setnum)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             hand_view.assign_cards_btns[idx][setnum] = prepare_card_btn
-            hand_view.assigned_cards[idx][setnum]= []
-            # key setnum in dictionary is an empty list now, a group of 3 cards with same number later.
-            # note that in controller prepared_cards is single dictionary, and keys are (idx, setnum)
         for runnum in range(sets_runs_tuple[1]):
             hand_view.assign_cards_btns[idx].append([])
             txt = "run " + str(runnum+1)
@@ -96,7 +80,6 @@ def newRound(hand_view, sets_runs_tuple):
             y = players_sp_top + (players_sp_h * jdx)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
-            hand_view.assigned_cards[idx][jdx] = []  # key jdx in dictionary is an empty list now,  a run later..
 
 
 def ButtonDisplay(hand_view):
@@ -179,6 +162,9 @@ def ClickedButton(hand_view, pos):
         hand_view.hand_info = []
         hand_view.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
         hand_view.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
+        if  hand_view.need_updated_buttons:
+            hand_view.RuleSetsButtons.newRound(hand_view, hand_view.Meld_Threshold[hand_view.round_index])
+            hand_view.need_updated_buttons = False
     elif hand_view.controller._state.round == -1 and hand_view.ready_no_btn.isOver(pos):
         hand_view.controller.setReady(False)
         # if you don't want last round's hand to reappear, then
