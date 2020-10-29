@@ -254,7 +254,7 @@ def cardValue(card):
         return 20
     raise ValueError("Card submitted is not a legal playing card option")
 
-def restoreRunAssignment(cardgroup_dictionary, round_index):
+def restoreRunAssignment(visible_scards_dictionary, round_index):
     """ assign values to Wild cards and Aces in runs from server.
 
     Needed to maintain integrity of Wilds' assigned values in runs.  Server does not know tempnumbers """
@@ -262,8 +262,15 @@ def restoreRunAssignment(cardgroup_dictionary, round_index):
     # todo: this does not assign tempnumber for wilds in middle of run.  processRuns should work regardless of
     #  whether those wilds have tempnumbers already assigned or not.  Debating whether code below -
     #  would be more efficient if simply set tempnumber for all wilds here?
-    if len(cardgroup_dictionary) == 0:
-        return(cardgroup_dictionary)
+    if len(visible_scards_dictionary) == 0:
+        return(visible_scards_dictionary)
+    cardgroup_dictionary = {}
+    for key, scard_group in visible_scards_dictionary.items():
+        card_group = []
+        for scard in scard_group:
+            card = Card(scard[0], scard[1], scard[2])
+            card_group.append(card)
+        cardgroup_dictionary[key] = card_group
     for k_group, card_group in cardgroup_dictionary.items():
         if k_group[1] >= Meld_Threshold[round_index][0]:       # check if this is a run.
             if card_group[-1].number in wild_numbers:    # reset tempnumber for Wilds/Aces if they are at the end.

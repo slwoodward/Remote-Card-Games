@@ -91,15 +91,13 @@ class ClientState:
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
         # Check ruleset to determine whether self.played_cards = all visible cards or cards that this client played.
-        # todo: Create rule:  Shared_Board == True or False, it would be False for HandAndFoot, Canasta, etc...
-        # but True for Liverpool and other Rummy games.
-        if self.ruleset == 'HandAndFoot':
+        if not self.rules.Shared_Board:
             self.rules.canPlay(prepared_cards, self.played_cards, self.round)
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
-        elif self.ruleset == 'Liverpool':
+        elif self.rules.Shared_Board:
             # unlike in HandAndFoot, where self.played_cards was used to check rules.
             # in Liverpool and other shared board games need to consider all of the played cards.
             # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
@@ -110,19 +108,9 @@ class ClientState:
             #          No need to process this unless playing cards, in which case visible_scards passed
             #          to controller and then to clientState, where only list item is deserialized and put in
             #          dictionary self.played_cards
-            print('in ClientState, line 104')
-            for key, scard_group in visible_scards[0].items():
-                card_group=[]
-                for scard in scard_group:
-                    card = Card(scard[0], scard[1], scard[2])
-                    card_group.append(card)
-                self.played_cards[key] = card_group
-                print(self.played_cards)
-            print('line line 112 in clientstate')
-            raw_dictionary = self.played_cards
-            self.played_cards = self.rules.restoreRunAssignment(raw_dictionary, self.round)
-            # restoreRunAssignment processes self.played_cards that are in runs so that positions of
-            # Wilds and Aces are maintained.
+            self.played_cards = self.rules.restoreRunAssignment(visible_scards[0], self.round)
+            # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
+            # that are in runs so that positions of Wilds and Aces are maintained.
             # This is done in rules because it will be specific to Liverpool (other shared_board games
             # will have different rules, such as whether Aces can be both high and low...)
             print('line line 120 in clientstate')
