@@ -10,9 +10,7 @@ import math
 
 Game_Name = "Liverpool"
 
-#todo: move Shared_Board from GamerServer.py to this file.
-# currently in GamerServer.py
-# Shared_Board = True for ruleset == Liverpool.
+Shared_Board = True
 Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1

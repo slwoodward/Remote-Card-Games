@@ -16,11 +16,10 @@ class Controller(ConnectionListener):
     def __init__(self, clientState):
         self._state = clientState
         self.prepared_cards = {}     #This is the dict of cards prepared to be played
-        self.prepared_cards_list =[] # liverpool needs list instead of a single dictionary.
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
-        # needed for Liverpool:
+        # variables needed for games with Shared_Board == True (i.e. Liverpool):
         self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
         self.visible_scards = [{}] # in Liverpool both HandView and TableView use data:visible cards.
@@ -149,26 +148,13 @@ class Controller(ConnectionListener):
     def assignCardsToGroup(self, assigned_key, selected_cards):
         """Liverpool Specific: Prepare selected cards to be played by assigning them to key based on button clicked.
 
-        # todo: implement this!!
-        Prepares card -- assigned_key is key of assignment button clicked.
-        If key is below Meld_Threshold[round][0] (set in rules) than it's a set, else it's a run.
-        (Key is integer corresponding to set or run needed for that round,
-         Meld_Threshold[round] is a tuple: (#sets, #runs) required for that round.
-        Returns options for where to play wild cards if cannot be automatically assigned.
+        Unlike HandAndFoot -- in Liverpool group assignement is explicit for all cards and
+        if value of Wild is ambiguous, it is not set until it is played.
         """
-        wilds_in_run = [] # this will be empty for sets and valid numbers for runs.
-        sets_runs = self.Meld_Threshold[self._state.round]
-        '''
-        if assigned_key[1] < sets_runs[0]:
-            print('this should be a set')
-        else:
-            print('this should be a run')
-        '''
         for wrappedcard in selected_cards:
             card = wrappedcard.card
             self.prepareCard(assigned_key, card)
-            #todo: assign jokers if a run. (automatically if in the middle, choose if on end).
-        return wilds_in_run
+        return
 
     def prepareCard(self, key, card):
         """Prepare the selected card with the specified key"""

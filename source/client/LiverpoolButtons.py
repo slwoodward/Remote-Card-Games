@@ -126,7 +126,6 @@ def ButtonDisplay(hand_view):
     hand_view.sort_al_btn.draw(hand_view.display, hand_view.sort_al_btn.outline_color)
     hand_view.sort_suit_ah_btn.draw(hand_view.display, hand_view.sort_suit_ah_btn.outline_color)
     hand_view.sort_ah_btn.draw(hand_view.display, hand_view.sort_ah_btn.outline_color)
-    # todo: check behavior for case when a player drops out
     if not hand_view.need_updated_buttons:
         for idx in range(hand_view.num_players):
             for jdx in range(hand_view.buttons_per_player):
@@ -189,32 +188,17 @@ def ClickedButton(hand_view, pos):
         hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
     elif not hand_view.need_updated_buttons:
         #  loop through all the buttons which prepare cards by assigning them to a particular run or set
-        #todo: this currently only supports sets, need to expand to support runs, too.
         for idx in range(hand_view.num_players):
             for jdx in range(hand_view.buttons_per_player):
                 if hand_view.assign_cards_btns[idx][jdx].isOver(pos):
                     # put all selected cards in a list
                     hand_view.wr_crds_to_prep = hand_view.gatherSelected()
-                    hand_view.wild_cards = hand_view.controller.assignCardsToGroup((idx,jdx), hand_view.wr_crds_to_prep)                   # wild_cards contains wild_cards that could not be automatically assigned. Wilds assigned to sets
-                    # automatically assigned the value of the card.numbers of the naturals in that set.
-                    # Runs are trickier.  hand_view.wild_cards is a list of lists --
-                    #       The outer list contains [card that could not be automatically prepared,
-                    #       list of possible options for that card]
-                    #       wild_cards[k][0] rank should be 0 (a joker)) for all k.
-                    #       wild_cards[k][1] is list of playable card values (might be anything in list of 1 to 13).
-                    #       Might make wild_cards[k][1] more sophisticated, so to add to a run of spades = [2,3,4,5]
-                    #       wild_cards[k][1] would be [1,6,7,8,9,10,11,12,13] << need number > 6 because other cards
-                    #       might also be prepared.
-                    hand_view.num_wilds = len(hand_view.wild_cards)
+                    hand_view.controller.assignCardsToGroup((idx,jdx), hand_view.wr_crds_to_prep)
                     hand_view.prepped_cards = hand_view.controller.getPreparedCards()
                     for wrappedcard in hand_view.wr_crds_to_prep:
                         if wrappedcard.card in hand_view.prepped_cards:
                             wrappedcard.status = 2
                             wrappedcard.img_clickable.changeOutline(4)
-                    # This concludes handling of the automatically prepared cards.
-                    # If there are cards that could not be automatically prepared, then HandView.nextEvent
-                    # will be looking for keystrokes (buttons are not involved), and HandView.assignWilds will
-                    # take care of assigning values and marking wilds as prepared.
     return
 
 
