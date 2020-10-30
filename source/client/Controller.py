@@ -22,7 +22,7 @@ class Controller(ConnectionListener):
         # variables needed for games with Shared_Board == True (i.e. Liverpool):
         self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
-        self.visible_scards = [{}] # in Liverpool both HandView and TableView use data:visible cards.
+        self.visible_scards = [{}] # if Shared_Board both HandView and TableView use data:visible cards.
 
     ### Player Actions ###
     def setName(self):
@@ -104,11 +104,11 @@ class Controller(ConnectionListener):
                 self._state.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
                 self.note = "Waiting for new cards to make required play"
             else:
-                self._state.turn_phase = Turn_Phases[3] # Liverpool doesn't force actions upon pile pickup.
+                self._state.turn_phase = Turn_Phases[3] # No action required if rules.play_pick_up = False
             connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):
-        """Complete the required play for picking up the pile, used in HandAndFoot but not Liverpool"""
+        """Complete the required play for picking up the pile, (used in HandAndFoot but not Liverpool)"""
         self.note = "Performing the play required to pick up the pile"
         #Get key for top_card (we know it can be auto-keyed), and then prepare it
         key = self._state.getValidKeys(top_card)[0]
@@ -146,10 +146,11 @@ class Controller(ConnectionListener):
         return user_input_cards
 
     def assignCardsToGroup(self, assigned_key, selected_cards):
-        """Liverpool Specific: Prepare selected cards to be played by assigning them to key based on button clicked.
+        """Assign cards to specific groups based on button clicked.
 
-        Unlike HandAndFoot -- in Liverpool group assignement is explicit for all cards and
-        if value of Wild is ambiguous, it is not set until it is played.
+         Wilds are assigned to group, but if value ambiguous it is not determined until group is played.
+         This method is needed in games where player explicitly assigns cards to groups (such as Liverpool).
+         In games that are purely set-based (such as Hand and Foot) this is not used.
         """
         for wrappedcard in selected_cards:
             card = wrappedcard.card
@@ -285,18 +286,6 @@ class Controller(ConnectionListener):
             return
         self._state.turn_phase = Turn_Phases[1]
         self.note = "Your turn has started. You may draw or attempt to pick up the pile"
-        #
-        # if playing with a shared board, then need to update played cards played.
-        if self._state.rules == 'Liverpool':
-            _state.first_play_this_turn = True  # must serialize visible_cards one time at beginning of turn.
-            # todo: get rid of _state.first_play_this_turn and perform serializaiton below.
-            # todo: have Network_startTurn send visible_cards for previous player's turn.
-            # send played_cards back to server, so that visible_cards[active player] is up to date.
-            _state.played_cards = visible_scards[0]  # in Liverpool all players' cards are included.
-            print('at line 310 in controller.py')
-            for key, vc in _state.played_cards():
-                print(vc)
-
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_newCards(self, data):

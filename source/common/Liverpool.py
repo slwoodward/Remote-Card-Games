@@ -14,7 +14,7 @@ Shared_Board = True
 Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
-play_pick_up = False # picking up the pile doesn't force cards to be played.
+play_pick_up = False # False because picking up the pile doesn't force cards to be played.
 wild_numbers = [0]
 
 # Liverpool: number of sets and runs required to meld.

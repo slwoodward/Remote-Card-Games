@@ -14,7 +14,7 @@ Shared_Board = False
 Draw_Size = 2
 Pickup_Size = 8
 Discard_Size = 1
-play_pick_up = True  # must play some cards upon picking up the pile.
+play_pick_up = True  # must play some cards in order to pick-up the pile.
 wild_numbers = [0, 2]
 
 Meld_Threshold = [50, 90, 120, 150]
