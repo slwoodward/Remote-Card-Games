@@ -16,7 +16,6 @@ class TableView(ConnectionListener):
     HandAndFoot specific version is in TableView_HF. This version ALSO supports Liverpool
     """
     # todo: eliminate TableView_HF from GitHub repository.
-    # todo: don't update #set, #runs until update visible_scards=[{}]
 
     def __init__(self, display, ruleset):
         self.display = display
@@ -143,7 +142,6 @@ class TableView(ConnectionListener):
         else:
             if len(v_scards[0]) == 0:
                 self.i_num_sets = int(self.Meld_Threshold[self.round_index][0])
-
         self.compressed_info = {}
         i_tot = len(self.player_names)
         for player_name in self.player_names:
@@ -157,40 +155,38 @@ class TableView(ConnectionListener):
                 all_visible_one_dictionary = v_scards[0]
                 for key, card_group in all_visible_one_dictionary.items():
                     text = ''
-                    if len(card_group) > 0:
-                        if key[0] == idx:
-                            if key[1] < self.i_num_sets:
-                                # this is a set
-                                card_numbers = []
-                                for s_card in card_group:
-                                    if not s_card[0] in self.wild_numbers:
-                                        card_numbers.append(s_card[0])
-                                unique_numbers = list(set(card_numbers))
-                                if len(unique_numbers) == 1:
-                                    unique_number = int(unique_numbers[0])
-                                elif len(unique_numbers) > 1:
-                                    # this should never happen.
-                                    print('bug in TableView')
+                    if key[0] == idx and len(card_group) > 0:
+                        # update is player by player, currently updating column of player no. idx.
+                        if key[1] < self.i_num_sets:
+                            # this is a set
+                            card_numbers = []
+                            for s_card in card_group:
+                                if not s_card[0] in self.wild_numbers:
+                                    card_numbers.append(s_card[0])
+                            unique_numbers = list(set(card_numbers))
+                            if len(unique_numbers) == 1:
+                                unique_number = int(unique_numbers[0])
                                 text = 'SET of ' + str(unique_number) + "'s: "
-                                for s_card in card_group:
-                                    if not s_card[0] in self.wild_numbers:
-                                        text = text + str(s_card[1]) +  ','
-                                    else:
-                                        text = text + 'Wild' + ','
-                            else:
-                                # this is a run, find suit, then write card.number afterward.
-                                this_run = card_group
-                                l_this_run = len(this_run)
-                                if l_this_run > 0:
-                                    idx_c = 0
-                                    while this_run[idx_c] in self.wild_numbers and idx_c < l_this_run:
-                                        idx_c = idx_c + 1
-                                    card_suit = str(this_run[idx_c][1])
-                                    text = 'Run in ' + card_suit + ": "
-                                    for idx_c in range(l_this_run):
-                                        text = text + str(this_run[idx_c][0]) + ','
-                    summary[key[1]] = text
-                self.compressed_info[key_player] = summary
+                            elif len(unique_numbers) > 1:
+                                # this should never happen.
+                                print('bug in program -- set had multiple non-wild numbers')
+                            for s_card in card_group:
+                                if not s_card[0] in self.wild_numbers:
+                                    text = text + str(s_card[1]) +  ','
+                                else:
+                                    text = text + 'Wild,'
+                        else:
+                            # this is a run, text = suit and list of card numbers, wilds listed as 'Wild'
+                            # Doesn't enforce one suit, but does assume there is only one suit.
+                            for s_card in card_group:
+                                if not s_card[0] in self.wild_numbers:
+                                    card_suit = str(s_card[1])
+                                    text = text + str(s_card[0]) + ','
+                                else:
+                                    text = text + 'Wild,'
+                            text = 'Run in ' + card_suit + ": " + text
+                        summary[key[1]] = text
+            self.compressed_info[key_player] = summary
 
     def display_melded_summary_HF(self, screen_loc_info, melded_summary):
         # This section is for HandAndFoot, where key is index of player
