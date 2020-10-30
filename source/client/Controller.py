@@ -173,7 +173,7 @@ class Controller(ConnectionListener):
 
     def play(self, player_index=0, visible_scards=[{}]):
         """Send the server the current set of played cards"""
-        # player_index and visible_scards needed for liverpool rules checking.
+        # player_index and visible_scards needed for rules checking in games with Shared_Board.
         #
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"

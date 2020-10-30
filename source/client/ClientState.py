@@ -98,7 +98,9 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.rules.Shared_Board:
-            # unlike in HandAndFoot, where self.played_cards was used to check rules.
+            # Review Notes
+            # todo: move these to documentation
+            #  unlike in HandAndFoot, where self.played_cards was used to check rules.
             # in Liverpool and other shared board games need to consider all of the played cards.
             # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
             # from controller.
@@ -111,26 +113,28 @@ class ClientState:
             self.played_cards = self.rules.restoreRunAssignment(visible_scards[0], self.round)
             # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
             # that are in runs so that positions of Wilds and Aces are maintained.
-            # This is done in rules because it will be specific to Liverpool (other shared_board games
-            # will have different rules, such as whether Aces can be both high and low...)
-            print('line line 120 in clientstate')
-            for key, card_group in self.played_cards.items():
-                for card in card_group:
-                    print(card)
-                    print(card.tempnumber)
+            # Review Note:  This is put in rules because I can imagine other shared board games
+            # will have different rules, such as whether Aces can be both high and low.
+            #
+            # todo:
+            #  tried to get canPlay to return combined dictionary, but then got error that indicated line below was
+            # converting self.played_cards into a boolean (?). Commented out next line and changed return combined_cards
+            # to return True in rules.canPlay.  This means need to process runs again.
+            # If no exception raised, wanted canPlay to return cards in proper order, ready to be transmitted to server.
+            # todo: debug  next line.
+            # self.played_cards  = self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
             self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
-            # If no exception raised, then must put cards in order prior to transmitting them to server.
+
             combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
+            self.played_cards = {}
             for k_group, card_group in combined_cards.items():
                 if k_group[1] >= self.rules.Meld_Threshold[self.round][0]:
-                    card_group.sort(key=lambda wc: wc.tempnumber)
+                    processed_group = self.rules.processRuns(card_group)  # process runs from combined_cards
                 else:
-                    print('need to sort sets')
-                    # card_group.sort(key=lambda wc: wc.suit)  < jokers don't sort this way, need to remove
-                    # jokers, sort the rest and then add jokers to the end.
+                    #todo: need to sort sets
+                    processed_group = card_group
+                self.played_cards[k_group] = processed_group
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
-            self.played_cards = combined_cards
-            print("line 141 in ClientState.py, prepared cards: ")
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)

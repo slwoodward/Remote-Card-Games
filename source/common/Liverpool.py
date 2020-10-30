@@ -217,7 +217,7 @@ def canPlay(prepared_cards, played_cards_dictionary, player_index, round_index):
     if (player_index,0) not in played_groups:
         return canMeld(prepared_cards, round_index, player_index)
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
-    combined_cards = combineCardDicts (played_cards_dictionary, prepared_cards)
+    combined_cards = combineCardDicts(played_cards_dictionary, prepared_cards)
     for k_group, card_group in combined_cards.items():
         if k_group[1] >= Meld_Threshold[round_index][0]:
             processed_group = processRuns(card_group)               # process runs from combined_cards
@@ -225,6 +225,8 @@ def canPlay(prepared_cards, played_cards_dictionary, player_index, round_index):
             processed_group = card_group
             # todo: decide when to sort sets.
         canPlayGroup(k_group, processed_group, round_index)
+    # todo: debug next line:
+    # return combined_cards  < caused an unexpected error...see notes in ClientState.py.
     return True
 
 def combineCardDicts(dict1, dict2):
