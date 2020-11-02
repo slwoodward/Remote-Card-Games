@@ -10,11 +10,12 @@ import math
 
 Game_Name = "Liverpool"
 
-Shared_Board = True
+Shared_Board = True  # once you meld you can play on other players set/runs
+Buy_Option = True  # in Liverpool you can purchase top discard.
+play_pick_up = False # False because picking up the pile doesn't force cards to be played.
 Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
-play_pick_up = False # False because picking up the pile doesn't force cards to be played.
 wild_numbers = [0]
 
 # Liverpool: number of sets and runs required to meld.
