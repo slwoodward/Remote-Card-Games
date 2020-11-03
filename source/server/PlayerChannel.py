@@ -91,3 +91,7 @@ class PlayerChannel(Channel):
 
         self.hand_status = data["hand_status"]
         self._server.Send_publicInfo()
+
+    ### Actions related to Buying Discards ###
+    def Network_buyingOpportunity(self,data):
+        

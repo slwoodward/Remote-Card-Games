@@ -129,13 +129,15 @@ def ClickedButton(hand_view, pos):
     if hand_view.draw_pile.isOver(pos):
         # first part of next if statement will always be true for Liverpool, but kept it in case someone
         # wanted to make minor changes to Liverpool, and didn't notice that this button needed to be reprogrammed.
-        if hand_view.controller._state.rules.Buy_Option and not hand_view.controller._state.rules.auction_toggle:
+        if hand_view.controller._state.rules.Buy_Option and not hand_view.controller._state.rules.buying_phase:
             hand_view.note = "First checking to see if anyone wants to buy the top discard, click on this again to draw...."
-            hand_view.controller._state.rules.auction_toggle = True
-            #todo: send message to server, and have it broadcast message to everyone that auction_toggle = True.
+            hand_view.controller._state.rules.buying_phase = True
+            #todo: send message to server, and have it broadcast message to everyone that buying_phase = True.
+            #todo: logic here will need to be updated once that is in place.
+            hand_view.controller.start_auction()
         else:
             hand_view.controller.draw()
-            hand_view.controller._state.rules.auction_toggle = False
+            hand_view.controller._state.rules.buying_phase = False
     elif hand_view.sort_al_btn.isOver(pos):
         hand_view.hand_info.sort(key=lambda wc: wc.key_LP[1])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)

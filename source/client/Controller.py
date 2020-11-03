@@ -223,8 +223,11 @@ class Controller(ConnectionListener):
                 self._state.turn_phase = Turn_Phases[0]
                 connection.Send({"action": "discard", "cards": []})
             return False
-    
-    
+
+    def start_auction(self):
+        """ For games with a buying option, tell server to broadcast buying opportunity."""
+        connection.Send({"action": "start_auction"})
+
     ### Fetchers for handView ###
     def getName(self):
         """return player name for labeling"""

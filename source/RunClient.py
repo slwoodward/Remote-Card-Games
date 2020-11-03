@@ -1,5 +1,6 @@
 import sys
 from time import sleep
+from time import time
 from PodSixNet.Connection import connection, ConnectionListener
 from client.ClientState import ClientState
 from client.Controller import Controller
@@ -68,16 +69,22 @@ def RunClient():
                 handView.update()
             note = gameControl.note
             gameboard.render(note)
-            if clientState.rules.Buy_Option and clientState.rules.auction_toggle:
-                if clientState.turn_phase == 'draw':
-                    note = 'Discard card is up for sale, this may take '+ str(clientState.rules.purchase_time)+\
-                           ' seconds, click on draw once more to proceed....'
-                    sleep(clientState.rules.purchase_time)
-                else:
-                    note = 'Discard card is up for sale, do you want it? [Y/N]'
-                    # need to put in correct action here.
-                gameboard.render(note)
-
+            # -- card buying sidebar -----------
+            if clientState.rules.Buy_Option and clientState.rules.buying_phase:
+                timelimit = time() + clientState.rules.purchase_time
+                print(timelimit)
+                while clientState.rules.buying_phase and time() < timelimit:
+                    if clientState.turn_phase == 'draw':
+                        note = 'Discard card is up for sale, this may take '+ str(clientState.rules.purchase_time)+\
+                               ' seconds, click on draw once more to proceed....'
+                    else:
+                        note = 'Discard card is up for sale, do you want it? [Y/N]'
+                        # need to put in correct actions here (send message to server).
+                    print(note)
+                    gameboard.render(note)
+                    print(time())
+                    sleep(clientState.rules.purchase_time/5)  # really long while debugging with internal print statements...
+            # -- end of card buying sidebar -----------
             sleep(0.001)
     else:
         print('that ruleset is not supported.')
