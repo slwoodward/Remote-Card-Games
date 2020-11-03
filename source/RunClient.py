@@ -47,7 +47,7 @@ def RunClient():
         gameControl.Pump()
         tableView.Pump()
         tableView.playerByPlayer(current_round)
-        note = "Connect and then add your name to list of player names..."
+        note = "You should connect once you've entered your name. Otherwise it is possible you have the wrong server or port#..."
         gameboard.render(note)
         playername = gameControl.checkNames(tableView.player_names)
     if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
@@ -61,17 +61,23 @@ def RunClient():
             gameControl.Pump()
             tableView.Pump()
             tableView.playerByPlayer(this_round)
-            # note for code review:
-            # - for Liverpool need to put handView.update on TOP of playerByPlayer.
-            # Might also need to add visible_cards to playerByPlayer (?)
-            # because Liverpool handView needs info on other players (HandAndFoot did not).
-            if  ruleset == 'Liverpool':
+            if  clientState.rules.Shared_Board:
                 visible_scards = tableView.visible_scards
                 handView.update(player_index, len(tableView.player_names), visible_scards)
             else:
                 handView.update()
             note = gameControl.note
             gameboard.render(note)
+            if clientState.rules.Buy_Option and clientState.rules.auction_toggle:
+                if clientState.turn_phase == 'draw':
+                    note = 'Discard card is up for sale, this may take '+ str(clientState.rules.purchase_time)+\
+                           ' seconds, click on draw once more to proceed....'
+                    sleep(clientState.rules.purchase_time)
+                else:
+                    note = 'Discard card is up for sale, do you want it? [Y/N]'
+                    # need to put in correct action here.
+                gameboard.render(note)
+
             sleep(0.001)
     else:
         print('that ruleset is not supported.')

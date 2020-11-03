@@ -1,4 +1,5 @@
 import random                  # will be used to assign unique names
+from time import sleep
 from common.Card import Card
 from PodSixNet.Connection import connection, ConnectionListener
 
@@ -89,9 +90,17 @@ class Controller(ConnectionListener):
         connection.Send({"action": "draw"})
         #Transition phase immediately to avoid double draw
         self._state.turn_phase = Turn_Phases[3]
-    
+
+    def card_for_sale(self):
+        # only called if self._state.rules.Buy_Option:
+        self.note = "Checking to see if anyone wants to buy the top discard..."
+        self._state.rules.buying_opportunity = True
+
     def pickUpPile(self, note):
         """Attempt to pick up the pile"""
+        if self._state.rules.Buy_Option and self._state.turn_phase != Turn_Phases[1]:
+            self.note = "Eventually a note appears here if this player buys the top discard"
+            #todo: put appropriate action here.
         if self._state.turn_phase != Turn_Phases[1]:
             self.note = note
             return
