@@ -333,3 +333,12 @@ class Controller(ConnectionListener):
 
     def Network_clearReady(self, data):
         self.setReady(False)
+
+    def Network_buyingResult(self, data):
+        buyer = data["player"]
+        purchase = Card.deserialize(data["top_card"])
+        self.note = "{0} has purchased {1}".format(buyer,purchase)
+
+    def Network_buyingOpportunity(self,data):
+        forsale = Card.deserialize(data["top_card"])
+        self.note = "Do you wish to buy {0} [y/n]?".format(forsale)

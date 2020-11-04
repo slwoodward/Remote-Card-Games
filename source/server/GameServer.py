@@ -18,6 +18,10 @@ class GameServer(Server, ServerState):
         self.game_over = False
         if self.rules.Shared_Board:      #  True for Liverpool, False for HandAndFoot.
             self.visible_cards_now = {}
+        """ think about whether I need additional variables for buying top discard.
+        if self.rules.Buy_Option:
+            buyer = ''
+        """
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -143,3 +147,13 @@ class GameServer(Server, ServerState):
         info = self.getDiscardInfo()
         self.Send_broadcast({"action": "discardInfo", "top_card": info[0].serialize(), "size": info[1]})
 
+    def Send_buyingOpportunity(self):
+        """ Broadcast to all players note that they can try to buy top card."""
+        info = self.getDiscardInfo()
+        self.Send_broadcast({"action": "buyingOpportunity", "top_card": info[0].serialize()})
+
+    def Send_buyingResult(self):
+        """ Broadcast who purchased what card in last auction."""
+        info = self.getDiscardInfo()  # be sure to send this before giving the player the top card.
+        placeholder = "placeholder"
+        self.Send_broadcast({"action": "buyingResult", "top_card": info[0].serialize(), "winner": placeholder})

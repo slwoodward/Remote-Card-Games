@@ -69,6 +69,7 @@ def RunClient():
                 handView.update()
             note = gameControl.note
             gameboard.render(note)
+            '''
             # -- card buying sidebar -----------
             if clientState.rules.Buy_Option and clientState.rules.buying_phase:
                 timelimit = time() + clientState.rules.purchase_time
@@ -83,8 +84,9 @@ def RunClient():
                     print(note)
                     gameboard.render(note)
                     print(time())
-                    sleep(clientState.rules.purchase_time/5)  # really long while debugging with internal print statements...
+                    sleep(clientState.rules.purchase_time/5) # scaled for while debugging with internal print statements...
             # -- end of card buying sidebar -----------
+            '''
             sleep(0.001)
     else:
         print('that ruleset is not supported.')

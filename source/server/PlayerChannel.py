@@ -93,5 +93,5 @@ class PlayerChannel(Channel):
         self._server.Send_publicInfo()
 
     ### Actions related to Buying Discards ###
-    def Network_buyingOpportunity(self,data):
-        
+    # def Network_buyingOpportunity(self,data):
+

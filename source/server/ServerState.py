@@ -48,6 +48,13 @@ class ServerState():
         for _ in range(self.rules.Draw_Size):
             result.append(self.draw_pile.pop())
         return result
+
+    def drawCards_withBuying(self):
+        """When player is drawing from pile, give other players option to buy top discard."""
+        result = []
+        for _ in range(self.rules.Draw_Size):
+            result.append(self.draw_pile.pop())
+        return result
     
     def pickUpPile(self):
         """Return the top Pickup_Size cards from the discard pile"""
