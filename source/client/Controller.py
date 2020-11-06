@@ -77,6 +77,8 @@ class Controller(ConnectionListener):
             self._state.turn_phase = Turn_Phases[0] #end turn after discard
             self.note = "Discard completed. Your turn is over."
             self.sendPublicInfo()
+            if self._state_rules.Buy_Option:
+                self._state.rules.buying_opportunity = False  # you can't "buy" card that you discarded.
             return True
         except Exception as err:
             self.note = "{0}".format(err)
@@ -91,16 +93,14 @@ class Controller(ConnectionListener):
         #Transition phase immediately to avoid double draw
         self._state.turn_phase = Turn_Phases[3]
 
-    def card_for_sale(self):
+    '''def card_for_sale(self):
         # only called if self._state.rules.Buy_Option:
         self.note = "Checking to see if anyone wants to buy the top discard..."
         self._state.rules.buying_opportunity = True
+    '''
 
     def pickUpPile(self, note):
         """Attempt to pick up the pile"""
-        if self._state.rules.Buy_Option and self._state.turn_phase != Turn_Phases[1]:
-            self.note = "Eventually a note appears here if this player buys the top discard"
-            #todo: put appropriate action here.
         if self._state.turn_phase != Turn_Phases[1]:
             self.note = note
             return
@@ -224,9 +224,10 @@ class Controller(ConnectionListener):
                 connection.Send({"action": "discard", "cards": []})
             return False
 
-    def start_auction(self):
+    '''def start_auction(self):
         """ For games with a buying option, tell server to broadcast buying opportunity."""
         connection.Send({"action": "start_auction"})
+    '''
 
     ### Fetchers for handView ###
     def getName(self):
@@ -298,6 +299,8 @@ class Controller(ConnectionListener):
             return
         self._state.turn_phase = Turn_Phases[1]
         self.note = "Your turn has started. You may draw or attempt to pick up the pile"
+        if self._state_rules.Buy_Option:
+            self._state.rules.buying_opportunity = False # you can't "buy" card on your turn (its free)
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_newCards(self, data):
@@ -320,6 +323,13 @@ class Controller(ConnectionListener):
     def Network_discardInfo(self, data):
         top_card = Card.deserialize(data["top_card"])
         size = data["size"]
+        # todo - move elsewhere --here this is triggered on player picking up top_discard.
+        if self._state.rules.Buy_Option:
+            if self._state.rules.buying_opportunity:
+                self._state.rules.buy_wantdiscard = False # presumption for each new discard.
+                self.note = "{0} is for sale, Do you want to buy it [y/n]".format(top_card)
+                self._state.rules.buying_opportunity == False
+                # if top card picked up during this turn, that should not trigger another buying opportunity.
         self._state.updateDiscardInfo(top_card, size)
     
     def Network_endRound(self, data):
@@ -338,7 +348,6 @@ class Controller(ConnectionListener):
         buyer = data["player"]
         purchase = Card.deserialize(data["top_card"])
         self.note = "{0} has purchased {1}".format(buyer,purchase)
+        #todo: this won't work -- it will give current top_card, instead of purchase.
+        #todo: need to attack this feature from server side.
 
-    def Network_buyingOpportunity(self,data):
-        forsale = Card.deserialize(data["top_card"])
-        self.note = "Do you wish to buy {0} [y/n]?".format(forsale)

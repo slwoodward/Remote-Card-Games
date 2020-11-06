@@ -12,8 +12,10 @@ Game_Name = "Liverpool"
 
 Shared_Board = True  # once you meld you can play on other players set/runs
 Buy_Option = True  # in Liverpool you can purchase top discard.
-buying_phase = False  # This toggles between True and False depending on whether an auction is underway.
-                  # switches to true whenever the current player draws instead of picking up the discard.
+buying_phase = False  # This is True when a card is up for sale, switches to True whenever there is a new discard.
+                      # todo: switches to False (i) at start of new round, (ii) when player ahead in line purchases card,
+                      # todo: or (iii) if 3 seconds have elapsed AND current player has drawn a card.
+buy_wantdiscard = False # flag transmitted to server to let server know a player is interested in buying card.
 purchase_time = 3.0 # time players have to request top discard (in seconds).
 play_pick_up = False # False because picking up the pile doesn't force cards to be played.
 Draw_Size = 1

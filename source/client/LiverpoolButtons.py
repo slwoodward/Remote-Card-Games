@@ -128,6 +128,8 @@ def ClickedButton(hand_view, pos):
             hand_view.controller.pickUpPile(notes[0])
     if hand_view.draw_pile.isOver(pos):
         '''
+        # this code will be useful if we use clicking on discard pile as signal that player wants to buy top discard.
+        #
         # first part of next if statement will always be true for Liverpool, but kept it in case someone
         # wanted to make minor changes to Liverpool, and didn't notice that this button needed to be reprogrammed.
         if hand_view.controller._state.rules.Buy_Option and not hand_view.controller._state.rules.buying_phase:
