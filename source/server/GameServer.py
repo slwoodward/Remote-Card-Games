@@ -92,6 +92,22 @@ class GameServer(Server, ServerState):
         newIndex = (self.turn_index + 1) % len(self.players)
         self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
+        if self.rules.Buy_Option:
+            self.signalBuyingOpportunity()
+
+
+    def signalBuyingOpportunity(self):
+        """ Let players know there's a buying opportunity
+
+        Used in games with with Buy_Option = True (i.e. Liverpool)
+        where you can buy the top discard if the next player doesn't want
+        it.  If there are N players, then N-2 players are eligible to buy card
+        (neither player who discarded, nor current active player are eligible).
+        """
+        i_max = len(self.players)-2
+        for i_count in range(i_max):
+            index = (self.turn_index + i_count + 1) % len(self.players)
+            self.players[index].Send({"action": "buyingOpportunity"})
 
     def Send_broadcast(self, data):
         """Send data to every connected player"""

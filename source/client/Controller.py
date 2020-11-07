@@ -77,8 +77,6 @@ class Controller(ConnectionListener):
             self._state.turn_phase = Turn_Phases[0] #end turn after discard
             self.note = "Discard completed. Your turn is over."
             self.sendPublicInfo()
-            if self._state_rules.Buy_Option:
-                self._state.rules.buying_opportunity = False  # you can't "buy" card that you discarded.
             return True
         except Exception as err:
             self.note = "{0}".format(err)
@@ -299,9 +297,14 @@ class Controller(ConnectionListener):
             return
         self._state.turn_phase = Turn_Phases[1]
         self.note = "Your turn has started. You may draw or attempt to pick up the pile"
-        if self._state_rules.Buy_Option:
-            self._state.rules.buying_opportunity = False # you can't "buy" card on your turn (its free)
         self.sendPublicInfo() #Let everyone know its your turn.
+
+    def Network_buyingOpportunity(self, data):
+        if self._state.round == -1 or self._state.discard_info[1] == 0:
+            #Ignore this when between rounds or when there are no cards in discard pile.
+            return
+        self.note = "Do you wish to buy the top card on the pile?  Line 306 in Controller.py"
+        print('at line 307 in controller Network_signalBuyingOpportunity ... ')
 
     def Network_newCards(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
@@ -324,12 +327,14 @@ class Controller(ConnectionListener):
         top_card = Card.deserialize(data["top_card"])
         size = data["size"]
         # todo - move elsewhere --here this is triggered on player picking up top_discard.
+        '''
         if self._state.rules.Buy_Option:
             if self._state.rules.buying_opportunity:
                 self._state.rules.buy_wantdiscard = False # presumption for each new discard.
                 self.note = "{0} is for sale, Do you want to buy it [y/n]".format(top_card)
                 self._state.rules.buying_opportunity == False
                 # if top card picked up during this turn, that should not trigger another buying opportunity.
+        '''
         self._state.updateDiscardInfo(top_card, size)
     
     def Network_endRound(self, data):

@@ -63,6 +63,9 @@ def newRound(hand_view, sets_runs_tuple):
         players_sp_w = UIC.Disp_Width
     players_sp_h = UIC.Disp_Height / 8
     players_sp_top = (UIC.Disp_Height / 5) + players_sp_h
+    #todo: debug this -- get error in button display if someone clicks OK before everyone has joined.
+    # Move this loop so that it's immediately after everyone clicks OK, but before play actually starts.
+    # Or maybe simply delay running newRound until everyone clicks OK.
     for idx in range(hand_view.num_players):
         hand_view.assign_cards_btns.append([])
         for setnum in range(sets_runs_tuple[0]):
