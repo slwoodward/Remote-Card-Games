@@ -36,8 +36,6 @@ class HandView:
             self.Meld_Threshold = Meld_Threshold_HF
             self.RuleSetsButtons = RuleSetsButtons_HF
             self.deal_size = Deal_Size_HF
-        else:
-            print(ruleset + ' is not supported')
         self.controller = controller
         self.display = display
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
@@ -52,8 +50,8 @@ class HandView:
         self.selected_list = []
         self.round_index = 0
         self.player_index = 0
-        self.round_advance = False
         # In liverpool: prepare cards buttons must be updated each round
+        self.round_advance = False
         self.num_players = 1
         self.need_updated_buttons = True
         self.ready_color_idx = 2
@@ -150,8 +148,15 @@ class HandView:
             elif self.event.type == pygame.MOUSEMOTION:
                 self.RuleSetsButtons.MouseHiLight(self, pos)
                 HandManagement.MouseHiLight(self.hand_info, pos)
-            elif self.event.type == pygame.KEYDOWN and self.num_wilds > 0:
-                HandManagement.ManuallyAssign(self)
+            elif self.event.type == pygame.KEYDOWN:
+                if self.controller._state.rules.Buy_Option:
+                    if self.controller.buying_opportunity:
+                        if self.event.key == pygame.K_y:
+                            self.controller.wantTopCard(True)
+                        elif self.event.key == pygame.K_n:
+                            self.controller.wantTopCard(False)
+                if self.num_wilds > 0:
+                    HandManagement.ManuallyAssign(self)
 
 
     def gatherSelected(self):

@@ -93,21 +93,7 @@ class GameServer(Server, ServerState):
         self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
         if self.rules.Buy_Option:
-            self.signalBuyingOpportunity()
-
-
-    def signalBuyingOpportunity(self):
-        """ Let players know there's a buying opportunity
-
-        Used in games with with Buy_Option = True (i.e. Liverpool)
-        where you can buy the top discard if the next player doesn't want
-        it.  If there are N players, then N-2 players are eligible to buy card
-        (neither player who discarded, nor current active player are eligible).
-        """
-        i_max = len(self.players)-2
-        for i_count in range(i_max):
-            index = (self.turn_index + i_count + 1) % len(self.players)
-            self.players[index].Send({"action": "buyingOpportunity"})
+            self.Send_buyingOpportunity()
 
     def Send_broadcast(self, data):
         """Send data to every connected player"""
@@ -164,12 +150,21 @@ class GameServer(Server, ServerState):
         self.Send_broadcast({"action": "discardInfo", "top_card": info[0].serialize(), "size": info[1]})
 
     def Send_buyingOpportunity(self):
-        """ Broadcast to all players note that they can try to buy top card."""
+        """ Let eligible players know there's a buying opportunity
+
+        Used in games with with Buy_Option = True (i.e. Liverpool)
+        where you can buy the top discard if the next player doesn't want
+        it.  If there are N players, then N-2 players are eligible to buy card
+        (neither player who discarded, nor current active player are eligible).
+        """
         info = self.getDiscardInfo()
-        self.Send_broadcast({"action": "buyingOpportunity", "top_card": info[0].serialize()})
+        i_max = len(self.players) - 2
+        for i_count in range(i_max):
+            index = (self.turn_index + i_count + 1) % len(self.players)
+            self.players[index].Send({"action": "buyingOpportunity", "top_card": info[0].serialize()})
 
     def Send_buyingResult(self):
         """ Broadcast who purchased what card in last auction."""
         info = self.getDiscardInfo()  # be sure to send this before giving the player the top card.
         placeholder = "placeholder"
-        self.Send_broadcast({"action": "buyingResult", "top_card": info[0].serialize(), "winner": placeholder})
+        self.Send_broadcast({"action": "buyingResult", "top_card": info[0].serialize(), "buyer": placeholder})

@@ -172,3 +172,5 @@ def ManuallyAssign(hand_view):
         hand_view.num_wilds = len(hand_view.wild_cards)
     return
 
+
+

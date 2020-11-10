@@ -29,6 +29,8 @@ def RunClient():
     print(host)
     print(port)
     ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
+    while not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
+        print(ruleset + ' is not supported, enter Liverpool OR HandAndFoot')
     print(ruleset)
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)

@@ -24,6 +24,8 @@ class Controller(ConnectionListener):
         self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
         self.visible_scards = [{}] # if Shared_Board both HandView and TableView use data:visible cards.
+        # variables needed if Buy_Option is True
+        self.buying_opportunity = False
 
     ### Player Actions ###
     def setName(self):
@@ -91,11 +93,13 @@ class Controller(ConnectionListener):
         #Transition phase immediately to avoid double draw
         self._state.turn_phase = Turn_Phases[3]
 
-    '''def card_for_sale(self):
-        # only called if self._state.rules.Buy_Option:
-        self.note = "Checking to see if anyone wants to buy the top discard..."
-        self._state.rules.buying_opportunity = True
-    '''
+    def wantTopCard(self, want_card):
+        if want_card:
+            print('player signaled wants top card')
+        else:
+            print('player does not want to buy top card')
+        self.buying_opportunity = False # can't change your mind.
+        self.sendBuyResponse(want_card)  # this is where send response to network, player channel.
 
     def pickUpPile(self, note):
         """Attempt to pick up the pile"""
@@ -261,6 +265,10 @@ class Controller(ConnectionListener):
         status_info = self._state.getHandStatus()
         connection.Send({"action": "publicInfo", "visible_cards":serialized_cards, "hand_status":status_info})
 
+    def sendBuyResponse(self, want_card):
+        """ In games with opportunity to buy discards, this sends response to buying opportunities to server.  """
+        connection.Send({"action": "buyResponse", "want_card": want_card})
+
     def lateJoinScores(self, score):
         """ When a player joins late the early rounds need to be assigned a score.  This does it. """
         connection.Send({"action": "reportScore", "score": score})
@@ -300,11 +308,12 @@ class Controller(ConnectionListener):
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_buyingOpportunity(self, data):
-        if self._state.round == -1 or self._state.discard_info[1] == 0:
-            #Ignore this when between rounds or when there are no cards in discard pile.
-            return
-        self.note = "Do you wish to buy the top card on the pile?  Line 306 in Controller.py"
-        print('at line 307 in controller Network_signalBuyingOpportunity ... ')
+        self.buying_opportunity = True
+        #  Ignore this when between rounds or when there are no cards in discard pile.
+        #todo: remove 2 lines below because almost certainly unnecessary.
+        #  if self._state.round == -1 or self._state.discard_info[1] == 0:
+        #     return
+        self.note = "The {0} is for sale, Do you want to buy it? [y/n]".format(Card.deserialize(data["top_card"]))
 
     def Network_newCards(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
@@ -326,15 +335,6 @@ class Controller(ConnectionListener):
     def Network_discardInfo(self, data):
         top_card = Card.deserialize(data["top_card"])
         size = data["size"]
-        # todo - move elsewhere --here this is triggered on player picking up top_discard.
-        '''
-        if self._state.rules.Buy_Option:
-            if self._state.rules.buying_opportunity:
-                self._state.rules.buy_wantdiscard = False # presumption for each new discard.
-                self.note = "{0} is for sale, Do you want to buy it [y/n]".format(top_card)
-                self._state.rules.buying_opportunity == False
-                # if top card picked up during this turn, that should not trigger another buying opportunity.
-        '''
         self._state.updateDiscardInfo(top_card, size)
     
     def Network_endRound(self, data):

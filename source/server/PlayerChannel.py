@@ -93,5 +93,9 @@ class PlayerChannel(Channel):
         self._server.Send_publicInfo()
 
     ### Actions related to Buying Discards ###
-    # def Network_buyingOpportunity(self,data):
+
+    def Network_buyResponse(self, data):
+        self.want_card = data["want_card"]
+        print(self.want_card)
+        print('next thing to do is write routine that uses this info to figure out who gets card')
 
