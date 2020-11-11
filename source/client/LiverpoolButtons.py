@@ -130,7 +130,10 @@ def ClickedButton(hand_view, pos):
         if hand_view.pickup_pile.isOver(pos):
             hand_view.controller.pickUpPile(notes[0])
     if hand_view.draw_pile.isOver(pos):
-        hand_view.controller.draw()
+        if hand_view.pickup_pile_sz > 0:
+            hand_view.controller.drawWithBuyOption()  # use different method for Liverpool than HandAndFoot
+        else:
+            hand_view.controller.draw()              # unless pile is empty (at start of each round)
     elif hand_view.sort_al_btn.isOver(pos):
         hand_view.hand_info.sort(key=lambda wc: wc.key_LP[1])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)

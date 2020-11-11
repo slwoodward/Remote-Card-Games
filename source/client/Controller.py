@@ -93,6 +93,15 @@ class Controller(ConnectionListener):
         #Transition phase immediately to avoid double draw
         self._state.turn_phase = Turn_Phases[3]
 
+    def drawWithBuyOption(self):
+        """ in cards with buy option use this method instead of draw (above)"""
+        if self._state.turn_phase != Turn_Phases[1]:
+            self.note = "You can only draw at the start of your turn"
+            return
+        connection.Send({"action": "drawWithBuyOption"})
+        # Transition phase immediately to avoid double draw
+        self._state.turn_phase = Turn_Phases[3]
+
     def wantTopCard(self, want_card):
         if want_card:
             print('player signaled wants top card')
@@ -350,9 +359,7 @@ class Controller(ConnectionListener):
         self.setReady(False)
 
     def Network_buyingResult(self, data):
-        buyer = data["player"]
+        buyer = data["buyer"]
         purchase = Card.deserialize(data["top_card"])
-        self.note = "{0} has purchased {1}".format(buyer,purchase)
-        #todo: this won't work -- it will give current top_card, instead of purchase.
-        #todo: need to attack this feature from server side.
+        self.note = "{0} has purchased {1}".format(buyer, purchase)
 

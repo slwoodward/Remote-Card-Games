@@ -3,6 +3,8 @@ from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
 from PodSixNet.Channel import Channel
+from time import time
+
 
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
@@ -18,10 +20,6 @@ class GameServer(Server, ServerState):
         self.game_over = False
         if self.rules.Shared_Board:      #  True for Liverpool, False for HandAndFoot.
             self.visible_cards_now = {}
-        """ think about whether I need additional variables for buying top discard.
-        if self.rules.Buy_Option:
-            buyer = ''
-        """
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -95,6 +93,29 @@ class GameServer(Server, ServerState):
         if self.rules.Buy_Option:
             self.Send_buyingOpportunity()
 
+    def cardBuyingResolution(self):
+        """ Resolve who gets to purchase card for games with Buy_Option = True
+        This is called when upon player drawing cards. """
+        timelimit = time() + self.rules.purchase_time
+        buying_phase = True # else this routine would not be called
+        # buy_response = [p.want_card for p in self.players]
+        i_max = len(self.players) - 2
+        index = (self.turn_index + 1) % len(self.players)
+        icount = 0
+        while buying_phase and time() < timelimit and icount < i_max:
+            if not self.players[index].want_card is None:
+                if self.players[index].want_card:
+                    self.Send_buyingResult(self.players[index].name)
+                    #todo: send self.players[index] top discard, top pile card, and let player who's turn it is draw.
+                elif not self.players[index].want_card:
+                    index = index + 1 % len(self.players)
+                    icount = icount + 1
+
+
+
+
+    ######################################################
+
     def Send_broadcast(self, data):
         """Send data to every connected player"""
         [p.Send(data) for p in self.players]
@@ -163,8 +184,8 @@ class GameServer(Server, ServerState):
             index = (self.turn_index + i_count + 1) % len(self.players)
             self.players[index].Send({"action": "buyingOpportunity", "top_card": info[0].serialize()})
 
-    def Send_buyingResult(self):
+    def Send_buyingResult(self, buyer):
         """ Broadcast who purchased what card in last auction."""
         info = self.getDiscardInfo()  # be sure to send this before giving the player the top card.
-        placeholder = "placeholder"
-        self.Send_broadcast({"action": "buyingResult", "top_card": info[0].serialize(), "buyer": placeholder})
+        self.Send_broadcast({"action": "buyingResult", "top_card": info[0].serialize(), "buyer": buyer})
+
