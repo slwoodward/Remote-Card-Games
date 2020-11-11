@@ -3,7 +3,7 @@ from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
 from PodSixNet.Channel import Channel
-from time import time
+from time import time, sleep
 
 
 class GameServer(Server, ServerState):
@@ -102,14 +102,22 @@ class GameServer(Server, ServerState):
         i_max = len(self.players) - 2
         index = (self.turn_index + 1) % len(self.players)
         icount = 0
-        while buying_phase and time() < timelimit and icount < i_max:
-            if not self.players[index].want_card is None:
-                if self.players[index].want_card:
-                    self.Send_buyingResult(self.players[index].name)
-                    #todo: send self.players[index] top discard, top pile card, and let player who's turn it is draw.
-                elif not self.players[index].want_card:
-                    index = index + 1 % len(self.players)
-                    icount = icount + 1
+        while buying_phase and icount < i_max:
+            while self.players[index].want_card is None and time() < timelimit:
+                # wait patiently while updating information from players.
+                self.Pump()
+                sleep(0.0001)
+            if self.players[index].want_card:
+                self.Send_buyingResult(self.players[index].name)
+                # send cards
+                cards = self.players[index]._server.drawCards()   # note number of cards is same as DrawSize
+                cards = cards + self.players[index]._server.pickUpPile()   # number of cards is same as Pickup_Size
+                self.players[index].Send_newCards(cards)
+                self.Send_discardInfo()
+                buying_phase = False
+            elif not self.players[index].want_card:
+                index = index + 1 % len(self.players)
+                icount = icount + 1
 
 
 
