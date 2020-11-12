@@ -31,6 +31,8 @@ def RunClient():
     ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
     while not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
         print(ruleset + ' is not supported, enter Liverpool OR HandAndFoot')
+        ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
+    # todo: check that server and client agree -- perhaps get ruleset from server?
     print(ruleset)
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)
@@ -52,12 +54,26 @@ def RunClient():
         tableView.playerByPlayer(current_round)
         note = "You should connect once you've entered your name. Otherwise it is possible you have the wrong server or port#..."
         gameboard.render(note)
-        playername = gameControl.checkNames(tableView.player_names)
+    playername = gameControl.checkNames(tableView.player_names)
+    # games with Shared_Board=True need to insure name on server and client agree.
+    if clientState.rules.Shared_Board:
+        player_index = -99
+        while player_index == -99:
+            try:
+                player_index = tableView.player_names.index(playername)
+            except Exception as err:
+                note = "{0}   waiting for name in player_names to update...".format(err)
+            gameboard.refresh()
+            connection.Pump()
+            gameControl.Pump()
+            tableView.Pump()
+            tableView.playerByPlayer(current_round)
+            gameboard.render(note)
+            sleep(0.001)
     if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
         while True:
             # Primary game loop.
             this_round = handView.round_index
-            player_index = tableView.player_names.index(playername)
             gameboard.refresh()
             handView.nextEvent()
             connection.Pump()
@@ -65,6 +81,7 @@ def RunClient():
             tableView.Pump()
             tableView.playerByPlayer(this_round)
             if  clientState.rules.Shared_Board:
+                player_index = tableView.player_names.index(playername)
                 visible_scards = tableView.visible_scards
                 handView.update(player_index, len(tableView.player_names), visible_scards)
             else:
@@ -72,8 +89,6 @@ def RunClient():
             note = gameControl.note
             gameboard.render(note)
             sleep(0.001)
-    else:
-        print('that ruleset is not supported.')
 
 if __name__ == "__main__":
     if len(sys.argv) != 1:

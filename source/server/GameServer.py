@@ -98,13 +98,15 @@ class GameServer(Server, ServerState):
         This is called when upon player drawing cards. """
         timelimit = time() + self.rules.purchase_time
         buying_phase = True # else this routine would not be called
-        # buy_response = [p.want_card for p in self.players]
         i_max = len(self.players) - 2
         index = (self.turn_index + 1) % len(self.players)
         icount = 0
         while buying_phase and icount < i_max:
             while self.players[index].want_card is None and time() < timelimit:
-                # wait patiently while updating information from players.
+                # wait patiently(?) while updating information from players.
+                # todo: discuss whether timer should start from time card is discarded, or
+                #  time next player attempts to draw.  Latter would enable players to give one another more time.
+                #  Currently done from time of discard, therefore, may want a longer purchase_time...
                 self.Pump()
                 sleep(0.0001)
             if self.players[index].want_card:
@@ -186,6 +188,8 @@ class GameServer(Server, ServerState):
         it.  If there are N players, then N-2 players are eligible to buy card
         (neither player who discarded, nor current active player are eligible).
         """
+        for p in self.players:
+            p.want_card = None     # reset all buying responses to None
         info = self.getDiscardInfo()
         i_max = len(self.players) - 2
         for i_count in range(i_max):

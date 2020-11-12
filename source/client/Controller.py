@@ -70,7 +70,7 @@ class Controller(ConnectionListener):
     def discard(self, discard_list):
         """Send discard to server"""
         if self._state.turn_phase != Turn_Phases[3]:
-            self.note = "You can only discard at the end of your turn (after having drawn)"
+            self.note = "You can only discard at the end of your turn (after having drawn)."
             return False
         try:
             self._state.discardCards(discard_list)
@@ -122,14 +122,14 @@ class Controller(ConnectionListener):
         else:
             if self._state.rules.play_pick_up:
                 self._state.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
-                self.note = "Waiting for new cards to make required play"
+                self.note = "Waiting for new cards to make required play."
             else:
                 self._state.turn_phase = Turn_Phases[3] # No action required if rules.play_pick_up = False
             connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):
         """Complete the required play for picking up the pile, (used in HandAndFoot but not Liverpool)"""
-        self.note = "Performing the play required to pick up the pile"
+        self.note = "Performing the play required to pick up the pile."
         #Get key for top_card (we know it can be auto-keyed), and then prepare it
         key = self._state.getValidKeys(top_card)[0]
         self.prepared_cards.setdefault(key, []).append(top_card)
@@ -330,7 +330,10 @@ class Controller(ConnectionListener):
         if self._state.turn_phase == Turn_Phases[2]:
             #This is the result of a pickup and we have a forced action
             self.makeForcedPlay(card_list[0])
-        self.note = "You can now play cards or discard"
+        # review note -- in Liverpool the note below
+        # overwrites message on who bought card, AND was appearing on board of the person who bought card.
+        if not self._state.rules.BuyOption:
+            self.note = "You can now play cards or discard"
         self.sendPublicInfo() #More cards in hand now, need to update public information
     
     def Network_deal(self, data):
