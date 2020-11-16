@@ -13,6 +13,9 @@ from common.Liverpool import Deal_Size as Deal_Size_LP
 from common.HandAndFoot import Deal_Size as Deal_Size_HF
 from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
 from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
+from common.Liverpool import help_text as help_text_LP
+from common.HandAndFoot import help_text as help_text_HF
+
 
 
 class HandView:
@@ -32,10 +35,12 @@ class HandView:
             self.RuleSetsButtons = RuleSetsButtons_LP
             self.deal_size = Deal_Size_LP
             self.buttons_per_player = self.Meld_Threshold[0][0] +  self.Meld_Threshold[0][1]
+            self.help_text = help_text_LP
         elif ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.RuleSetsButtons = RuleSetsButtons_HF
             self.deal_size = Deal_Size_HF
+            self.help_text = help_text_HF
         self.controller = controller
         self.display = display
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
@@ -67,13 +72,6 @@ class HandView:
         #  round number.  May need to clarify that round 0 = round with 2 sets to meld.
         #
         # todo: help_text is should be game specific.  Move it to Ruleset.
-        self.help_text = ['Welcome to a the game.  Meld requirement is: '
-                          + str(self.Meld_Threshold[self.round_index]) + '.',
-                              'To draw click on the deck of cards (upper left).',
-                              'To discard select ONE card & double click on discard button. ',
-                              'To pick up discard, or attempt to buy discard, click on discard pile. ',
-                              "Cumulative score will display beneath player's cards",
-                              'When ready to start playing click on the YES button on the lower right.']
         self.RuleSetsButtons.CreateButtons(self)
 
     def update(self, player_index=0, num_players=1, visible_scards = []):

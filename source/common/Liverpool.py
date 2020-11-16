@@ -28,6 +28,13 @@ Deal_Size = 11
 Hands_Per_Player = 1
 notes = ["You can only pick up the pile at the start of your turn (buying not yet implemented)."]
 
+help_text = ['Welcome to a Liverpool!  Meld requirement is: (1,1)   (= 1 set, 1 run).',
+                              'To draw click on the deck of cards (upper left).',
+                              'To discard select ONE card & double click on discard button. ',
+                              'To prepare cards click on appropriate Run/Set button (they will appear after you click OK)',
+                              'To pick up discard click on discard pile, to attempt to buy discard type y.',
+                              "Cumulative score will display beneath player's cards",
+                              'When ready to start playing click on the YES button on the lower right.']
 
 def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""

@@ -24,7 +24,12 @@ Number_Rounds = len(Meld_Threshold)  # For convenience
 Deal_Size = 11
 Hands_Per_Player = 2
 notes = ["You can only pick up the pile at the start of your turn."]
-
+help_text = ['Welcome to a Hand And Foot!  Meld requirement is: '+  str(Meld_Threshold[0]) + '.',
+                              'To draw click on the deck of cards (upper left).',
+                              'To discard select ONE card & double click on discard button. ',
+                              'To pick up discard prepare 2 matching cards in hand and click on discard pile. ',
+                              "Cumulative score will display beneath player's cards",
+                              'When ready to start playing click on the YES button on the lower right.']
 
 def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""
