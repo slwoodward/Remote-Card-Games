@@ -332,7 +332,7 @@ class Controller(ConnectionListener):
             self.makeForcedPlay(card_list[0])
         # review note -- in Liverpool the note below
         # overwrites message on who bought card, AND was appearing on board of the person who bought card.
-        if not self._state.rules.BuyOption:
+        if not self._state.rules.Buy_Option:
             self.note = "You can now play cards or discard"
         self.sendPublicInfo() #More cards in hand now, need to update public information
     

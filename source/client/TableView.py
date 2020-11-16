@@ -7,7 +7,7 @@ from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
 from common.HandAndFoot import wild_numbers as wild_numbers_HF
 from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
 from common.Liverpool import wild_numbers as wild_numbers_LP
-from common.Liverpool import combineCardDicts as combineCardDicts
+# from common.Liverpool import combineCardDicts as combineCardDicts
 
 
 class TableView(ConnectionListener):
@@ -172,7 +172,7 @@ class TableView(ConnectionListener):
                                 print('bug in program -- set had multiple non-wild numbers')
                             for s_card in card_group:
                                 if not s_card[0] in self.wild_numbers:
-                                    text = text + str(s_card[1]) +  ','
+                                    text = text + self.cardSuitSymbol(s_card[1]) +  ','
                                 else:
                                     text = text + 'Wild,'
                         else:
@@ -238,6 +238,21 @@ class TableView(ConnectionListener):
     def textObjects(self, text, font, color):
         text_surface = font.render(text, True, color)
         return text_surface, text_surface.get_rect()
+
+    def cardSuitSymbol(self,suit):
+        if suit == 'Spades':
+            return str(u"\u2660")
+        elif suit == 'Hearts':
+            return str(u"\u2661")
+        elif suit == 'Diamonds':
+            return str(u"\u2662")
+        elif suit == 'Clubs':
+            return str(u"\u2663")
+        elif None:
+            return 'Wild'
+        else:
+            return 'Invalid suit.'
+
 
 
     #######################################
