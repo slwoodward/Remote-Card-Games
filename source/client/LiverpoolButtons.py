@@ -33,9 +33,6 @@ def CreateButtons(hand_view, num_players=1):
     hand_view.sort_al_btn = Btn.Button(UIC.White, 850, 75, 175, 20, text=' by  no. (Aces=1) ')
     hand_view.sort_suit_ah_btn = Btn.Button(UIC.White, 1025, 50, 100, 20, text=' (Aces high)')
     hand_view.sort_ah_btn = Btn.Button(UIC.White, 1025, 75, 100, 20, text=' (Aces high)')
-    #  For liverpool need multiple buttons to assign cards to appropriate set/run.
-    #  and need to do this at beginning of each round, so those buttons are in separate method: newRound
-    # btns = a list  of lists. Index of outer list = player_index for each player, index of inner list = # of group.
     hand_view.assign_cards_btns = [[]]  # list of card groups (each group is a set or run) for each player.
     hand_view.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 53, 225, 25, text='Clear prepared cards')
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
@@ -48,7 +45,7 @@ def CreateButtons(hand_view, num_players=1):
 
 
 def newRound(hand_view, sets_runs_tuple):
-    """ At start of each round this creates buttons used to assign cards."""
+    """ At start of each round (after all players hit OK) this creates buttons used to assign cards."""
 
     #  For liverpool need multiple buttons to assign cards to appropriate set/run.
     #  and need to do this at beginning of each round, so those buttons are in this separate method.
@@ -63,30 +60,36 @@ def newRound(hand_view, sets_runs_tuple):
         players_sp_w = UIC.Disp_Width
     players_sp_h = UIC.Disp_Height / 8
     players_sp_top = (UIC.Disp_Height / 5) + players_sp_h
-    #todo: debug this -- get error in button display if someone clicks OK before everyone has joined.
-    # Move this loop so that it's immediately after everyone clicks OK, but before play actually starts.
-    # Or maybe simply delay running newRound until everyone clicks OK.
-    for idx in range(hand_view.num_players):
+    for idx in range(hand_view.num_players - 1):
         hand_view.assign_cards_btns.append([])
+    for idx in range(hand_view.num_players):
         for setnum in range(sets_runs_tuple[0]):
-            hand_view.assign_cards_btns[idx].append([])
+            # hand_view.assign_cards_btns[idx].append([])
             txt = "set " + str(setnum+1)
             x = 100 + (players_sp_w*idx)
             y = players_sp_top + (players_sp_h*setnum)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
-            hand_view.assign_cards_btns[idx][setnum] = prepare_card_btn
+            hand_view.assign_cards_btns[idx].append(prepare_card_btn)
         for runnum in range(sets_runs_tuple[1]):
-            hand_view.assign_cards_btns[idx].append([])
             txt = "run " + str(runnum+1)
             jdx = sets_runs_tuple[0] + runnum
             x = 100 + (players_sp_w * idx)
             y = players_sp_top + (players_sp_h * jdx)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
-            hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
+            # hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
+            hand_view.assign_cards_btns[idx].append(prepare_card_btn)
 
 
 def ButtonDisplay(hand_view):
     """ This updates draw pile and action buttons. It is called in HandView.update each render cycle. """
+
+    # at beginning of round of Liverpool (or other shared_board game) create new buttons.
+    # Review note - wait until all players hit OK else it crashes if you hit OK and then another player joins,
+    # because then you won't have buttons for that player.  Note if a player leaves mid round then the sets and runs
+    # that disappear are those of the player on the far right.
+    if hand_view.need_updated_buttons and not hand_view.controller._state.round == -1:
+        hand_view.RuleSetsButtons.newRound(hand_view, hand_view.Meld_Threshold[hand_view.round_index])
+        hand_view.need_updated_buttons = False
     loc_xy = (hand_view.draw_pile.x, hand_view.draw_pile.y)
     hand_view.draw_pile.draw(hand_view.display, loc_xy, hand_view.draw_pile.outline_color)
     # update discard info and redraw
@@ -168,9 +171,6 @@ def ClickedButton(hand_view, pos):
         hand_view.hand_info = []
         hand_view.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
         hand_view.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
-        if  hand_view.need_updated_buttons:
-            hand_view.RuleSetsButtons.newRound(hand_view, hand_view.Meld_Threshold[hand_view.round_index])
-            hand_view.need_updated_buttons = False
     elif hand_view.controller._state.round == -1 and hand_view.ready_no_btn.isOver(pos):
         hand_view.controller.setReady(False)
         # if you don't want last round's hand to reappear, then
@@ -180,7 +180,7 @@ def ClickedButton(hand_view, pos):
         hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
     elif not hand_view.need_updated_buttons:
         #  loop through all the buttons which prepare cards by assigning them to a particular run or set
-        for idx in range(hand_view.num_players):
+        for idx in range(len(hand_view.assign_cards_btns)):
             for jdx in range(hand_view.buttons_per_player):
                 if hand_view.assign_cards_btns[idx][jdx].isOver(pos):
                     # put all selected cards in a list

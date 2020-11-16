@@ -50,9 +50,9 @@ class HandView:
         self.selected_list = []
         self.round_index = 0
         self.player_index = 0
-        # In liverpool: prepare cards buttons must be updated each round
         self.round_advance = False
         self.num_players = 1
+        # In Liverpool and other Shared_Board games:  prepare cards buttons must be updated each round
         self.need_updated_buttons = True
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
@@ -88,7 +88,7 @@ class HandView:
                 self.round_index = self.round_index + 1
                 if self.round_index < len(self.Meld_Threshold):
                     self.help_text[0] = 'This is the round of ' + str(self.Meld_Threshold[self.round_index]) + ' ! '
-                    self.need_updated_buttons = True
+                    self.need_updated_buttons = True  # used for Liverpool.
                 else:
                     self.help_text = ['Game has concluded. Scores for each round can be found in command window.']
                 self.round_advance = False
