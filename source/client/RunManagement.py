@@ -2,7 +2,7 @@ from common.Card import Card
 
 """This file contains methods used in processing runs for Liverpool.
 
-Some oddities -- it assumes that Aces can be Hi or Low but not both.
+Some Liverpool specific stuff -- it assumes that Aces can be Hi or Low but not both (K,A,2 not allowed).
 
 In order to preserve backwards compatibility with June 2020 distribution, it assumes that card.tempnumber is
 not passed back and forth between the client and server. This only causes ambiguity in wilds and 
@@ -12,11 +12,12 @@ wilds and Aces on ends of runs the appropriate tempnumber before processRuns is 
 To preserve info on whether Ace is assigned hi or low, if Ace is assigned low, then tempnumber is set to -1.
 """
 
-def processRuns(card_group):
+def processRuns(card_group, wild_numbers):
     """ handle sorting of run, including placement of wilds.  Handles minor rule checking.
 
     # processRuns does not presume length requirement or that all cards are in same suit.
     # it DOES presume that if Aces are not wild, then they are hi or low, but not both.
+    # IF ACE CAN BE HIGH OR LOW (very unusual) THAN AUTOMATICALLY MAKING IT LOW.
     """
     card_group.sort(key=lambda wc: wc.tempnumber)
     first_card = True
@@ -44,10 +45,10 @@ def processRuns(card_group):
                 card_group.append(this_wild)
                 card_group.append(card)
             elif card.tempnumber == card_group[-1].tempnumber:
-                if isWild(card):
+                if isWild(card, wild_numbers):
                     card.tempnumber = card.number
                     groups_wilds.append(card)
-                elif isWild(card_group[-1]):
+                elif isWild(card_group[-1], wild_numbers):
                     this_wild = card_group.pop(-1)
                     this_wild.tempnumber = this_wild.number
                     groups_wilds.append(card)
@@ -73,13 +74,14 @@ def processRuns(card_group):
             this_ace.tempnumber = -1
             card_group.insert(0, this_ace)
     # possible to assign remaining Aces after wilds are assigned.
+    possible_wild_assignments=[]
     while len(groups_wilds) > 0 :
         # todo: handle jokers properly -- ask if high or low when both are an option.
         this_wild = groups_wilds.pop(0)
-        if card_group[-1].tempnumber < 14 and not isWild(card_group[-1]):
+        if card_group[-1].tempnumber < 14 and not isWild(card_group[-1], wild_numbers):
             this_wild.tempnumber = card_group[-1].tempnumber + 1
             card_group.append(this_wild)
-        elif card_group[0].tempnumber > 1 and not isWild(card_group[0]):
+        elif card_group[0].tempnumber > 1 and not isWild(card_group[0], wild_numbers):
             this_wild.tempnumber = card_group[0].tempnumber - 1
             card_group.insert(0, this_wild)
         else:
@@ -91,13 +93,13 @@ def processRuns(card_group):
     if len(aces_list) > 0:
         raise Exception('Cannot play Ace in designated run')
     for card in card_group:
-        if (isWild(card) and last_card_wild) or (isWild(card) and second2last_card_wild):
+        if (isWild(card, wild_numbers) and last_card_wild) or (isWild(card, wild_numbers) and second2last_card_wild):
             raise Exception('Must have two natural cards between wild cards in runs')
         second2last_card_wild = last_card_wild
-        last_card_wild = isWild(card)
-    return card_group
+        last_card_wild = isWild(card, wild_numbers)
+    return card_group, number_wilds
 
-def restoreRunAssignment(visible_scards_dictionary, round_index):
+def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
     """ assign values to Wild cards and Aces in runs from server.
 
     Needed to maintain integrity of Wilds' assigned values in runs.  Server does not know tempnumbers
@@ -115,7 +117,7 @@ def restoreRunAssignment(visible_scards_dictionary, round_index):
             card_group.append(card)
         cardgroup_dictionary[key] = card_group
     for k_group, card_group in cardgroup_dictionary.items():
-        if k_group[1] >= Meld_Threshold[round_index][0] and len(card_group) > 1:       # check if this is a run.
+        if k_group[1] >= numsets and len(card_group) > 1:       # check if this is a run.
             if card_group[-1].number in wild_numbers:    # reset tempnumber for Wilds/Aces if they are at the end.
                 card_group[-1].assignWild(card_group[-2].tempnumber + 1)
             elif card_group[-1].number == 1:
@@ -126,3 +128,10 @@ def restoreRunAssignment(visible_scards_dictionary, round_index):
             elif card_group[0].number == 1:
                 card_group[0].tempnumber = -1
         return cardgroup_dictionary
+
+def isWild(card, wild_numbers):
+    """returns true if a card is a wild"""
+    if card.number in wild_numbers:
+        return True
+    else:
+        return False

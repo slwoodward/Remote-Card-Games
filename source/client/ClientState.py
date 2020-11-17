@@ -1,5 +1,7 @@
 import importlib
 from common.Card import Card
+from client.RunManagement import processRuns
+from client.RunManagement import restoreRunAssignment
 
 
 class ClientState:
@@ -110,21 +112,19 @@ class ClientState:
             #          No need to process this unless playing cards, in which case visible_scards passed
             #          to controller and then to clientState, where only list item is deserialized and put in
             #          dictionary self.played_cards
-            print('need to debug around line 115 in ClientState.py')
-            self.played_cards = self.rules.restoreRunAssignment(visible_scards[0], self.round)
+            numsets = self.rules.Meld_Threshold[self.round][0]
+            self.played_cards = restoreRunAssignment(visible_scards[0], self.rules.wild_numbers, numsets)
             # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
             # that are in runs so that positions of Wilds and Aces are maintained.
-            # Review Note:  This is put in rules because I can imagine other shared board games
-            # will have different rules, such as whether Aces can be both high and low.
             #
             self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
             combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
             self.played_cards = {}
             for k_group, card_group in combined_cards.items():
                 if k_group[1] >= self.rules.Meld_Threshold[self.round][0]:
-                    processed_group = self.rules.processRuns(card_group)  # process runs from combined_cards
+                    processed_group = processRuns(card_group, self.rules.wild_numbers)# process runs from combined_cards
                 else:
-                    #todo: need to sort sets?
+                    #todo: need to sort sets?  get user feedback.
                     processed_group = card_group
                 self.played_cards[k_group] = processed_group
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.

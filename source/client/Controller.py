@@ -199,6 +199,7 @@ class Controller(ConnectionListener):
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
+        # debugging - replace 'try:' with 'if True:'  and comment out except block.
         try:
             self._state.playCards(self.prepared_cards, visible_scards, player_index)
             self.clearPreparedCards()
