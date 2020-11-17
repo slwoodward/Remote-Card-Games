@@ -26,14 +26,14 @@ Number_Rounds = len(Meld_Threshold)  # For convenience
 
 Deal_Size = 11
 Hands_Per_Player = 1
-notes = ["You can only pick up the pile at the start of your turn (buying not yet implemented)."]
+notes = ["Clicking on pile only works on your turn. If you are eligible to buy a card, then click on y (for yes)."]
 
 help_text = ['Welcome to a Liverpool!  Meld requirement is: (1,1)   (= 1 set, 1 run).',
-                              'To draw click on the deck of cards (upper left).',
+                              '# decks = ceil(# players *0.6), To draw click on the deck of cards (upper left).',
                               'To discard select ONE card & double click on discard button. ',
                               'To prepare cards click on appropriate Run/Set button (they will appear after you click OK)',
                               'To pick up discard click on discard pile, to attempt to buy discard type y.',
-                              "Cumulative score will display beneath player's cards",
+                              "Cumulative score will display beneath player's cards.",
                               'When ready to start playing click on the YES button on the lower right.']
 
 def numDecks(numPlayers):
@@ -112,6 +112,7 @@ def canPlayGroup(key, card_group, this_round):
                 suits_in_run.append(card.suit)
         unique_suits = list(set(suits_in_run))
         if len(unique_suits) > 4:
+        if len(unique_suits) > 4:  # testing > 1:
             #todo: for testing not requiring one suit.  Fix this later.
             raise Exception("Cards in a run must all have the same suit (except wilds).")
     return True
@@ -121,8 +122,6 @@ def processRuns(card_group):
 
     # processRuns does not presume length requirement or that all cards are in same suit.
     # it DOES presume that if Aces are not wild, then they are hi or low, but not both.
-    # todo: this is not preserving position of wilds when they're first or last card.
-    # todo: also not handling aces properly.
     card_group.sort(key=lambda wc: wc.tempnumber)
     first_card = True
     groups_wilds = []
@@ -139,9 +138,6 @@ def processRuns(card_group):
     for card in temp_run_group:
         if first_card:
             first_card = False
-            if card.tempnumber == 2 and len(aces_list) > 0:
-                this_ace = aces_list.pop(0)
-                card_group.append(this_ace)
             card_group.append(card)
         else:
             if card.tempnumber == (card_group[-1].tempnumber + 1):
@@ -163,12 +159,25 @@ def processRuns(card_group):
                     raise Exception('Card value already in the run.')
             else:
                 raise Exception('too big a gap between numbers')
-    if len(aces_list) > 0 and card_group[-1].tempnumber == 13:
-        this_ace = aces_list.pop(0)
-        this_ace.tempnumber = 14
-        card_group.append(this_ace)
+    #  Review note - Handle Aces after other cards, else ran into problem when wanted Ace, Joker, 3...
+    # Rare for Ace Hi and Ace low to both be options. If they are, does it make a difference which one they are?
+    # If run is A,2,Wild,4...J,Q,K,Wild then it does.
+    # todo: be sure to preserve this in documentation.  If Ace is assigned low, then tempnumber is -1.
     if len(aces_list) > 0:
-        raise Exception('Cannot play Ace in designated run')
+        if card_group[-1].tempnumber == 13 and not card_group[0].tempnumber == 2:
+            this_ace = aces_list.pop(0)
+            this_ace.tempnumber = 14
+            card_group.append(this_ace)
+        elif not card_group[-1].tempnumber == 13 and card_group[0].tempnumber == 2:
+            this_ace = aces_list.pop(0)
+            this_ace.tempnumber = -1
+            card_group.insert(0, this_ace)
+        elif card_group[-1].tempnumber == 13 and card_group[0].tempnumber == 2:
+            print("IF ACE CAN BE HIGH OR LOW THAN AUTOMATICALLY MAKING IT LOW, RATHER THAN HANDLING CORNER CASE.")
+            this_ace = aces_list.pop(0)
+            this_ace.tempnumber = -1
+            card_group.insert(0, this_ace)
+    # possible to assign remaining Aces after wilds are assigned.
     while len(groups_wilds) > 0 :
         # todo: handle jokers properly -- ask if high or low when both are an option.
         this_wild = groups_wilds.pop(0)
@@ -182,6 +191,10 @@ def processRuns(card_group):
             raise Exception('you have too many jokers in a single Run')
     last_card_wild = False
     second2last_card_wild = False
+    # todo: check to see if can play any remaining aces after wilds are placed.
+    # todo: Need to get input from user, so move this method and restoreRunAssignments to controller.
+    if len(aces_list) > 0:
+        raise Exception('Cannot play Ace in designated run')
     for card in card_group:
         if (isWild(card) and last_card_wild) or (isWild(card) and second2last_card_wild):
             raise Exception('Must have two natural cards between wild cards in runs')
@@ -270,11 +283,11 @@ def cardValue(card):
 def restoreRunAssignment(visible_scards_dictionary, round_index):
     """ assign values to Wild cards and Aces in runs from server.
 
-    Needed to maintain integrity of Wilds' assigned values in runs.  Server does not know tempnumbers """
+    Needed to maintain integrity of Wilds' assigned values in runs.  Server does not know tempnumbers
+    (for backwards compatability not changing json between server and client).
+    There's no ambiguity except for wilds and Aces at the ends of the run (processRuns handles wilds in middle).
+    """
 
-    # todo: this does not assign tempnumber for wilds in middle of run.  processRuns should work regardless of
-    #  whether those wilds have tempnumbers already assigned or not.  Debating whether code below -
-    #  would be more efficient if simply set tempnumber for all wilds here?
     if len(visible_scards_dictionary) == 0:
         return(visible_scards_dictionary)
     cardgroup_dictionary = {}
@@ -285,13 +298,16 @@ def restoreRunAssignment(visible_scards_dictionary, round_index):
             card_group.append(card)
         cardgroup_dictionary[key] = card_group
     for k_group, card_group in cardgroup_dictionary.items():
-        if k_group[1] >= Meld_Threshold[round_index][0]:       # check if this is a run.
+        if k_group[1] >= Meld_Threshold[round_index][0] and len(card_group) > 1:       # check if this is a run.
             if card_group[-1].number in wild_numbers:    # reset tempnumber for Wilds/Aces if they are at the end.
                 card_group[-1].assignWild(card_group[-2].tempnumber + 1)
             elif card_group[-1].number == 1:
                 card_group[-1].assignWild(14)
             if card_group[0].number in wild_numbers:    # reset tempnumber for wild cards if they are at the beginning.
                 card_group[0].assignWild(card_group[1].tempnumber - 1)
+            # todo: be sure to preserve this in documentation.  If Ace is assigned low, then tempnumber is -1.
+            elif card_group[0].number == 1:
+                card_group[0].tempnumber = -1
         return cardgroup_dictionary
 
 def goneOut(played_cards):

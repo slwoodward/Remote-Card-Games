@@ -71,7 +71,6 @@ class HandView:
         # todo: implement solution where when you start game and enter liverpool, you are also asked to enter
         #  round number.  May need to clarify that round 0 = round with 2 sets to meld.
         #
-        # todo: help_text is should be game specific.  Move it to Ruleset.
         self.RuleSetsButtons.CreateButtons(self)
 
     def update(self, player_index=0, num_players=1, visible_scards = []):
