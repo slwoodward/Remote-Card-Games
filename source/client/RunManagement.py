@@ -74,30 +74,85 @@ def processRuns(card_group, wild_numbers):
             this_ace.tempnumber = -1
             card_group.insert(0, this_ace)
     # possible to assign remaining Aces after wilds are assigned.
-    possible_wild_assignments=[]
-    while len(groups_wilds) > 0 :
-        # todo: handle jokers properly -- ask if high or low when both are an option.
-        this_wild = groups_wilds.pop(0)
+    num_remaining_wilds = len(groups_wilds)
+    possible_wild_assignments = []
+    if not num_remaining_wilds == 0:
+        # are there options on where to assign wilds?
+        if num_remaining_wilds > 2:
+            raise Exception('You cannot play all the wild cards.')
+        # Calculate if wild cards be played at both ends of runs.
+        possible_wild_assignments = []
+        if card_group[0].tempnumber > 1 and not isWild(card_group[0], wild_numbers):
+            runslot = card_group[-1].tempnumber - 1
+            possible_wild_assignments.append(runslot)
         if card_group[-1].tempnumber < 14 and not isWild(card_group[-1], wild_numbers):
-            this_wild.tempnumber = card_group[-1].tempnumber + 1
-            card_group.append(this_wild)
-        elif card_group[0].tempnumber > 1 and not isWild(card_group[0], wild_numbers):
-            this_wild.tempnumber = card_group[0].tempnumber - 1
-            card_group.insert(0, this_wild)
-        else:
-            raise Exception('you have too many jokers in a single Run')
+            runslot = card_group[-1].tempnumber + 1
+            possible_wild_assignments.append(runslot)
+        # Can wilds be played?
+        if num_remaining_wilds > len(possible_wild_assignments):
+            raise Exception('you cannot play all the wild cards.')
+        # Can Aces that previously could not be played now be played?
+        if len(aces_list) == 1:
+            if not 2 in possible_wild_assignments and not 13 in possible_wild_assignments:
+                raise Exception('Ace cannot be played')
+            else:
+                if 2 in possible_wild_assignments:
+                    print('making Ace low, even if it is possible to automatically play it high')
+                    possible_wild_assignments.pop(2)
+                    this_wild = groups_wilds.pop(0)
+                    this_wild.tempnumber = 2
+                    card_group.insert(0, this_wild)
+                    aces_list[0].tempnumber = -1
+                    card_group.insert(0, aces_list[0])
+        elif len(aces_list) == 2:
+            if not (2 in possible_wild_assignments and 13 in possible_wild_assignments):
+                raise Exception('Ace cannot be played')
+            else:
+                possible_wild_assignments = []
+                this_wild = groups_wilds.pop(0)
+                this_wild.tempnumber = 2
+                card_group.insert(0, this_wild)
+                aces_list[0].tempnumber = -1
+                card_group.insert(0, aces_list[0])
+                this_wild = groups_wilds.pop(0)
+                this_wild.tempnumber = 13
+                card_group.append(this_wild)
+                aces_list[1].tempnumber = 14
+                card_group.append(aces_list[1])
+        elif len(aces_list) > 2:
+            raise Exception('Cannot play more than 2 Aces in a single run.')
+        num_remaining_wilds = len(groups_wilds)
+        # Can wilds be automatically played?
+        if num_remaining_wilds == 2:
+            groups_wilds[0].tempnumber = possible_wild_assignments[0]
+            groups_wilds[1].tempnumber = possible_wild_assignments[1]
+            card_group.insert(0, groups_wilds[0])
+            card_group.append(groups_wilds[1])
+            groups_wilds=[]
+            possible_wild_assignments=[]
+        elif num_remaining_wilds == 1 and len(possible_wild_assignments)==1:
+            groups_wilds[0].tempnumber = possible_wild_assignments[0]
+            if possible_wild_assignments[0] > card_group[0].tempnumber:
+                card_group.insert(0, groups_wilds[0])
+            else:
+                card_group.append(groups_wilds[0])
+            groups_wilds=[]
+            possible_wild_assignments=[]
+        num_remaining_wilds = len(groups_wilds)
+        # Double check that don't have wilds too close together.
+        # Then, if necessary, have controller ask player where to play wild.
+        if num_remaining_wilds == 1 and len(possible_wild_assignments) == 2:
+            print('Might need to ask player whether to play high or low')
+            print('first check that wild placement is still legit. ')
+    #todo:  Double check that possible wild assignments left in list is legit.  Make certain that cards near by are not wild.
     last_card_wild = False
     second2last_card_wild = False
-    # todo: check to see if can play any remaining aces after wilds are placed.
-    # todo: Need to get input from user, so move this method and restoreRunAssignments to controller.
-    if len(aces_list) > 0:
-        raise Exception('Cannot play Ace in designated run')
     for card in card_group:
         if (isWild(card, wild_numbers) and last_card_wild) or (isWild(card, wild_numbers) and second2last_card_wild):
             raise Exception('Must have two natural cards between wild cards in runs')
         second2last_card_wild = last_card_wild
         last_card_wild = isWild(card, wild_numbers)
-    return card_group, number_wilds
+    return card_group, possible_wild_assignments
 
 def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
     """ assign values to Wild cards and Aces in runs from server.
