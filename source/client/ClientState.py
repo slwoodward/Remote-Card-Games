@@ -122,7 +122,11 @@ class ClientState:
             self.played_cards = {}
             for k_group, card_group in combined_cards.items():
                 if k_group[1] >= self.rules.Meld_Threshold[self.round][0]:
-                    processed_group = processRuns(card_group, self.rules.wild_numbers)# process runs from combined_cards
+                    # process runs from combined_cards
+                    processed_group, wild_options, unassigned_wilds = processRuns(card_group, self.rules.wild_numbers)
+                    print(wild_options)
+                    print(unassigned_wilds)
+                    #todo: at this point should call method to choose whether unassigned cards are high or low.
                 else:
                     #todo: need to sort sets?  get user feedback.
                     processed_group = card_group

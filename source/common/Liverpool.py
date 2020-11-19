@@ -91,6 +91,7 @@ def canPlayGroup(key, card_group, this_round):
             raise Exception("Too few cards in run - minimum is 2 (for now) 4 (final version)")
         suits_in_run = []
         for card in card_group:
+            print(card)  #todo: debug
             if not isWild(card):
                 suits_in_run.append(card.suit)
         unique_suits = list(set(suits_in_run))
@@ -108,7 +109,8 @@ def canMeld(prepared_cards, round_index, player_index):
     for key, card_group in prepared_cards.items():
         if key[0] == player_index:
             if key[1] >= Meld_Threshold[round_index][0]:
-                processed_group = processRuns(card_group, wild_numbers)  # process runs from prepared_cards
+                # process runs from prepared_cards.
+                processed_group, wild_options, unassigned_wilds = processRuns(card_group, wild_numbers)
             else:
                 processed_group = card_group
             if canPlayGroup(key, processed_group, round_index):
@@ -141,7 +143,8 @@ def canPlay(prepared_cards, played_cards_dictionary, player_index, round_index):
     combined_cards = combineCardDicts(played_cards_dictionary, prepared_cards)
     for k_group, card_group in combined_cards.items():
         if k_group[1] >= Meld_Threshold[round_index][0]:
-            processed_group = processRuns(card_group, wild_numbers)               # process runs from combined_cards
+            # process runs from combined_cards
+            processed_group, wild_options, unassigned_wilds = processRuns(card_group, wild_numbers)
         else:
             processed_group = card_group
             # todo: decide when to sort sets.
