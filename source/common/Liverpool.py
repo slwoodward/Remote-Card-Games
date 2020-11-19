@@ -20,7 +20,7 @@ Pickup_Size = 1
 Discard_Size = 1
 wild_numbers = [0]
 
-# Liverpool: number of sets and runs required to meld.
+# Liverpool: number of sets and runs required to meld.  Order is important! (code relies on sets being first).
 # first element below is temporary (for testing).
 Meld_Threshold = [(1,1), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
 Number_Rounds = len(Meld_Threshold)  # For convenience

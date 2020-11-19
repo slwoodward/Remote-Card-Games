@@ -5,7 +5,7 @@ from PodSixNet.Connection import connection, ConnectionListener
 from client.ClientState import ClientState
 from client.Controller import Controller
 from client.CreateDisplay import CreateDisplay
-from client.TableView import TableView            # this should support both Liverpool and HandAndFoot
+from client.TableView import TableView
 from client.HandView import HandView
 # imports below added so that can generate executable using pyinstaller.
 import common.HandAndFoot
@@ -29,9 +29,9 @@ def RunClient():
     print(host)
     print(port)
     ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
-    while not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
+    if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
         print(ruleset + ' is not supported, enter Liverpool OR HandAndFoot')
-        ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
+        exit() #todo: is exit() the right command.
     # todo: check that server and client agree -- perhaps get ruleset from server?
     print(ruleset)
     connection.DoConnect((host, int(port)))
@@ -39,10 +39,7 @@ def RunClient():
     gameControl = Controller(clientState)
     playername = gameControl.getName()
     gameboard = CreateDisplay(playername)
-    if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
-        tableView = TableView(gameboard.display, ruleset)
-    else:
-        print('that ruleset is not supported')
+    tableView = TableView(gameboard.display, ruleset)
     handView = HandView(gameControl, gameboard.display, ruleset)
     current_round = handView.round_index
     while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):

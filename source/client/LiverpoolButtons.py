@@ -50,6 +50,10 @@ def newRound(hand_view, sets_runs_tuple):
     #  For liverpool need multiple buttons to assign cards to appropriate set/run.
     #  and need to do this at beginning of each round, so those buttons are in this separate method.
     # btns = a list  of lists. Index of outer list = player_index for each player, index of inner list = # of group.
+    # Buttons are used as keys in Dictionary of visible cards. (e.g. for  k_group, card_group in visible_cards.items())
+    # k_group is a tuple of (player index, group number) and corresponds to one of the buttons about to be created.
+    # Groups that are sets are always before groups that are runs (code depends on that).
+    #
     hand_view.buttons_per_player = sets_runs_tuple[0] + sets_runs_tuple[1]
     hand_view.assign_cards_btns = [[]]
     w = 75  # width of following buttons

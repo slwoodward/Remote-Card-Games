@@ -13,7 +13,6 @@ class ClientState:
 
     def __init__(self, ruleset = None):
         """Initialize a state tracker for a given client"""
-        self.ruleset = ruleset
         if ruleset is not None:
             rule_module = "common." + ruleset
         else:
@@ -67,11 +66,13 @@ class ClientState:
         """Clear out round specific state to prepare for next round to start"""
         self.hand_list = []
         self.hand_cards = []
-        self.played_cards = {}    # if self.rules.Shared_Board is False (HandAndFoot) this is dictionary of
-        #                               cards played by this client.
-        #                           if self.rules.Shared_Board is True (Liverpool) it is a dictionary containing
-        #                           cards played by all players, hence it is derived from
-        #                           data: visible cards, which is processed in method:  in visible_scards[{...}]
+        #   If self.rules.Shared_Board is False (HandAndFoot) this is dictionary of
+        #   cards played by this client.
+        #   If self.rules.Shared_Board is True (Liverpool)
+        #   it is a dictionary containing cards played by all players, hence it is derived from
+        #   data: visible cards, which is processed in method: visible_scards[{...}]
+
+        self.played_cards = {}
         self.went_out = False
         self.discard_info = [None, 0]
 
@@ -107,16 +108,16 @@ class ClientState:
             # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
             # from controller.
             # (Path taken by visible_scards:
-            #          Tableview gets the serialized cards every msec to keep display up to date,
+            #          Tableview gets the serialized cards every cycle to keep display up to date,
             #          In handview.update tableview.visible_scards list is passed to handview.visible_scards
             #          No need to process this unless playing cards, in which case visible_scards passed
             #          to controller and then to clientState, where only list item is deserialized and put in
             #          dictionary self.played_cards
             numsets = self.rules.Meld_Threshold[self.round][0]
-            self.played_cards = restoreRunAssignment(visible_scards[0], self.rules.wild_numbers, numsets)
             # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
             # that are in runs so that positions of Wilds and Aces are maintained.
-            #
+            # This could be made obsolete by adding tempnumbers to card serialization.
+            self.played_cards = restoreRunAssignment(visible_scards[0], self.rules.wild_numbers, numsets)
             self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
             combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
             self.played_cards = {}

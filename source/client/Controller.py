@@ -23,7 +23,6 @@ class Controller(ConnectionListener):
         # variables needed for games with Shared_Board == True (i.e. Liverpool):
         self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
-        self.visible_scards = [{}] # if Shared_Board both HandView and TableView use data:visible cards.
         # variables needed if Buy_Option is True
         self.buying_opportunity = False
 
@@ -37,8 +36,8 @@ class Controller(ConnectionListener):
         # if name is in list of forbidden names, then changeName is called.
         displayName = input("Enter a display name: ")
         if displayName in Forbidden_Names:
-            self.note = "Sorry, but that name ('"+displayName+"') is forbidden."
-            self._state.name = self.changeName()
+            self.note = "Sorry, but the name "+displayName+" is forbidden."
+            self.changeName()
         else:
             self._state.name = displayName
             connection.Send({"action": "displayName", "name": displayName})
@@ -132,8 +131,8 @@ class Controller(ConnectionListener):
         self.note = "Performing the play required to pick up the pile."
         #Get key for top_card (we know it can be auto-keyed), and then prepare it
         key = self._state.getValidKeys(top_card)[0]
-        self.prepared_cards.setdefault(key, []).append(top_card)
         #Can't just call prepared card b/c of turn phase checking
+        self.prepared_cards.setdefault(key, []).append(top_card)
         #Set turn phase to allow play and then immediately make play
         self._state.turn_phase = Turn_Phases[3]
         self.play()
