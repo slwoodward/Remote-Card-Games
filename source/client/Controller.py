@@ -206,7 +206,16 @@ class Controller(ConnectionListener):
             self.sendPublicInfo()
         except Exception as err:
             self.note = "{0}".format(err)
+            # In Liverpool and other shared_board games reset wilds in prepared cards, so they can be reassigned.
+            if self._state.rules.Shared_Board:
+                self.resetPreparedWilds()
             return
+
+    def resetPreparedWilds(self):
+        """ If prepared cards cannot be played, then the values of Aces and WildCards should be reset"""
+        for card_group in self.prepared_cards.values():
+            for card in card_group:
+                card.tempnumber = card.number
 
     def handleEmptyHand(self, isDiscard):
         """Checks for and handles empty hand. 
@@ -234,11 +243,6 @@ class Controller(ConnectionListener):
                 self._state.turn_phase = Turn_Phases[0]
                 connection.Send({"action": "discard", "cards": []})
             return False
-
-    '''def start_auction(self):
-        """ For games with a buying option, tell server to broadcast buying opportunity."""
-        connection.Send({"action": "start_auction"})
-    '''
 
     ### Fetchers for handView ###
     def getName(self):

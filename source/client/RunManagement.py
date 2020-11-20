@@ -2,7 +2,8 @@ from common.Card import Card
 
 """This file contains methods used in processing runs for Liverpool.
 
-Some Liverpool specific stuff -- it assumes that Aces can be Hi or Low but not both (K,A,2 not allowed).
+Some Liverpool specific stuff:
+it assumes that Aces can be Hi or Low but not both (K,A,2 not allowed).
 Enforces rule that you must have two natural cards between wilds in a run.
 
 In order to preserve backwards compatibility with June 2020 distribution, it assumes that card.tempnumber is
@@ -222,6 +223,9 @@ def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
 
 def isWild(card, wild_numbers):
     """returns true if a card is a wild"""
+
+    # Review question -- Currently the methods in this file import minimal amount, and assume variables are passed
+    # through and returned. Would it be better to import liverpool ruleset (including wild_numbers and method isWild).
     if card.number in wild_numbers:
         return True
     else:
