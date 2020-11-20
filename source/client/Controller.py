@@ -138,9 +138,9 @@ class Controller(ConnectionListener):
         self.play()
 
     def automaticallyPrepareCards(self, selected_cards):
-        """HandAndFoot specific: Prepare selected cards to be played.
+        """HandAndFoot specific: Prepare selected cards to be played.  Called from HandAndFootButtons.py.
         
-        Assumes all groups are sets.
+        Assumes all groups are sets
         Fully prepares natural cards
         Returns options for where to play wild cards
         Returns message that you can't play 3s
@@ -167,9 +167,9 @@ class Controller(ConnectionListener):
     def assignCardsToGroup(self, assigned_key, selected_cards):
         """Assign cards to specific groups based on button clicked.
 
-         Wilds are assigned to group, but if value ambiguous it is not determined until group is played.
+         Wilds are assigned to group, but it's assigned value is not determined until group is played.
          This method is needed in games where player explicitly assigns cards to groups (such as Liverpool).
-         In games that are purely set-based (such as Hand and Foot) this is not used.
+         In games that are purely set-based (such as Hand and Foot) this is not needed.
         """
         for wrappedcard in selected_cards:
             card = wrappedcard.card

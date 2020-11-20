@@ -31,7 +31,7 @@ def RunClient():
     ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
     if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
         print(ruleset + ' is not supported, enter Liverpool OR HandAndFoot')
-        exit() #todo: is exit() the right command.
+        exit()
     # todo: check that server and client agree -- perhaps get ruleset from server?
     print(ruleset)
     connection.DoConnect((host, int(port)))
@@ -67,25 +67,24 @@ def RunClient():
             tableView.playerByPlayer(current_round)
             gameboard.render(note)
             sleep(0.001)
-    if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
-        while True:
-            # Primary game loop.
-            this_round = handView.round_index
-            gameboard.refresh()
-            handView.nextEvent()
-            connection.Pump()
-            gameControl.Pump()
-            tableView.Pump()
-            tableView.playerByPlayer(this_round)
-            if  clientState.rules.Shared_Board:
-                player_index = tableView.player_names.index(playername)
-                visible_scards = tableView.visible_scards
-                handView.update(player_index, len(tableView.player_names), visible_scards)
-            else:
-                handView.update()
-            note = gameControl.note
-            gameboard.render(note)
-            sleep(0.001)
+    while True:
+        # Primary game loop.
+        this_round = handView.round_index
+        gameboard.refresh()
+        handView.nextEvent()
+        connection.Pump()
+        gameControl.Pump()
+        tableView.Pump()
+        tableView.playerByPlayer(this_round)
+        if  clientState.rules.Shared_Board:
+            player_index = tableView.player_names.index(playername)
+            visible_scards = tableView.visible_scards
+            handView.update(player_index, len(tableView.player_names), visible_scards)
+        else:
+            handView.update()
+        note = gameControl.note
+        gameboard.render(note)
+        sleep(0.001)
 
 if __name__ == "__main__":
     if len(sys.argv) != 1:

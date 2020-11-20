@@ -132,7 +132,8 @@ def MouseHiLight(wrapped_hand, pos):
 def ManuallyAssign(hand_view):
     """ Cards that cannot be automatically assigned to sets must be manually assigned.
 
-    For HandAndFoot only wild cards need to be manually assigned.
+    Used in HandAndFoot (HandAndFootButtons.py contains methods that eventually trigger this method).
+    Only wild cards need to be manually assigned.
     For other games it may be more complex (e.g. games with runs and sets)
     At this time only set-based games like HandAndFoot are supported.
     """

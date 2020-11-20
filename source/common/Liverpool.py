@@ -24,7 +24,6 @@ wild_numbers = [0]
 # first element below is temporary (for testing).
 Meld_Threshold = [(1,1), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
 Number_Rounds = len(Meld_Threshold)  # For convenience
-
 Deal_Size = 11
 Hands_Per_Player = 1
 notes = ["Clicking on pile only works on your turn. If you are eligible to buy a card, then click on y (for yes)."]
@@ -36,6 +35,8 @@ help_text = ['Welcome to a Liverpool!  Meld requirement is: (1,1)   (= 1 set, 1 
                               'To pick up discard click on discard pile, to attempt to buy discard type y.',
                               "Cumulative score will display beneath player's cards.",
                               'When ready to start playing click on the YES button on the lower right.']
+wilds_high_low_dict = {}  # used in tracking whether wild cards should be assigned to hi or low in runs.
+
 
 def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""
@@ -140,18 +141,22 @@ def canPlay(prepared_cards, played_cards_dictionary, player_index, round_index):
     if (player_index,0) not in played_groups:
         return canMeld(prepared_cards, round_index, player_index)
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
+    print('at line 143')
     combined_cards = combineCardDicts(played_cards_dictionary, prepared_cards)
+    print(combined_cards)
     for k_group, card_group in combined_cards.items():
         if k_group[1] >= Meld_Threshold[round_index][0]:
             # process runs from combined_cards
             processed_group, wild_options, unassigned_wilds = processRuns(card_group, wild_numbers)
+            if len(unassigned_wilds) > 0:
+                print(unassigned_wilds)
+                self.wilds_high_low_dict[k_group]=[processed_group, wild_options, unassigned_wilds]
+                print(self.wilds_high_low_dict)
+                print('If this non-zero at end of canPlay need to raise exception that will get new assignments method called.')
         else:
             processed_group = card_group
-            # todo: decide when to sort sets.
         canPlayGroup(k_group, processed_group, round_index)
-    # todo: debug next line:
-    # return combined_cards  < caused an unexpected error...see notes in ClientState.py.
-    return True
+    return
 
 def combineCardDicts(dict1, dict2):
     """Combine two dictionaries of cards, such as played and to be played cards.
@@ -165,6 +170,8 @@ def combineCardDicts(dict1, dict2):
         for card in dict2.setdefault(key, []):
             combo_list.append(card)
         combined_cards[key] = combo_list
+    print('in combineCardDicts')
+    print(combined_cards)
     return combined_cards
 
 

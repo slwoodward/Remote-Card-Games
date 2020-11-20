@@ -31,6 +31,7 @@ class HandView:
     def __init__(self, controller, display, ruleset):
         self.ruleset = ruleset
         if ruleset == 'Liverpool':
+            # todo: replace lines below with xxx = controller._state.rules.xxx and omit imports.
             self.Meld_Threshold = Meld_Threshold_LP
             self.RuleSetsButtons = RuleSetsButtons_LP
             self.deal_size = Deal_Size_LP
@@ -50,6 +51,7 @@ class HandView:
         self.prepared_cards = []     # will contain list of prepared cards from controller
         self.discards = []
         self.discard_confirm = False
+        # num_wilds is HandAndFoot specific, only non-zero if by prepare_card_btn in HandAndFootButtons.py is triggered.
         self.num_wilds = 0
         self.wild_cards = []
         self.selected_list = []
@@ -61,16 +63,11 @@ class HandView:
         self.need_updated_buttons = True
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
-        # --- Hand And Foot Specific:
-        # if someone joins between rounds, then they won't know the meld requirement until the round begins because
-        # self.controller._state.round = -1 until play commences.  At that point the help_text is no longer printed.
-        # Correct meld requirement will be written in lower right corner once play commences.
         #
-        #  For Liverpool the correct "prepare cards" buttons must be created, so I don't think it will support a player
-        # joining in the middle, unless they know what round they're joining in.
-        # todo: implement solution where when you start game and enter liverpool, you are also asked to enter
-        #  round number.  May need to clarify that round 0 = round with 2 sets to meld.
-        #
+        # if someone joins between rounds, then they won't know the correct meld requirement until the round begins.
+        # (self.controller._state.round = -1 until play commences).
+        # In HandAndFoot: Correct meld requirement will be written in lower right corner once play commences.
+        # In Liverpool: Will see correct buttons once round commences.
         self.RuleSetsButtons.CreateButtons(self)
 
     def update(self, player_index=0, num_players=1, visible_scards = []):
@@ -114,8 +111,9 @@ class HandView:
     def nextEvent(self):
         """This submits the next user input to the controller,
 
-        key strokes don't do anything unless designating values for prepared wild cards,
-        at which time the mouse is ignored unless you want to clear the prepared cards."""
+        In games with Shared_Board = False (e.g. HandAndFoot) key strokes don't do anything
+        unless designating values for prepared wild cards, at which time the mouse is ignored
+        unless you want to clear the prepared cards."""
 
         for self.event in pygame.event.get():
             if self.num_wilds > 0:
@@ -152,7 +150,7 @@ class HandView:
                             self.controller.wantTopCard(True)
                         elif self.event.key == pygame.K_n:
                             self.controller.wantTopCard(False)
-                if self.num_wilds > 0:
+                if not self.controller._state.rules.Shared_Board and self.num_wilds > 0:
                     HandManagement.ManuallyAssign(self)
 
 

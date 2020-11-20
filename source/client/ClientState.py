@@ -103,7 +103,7 @@ class ClientState:
         elif self.rules.Shared_Board:
             # Review Notes
             # todo: move these to documentation
-            #  unlike in HandAndFoot, where self.played_cards was used to check rules.
+            # Unlike in HandAndFoot, where self.played_cards was used to check rules,
             # in Liverpool and other shared board games need to consider all of the played cards.
             # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
             # from controller.
@@ -114,24 +114,36 @@ class ClientState:
             #          to controller and then to clientState, where only list item is deserialized and put in
             #          dictionary self.played_cards
             numsets = self.rules.Meld_Threshold[self.round][0]
+            # use dictionary to track what wild cards need to be manually assigned after going through all the runs.
+            self.rules.wilds_high_low_dict = {}
             # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
             # that are in runs so that positions of Wilds and Aces are maintained.
             # This could be made obsolete by adding tempnumbers to card serialization.
             self.played_cards = restoreRunAssignment(visible_scards[0], self.rules.wild_numbers, numsets)
             self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
+            # play is legal, so rebuild played_cards with cards appropriately sorted and tempnumbers properly assigned.
             combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
+            if not self.rules.wilds_high_low_dict == {}:
+                print('should hi low wilds should already be assigned?  ?? so above dictionary should be empty that need to be reassigned tempnumbers get them.')
+                print(self.rules.wilds_high_low_dict)
+            # gather all the wild_options and unassigned_wilds in a dictionary keyed on k_group, and once
+            # they are all gathered raise exception so that break out of this method to assign wilds.
+            # self.rules.wilds_high_low_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             self.played_cards = {}
             for k_group, card_group in combined_cards.items():
-                if k_group[1] >= self.rules.Meld_Threshold[self.round][0]:
-                    # process runs from combined_cards
+                # process runs from combined_cards (if k_group[1] > numsets, then it is a run).
+                if k_group[1] >= numsets:
                     processed_group, wild_options, unassigned_wilds = processRuns(card_group, self.rules.wild_numbers)
+                    print('in client state, line 136')
                     print(wild_options)
                     print(unassigned_wilds)
-                    #todo: at this point should call method to choose whether unassigned cards are high or low.
+                    # At this point all wilds should have been set properly (this is done after calling canPLay).
                 else:
                     #todo: need to sort sets?  get user feedback.
                     processed_group = card_group
                 self.played_cards[k_group] = processed_group
+            if not self.rules.wilds_high_low_dict == {}:
+                raise Exception('Wild(s) must be assigned hi/low')
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
             for key, card_group in prepared_cards.items():
                 for card in card_group:

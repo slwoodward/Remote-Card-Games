@@ -30,6 +30,8 @@ help_text = ['Welcome to a Hand And Foot!  Meld requirement is: '+  str(Meld_Thr
                               'To pick up discard prepare 2 matching cards in hand and click on discard pile. ',
                               "Cumulative score will display beneath player's cards",
                               'When ready to start playing click on the YES button on the lower right.']
+wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
+wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
 
 def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""

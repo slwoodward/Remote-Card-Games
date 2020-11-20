@@ -9,7 +9,6 @@ In order to preserve backwards compatibility with June 2020 distribution, it ass
 not passed back and forth between the client and server. This only causes ambiguity in wilds and 
 Aces at the ends of runs.   Method restoreRunAssignment takes care of this by assigning
 wilds and Aces on ends of runs the appropriate tempnumber before processRuns is called.
-
 To preserve info on whether Ace is assigned hi or low, if Ace is assigned low, then tempnumber is set to -1.
 """
 
@@ -99,8 +98,44 @@ def processRuns(card_group, wild_numbers):
                 this_ace = aces_list.pop(0)
                 this_ace.tempnumber = 14
                 card_group.append(0, this_ace)
-    # Calculate if wild cards be played  - only possible remaining slots for wilds are at the ends of the current run.
-    # Might be possible to assign any remaining Aces after remaining wilds are assigned.
+    # Might be possible to assign any remaining Aces if there are any remaining wildcards.
+    if len(aces_list) > 0 and len(groups_wilds) > 0:
+        # Can Aces that previously could not be played now be played?
+        if len(aces_list) == 2:
+            if len(groups_wilds) >= 2 and card_group[0].tempnumber == 3 and card_group[-1].tempnumber == 12:
+                this_wild = groups_wilds.pop(0)
+                this_wild.tempnumber = 2
+                card_group.insert(0, this_wild)
+                aces_list[0].tempnumber = -1
+                card_group.insert(0, aces_list[0])
+                this_wild = groups_wilds.pop(0)
+                this_wild.tempnumber = 13
+                card_group.append(this_wild)
+                aces_list[1].tempnumber = 14
+                card_group.append(aces_list[1])
+                aces_list = []
+        elif len(aces_list) == 1:
+            if card_group[0].tempnumber == 3 and not isWild(card_group[0], wild_numbers) \
+                    and not isWild(card_group[1], wild_numbers):
+                print('Using Joker to put Ace in run (if possible to play low or high, will play low)')
+                # todo: modify so that choose if both possible.
+                this_wild = groups_wilds.pop(0)
+                this_wild.tempnumber = 2
+                card_group.insert(0, this_wild)
+                aces_list[0].tempnumber = -1
+                card_group.insert(0, aces_list[0])
+                aces_list = []
+            elif card_group[-1].tempnumber == 12 and not isWild(card_group[-1], wild_numbers) \
+                    and not isWild(card_group[-2], wild_numbers):
+                this_wild = groups_wilds.pop(-1)
+                this_wild.tempnumber = 13
+                card_group.append(this_wild)
+                aces_list[0].tempnumber = 14
+                card_group.append(aces_list[0])
+                aces_list = []
+    if len(aces_list) > 0:
+        raise Exception('Ace cannot be played')
+   # Calculate if wild cards can be played  - only possible remaining slots for wilds are at the ends of the current run.
     num_remaining_wilds = len(groups_wilds)
     possible_wild_assignments = []
     if not num_remaining_wilds == 0:
@@ -118,43 +153,6 @@ def processRuns(card_group, wild_numbers):
         # Can wilds be played?
         if num_remaining_wilds > len(possible_wild_assignments):
             raise Exception('you cannot play all the wild cards.')
-        # Can Aces that previously could not be played now be played?
-        if len(aces_list) == 1:
-            if not 2 in possible_wild_assignments and not 13 in possible_wild_assignments:
-                raise Exception('Ace cannot be played')
-            else:
-                if 2 in possible_wild_assignments:
-                    print('Using Joker to put Ace in run (playing low if possible to play low or high)')
-                    #todo: modify so that choose if both possible.
-                    this_wild = groups_wilds.pop(0)
-                    this_wild.tempnumber = 2
-                    possible_wild_assignments.remove(2)
-                    card_group.insert(0, this_wild)
-                    aces_list[0].tempnumber = -1
-                    card_group.insert(0, aces_list[0])
-                elif 13 in possible_wild_assignments:
-                    this_wild = groups_wilds.pop(0)
-                    this_wild.tempnumber = 13
-                    possible_wild_assignments.remove(13)
-                    card_group.append(this_wild)
-                    aces_list[0].tempnumber = 14
-                    card_group.append(aces_list[0])
-        elif len(aces_list) == 2:
-            if not (2 in possible_wild_assignments and 13 in possible_wild_assignments):
-                raise Exception('Ace cannot be played')
-            else:
-                possible_wild_assignments = []
-                this_wild = groups_wilds.pop(0)
-                this_wild.tempnumber = 2
-                card_group.insert(0, this_wild)
-                aces_list[0].tempnumber = -1
-                card_group.insert(0, aces_list[0])
-                this_wild = groups_wilds.pop(0)
-                this_wild.tempnumber = 13
-                card_group.append(this_wild)
-                aces_list[1].tempnumber = 14
-                card_group.append(aces_list[1])
-                aces_list = []
         num_remaining_wilds = len(groups_wilds)
         # Can wilds be automatically played?
         if num_remaining_wilds == 2:
@@ -180,9 +178,9 @@ def processRuns(card_group, wild_numbers):
         # Then, if necessary, have controller ask player where to play wild.
         if num_remaining_wilds == 1 and len(possible_wild_assignments) == 2:
             print('Might need to ask player whether to play high or low')
-            print('first check that wild placement did not result in two wilds too close together. ')
         elif num_remaining_wilds == 0:
             possible_wild_assignments = []
+    # Doublecheck that wild placement did not result in wilds too close together (already considered in possible_wild_assignments).
     last_card_wild = False
     second2last_card_wild = False
     for card in card_group:
