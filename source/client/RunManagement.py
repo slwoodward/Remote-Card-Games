@@ -221,6 +221,7 @@ def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
                 card_group[0].tempnumber = -1
         return cardgroup_dictionary
 
+
 def isWild(card, wild_numbers):
     """returns true if a card is a wild"""
 

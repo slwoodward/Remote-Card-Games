@@ -35,7 +35,6 @@ help_text = ['Welcome to a Liverpool!  Meld requirement is: (1,1)   (= 1 set, 1 
                               'To pick up discard click on discard pile, to attempt to buy discard type y.',
                               "Cumulative score will display beneath player's cards.",
                               'When ready to start playing click on the YES button on the lower right.']
-wilds_high_low_dict = {}  # used in tracking whether wild cards should be assigned to hi or low in runs.
 
 
 def numDecks(numPlayers):
@@ -150,9 +149,6 @@ def canPlay(prepared_cards, played_cards_dictionary, player_index, round_index):
             processed_group, wild_options, unassigned_wilds = processRuns(card_group, wild_numbers)
             if len(unassigned_wilds) > 0:
                 print(unassigned_wilds)
-                self.wilds_high_low_dict[k_group]=[processed_group, wild_options, unassigned_wilds]
-                print(self.wilds_high_low_dict)
-                print('If this non-zero at end of canPlay need to raise exception that will get new assignments method called.')
         else:
             processed_group = card_group
         canPlayGroup(k_group, processed_group, round_index)

@@ -2,6 +2,8 @@ import importlib
 from common.Card import Card
 from client.RunManagement import processRuns
 from client.RunManagement import restoreRunAssignment
+from client.RunManagement import wildsHiLo
+
 
 
 class ClientState:
@@ -102,7 +104,7 @@ class ClientState:
                     self.played_cards.setdefault(key, []).append(card)
         elif self.rules.Shared_Board:
             # Review Notes
-            # todo: move these to documentation
+            # todo: move these to documentation Review question -- should I keep them here, too?
             # Unlike in HandAndFoot, where self.played_cards was used to check rules,
             # in Liverpool and other shared board games need to consider all of the played cards.
             # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
@@ -114,8 +116,6 @@ class ClientState:
             #          to controller and then to clientState, where only list item is deserialized and put in
             #          dictionary self.played_cards
             numsets = self.rules.Meld_Threshold[self.round][0]
-            # use dictionary to track what wild cards need to be manually assigned after going through all the runs.
-            self.rules.wilds_high_low_dict = {}
             # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
             # that are in runs so that positions of Wilds and Aces are maintained.
             # This could be made obsolete by adding tempnumbers to card serialization.
@@ -123,12 +123,6 @@ class ClientState:
             self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
             # play is legal, so rebuild played_cards with cards appropriately sorted and tempnumbers properly assigned.
             combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
-            if not self.rules.wilds_high_low_dict == {}:
-                print('should hi low wilds should already be assigned?  ?? so above dictionary should be empty that need to be reassigned tempnumbers get them.')
-                print(self.rules.wilds_high_low_dict)
-            # gather all the wild_options and unassigned_wilds in a dictionary keyed on k_group, and once
-            # they are all gathered raise exception so that break out of this method to assign wilds.
-            # self.rules.wilds_high_low_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             self.played_cards = {}
             for k_group, card_group in combined_cards.items():
                 # process runs from combined_cards (if k_group[1] > numsets, then it is a run).
@@ -137,13 +131,21 @@ class ClientState:
                     print('in client state, line 136')
                     print(wild_options)
                     print(unassigned_wilds)
-                    # At this point all wilds should have been set properly (this is done after calling canPLay).
+                    if len(unassigned_wilds) > 0:
+                        textnote = "For the " + str(processed_group[0].suit) + " run: "
+                        for card in processed_group:
+                            textnote = textnote + str(card.number) + ','
+                        textnote = textnote + "should the wild be high or low?  type H or L ?"
+                        # todo: _state doesn't know about hand_view.
+                        # hand_view.controller.note = textnote
+                        print(textnote)
+                        # todo: where should wildsHiLo go?? Do both capital and lower case L work, ....
+                        # processed_group = HandManagement.wildsHiLo(processed_group, wild_options, unassigned_wilds)
+                    # At this point all wilds should have been set properly.
                 else:
                     #todo: need to sort sets?  get user feedback.
                     processed_group = card_group
                 self.played_cards[k_group] = processed_group
-            if not self.rules.wilds_high_low_dict == {}:
-                raise Exception('Wild(s) must be assigned hi/low')
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
             for key, card_group in prepared_cards.items():
                 for card in card_group:

@@ -171,5 +171,21 @@ def ManuallyAssign(hand_view):
         hand_view.num_wilds = len(hand_view.wild_cards)
     return
 
+def wildsHiLo(hand_view, processed_group, wild_options, unassigned_wilds):
+    """ Used in Liverpool and other games with runs to assign wilds.
+
+    Assigning wilds is as automated as possible, so this is only used to determine
+    if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
+    """
+    this_wild = unassigned_wilds[0]
+    if hand_view.event.key == pygame.K_l:
+        this_wild.tempnumber = wild_options[0]
+    elif hand_view.event.key == pygame.K_h:
+        this_wild.tempnumber = wild_options[1]
+    else:
+        print('invalid response in wildsHiLo, made wild card high')
+        this_wild.tempnumber = wild_options[1]
+    return processed_group
+
 
 
