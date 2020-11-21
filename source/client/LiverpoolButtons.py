@@ -159,6 +159,12 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
+        # first process cards, this will set tempnumbers properly and put them in dictionary controller.played_cards.
+        hand_view.controller.processCards(hand_view.visible_scards)
+        # if any spare wilds in runs, set them hi or low, and append them to appropriate entry in played_cards.
+        if len(hand_view.controller.unassigned_wilds_dict) > 0:
+            HandManagement.wildsHiLo(hand_view)
+        # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
         hand_view.controller.play(hand_view.player_index, hand_view.visible_scards)
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()

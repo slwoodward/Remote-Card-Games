@@ -140,12 +140,14 @@ def canPlay(prepared_cards, played_cards_dictionary, player_index, round_index):
     if (player_index,0) not in played_groups:
         return canMeld(prepared_cards, round_index, player_index)
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
-    print('at line 143')
+    print('at line 143 in liverpool.py')
     combined_cards = combineCardDicts(played_cards_dictionary, prepared_cards)
     print(combined_cards)
     for k_group, card_group in combined_cards.items():
         if k_group[1] >= Meld_Threshold[round_index][0]:
             # process runs from combined_cards
+            #todo: check if it still gets to this line. don't think it should.
+            print('at line 150 in liverpool.py  method canPlay')
             processed_group, wild_options, unassigned_wilds = processRuns(card_group, wild_numbers)
             if len(unassigned_wilds) > 0:
                 print(unassigned_wilds)

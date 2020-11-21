@@ -1,8 +1,8 @@
 import importlib
 from common.Card import Card
-from client.RunManagement import processRuns
-from client.RunManagement import restoreRunAssignment
-from client.RunManagement import wildsHiLo
+# from client.RunManagement import processRuns
+# from client.RunManagement import restoreRunAssignment
+# todo: where should wildsHiLo live? from client.RunManagement import wildsHiLo
 
 
 
@@ -103,10 +103,13 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.rules.Shared_Board:
+            self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
+            #todo: testing moving this to controller.
+            '''
             # Review Notes
             # todo: move these to documentation Review question -- should I keep them here, too?
             # Unlike in HandAndFoot, where self.played_cards was used to check rules,
-            # in Liverpool and other shared board games need to consider all of the played cards.
+            # in Livecrpool and other shared board games need to consider all of the played cards.
             # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
             # from controller.
             # (Path taken by visible_scards:
@@ -120,7 +123,6 @@ class ClientState:
             # that are in runs so that positions of Wilds and Aces are maintained.
             # This could be made obsolete by adding tempnumbers to card serialization.
             self.played_cards = restoreRunAssignment(visible_scards[0], self.rules.wild_numbers, numsets)
-            self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
             # play is legal, so rebuild played_cards with cards appropriately sorted and tempnumbers properly assigned.
             combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
             self.played_cards = {}
@@ -142,11 +144,14 @@ class ClientState:
                         # todo: where should wildsHiLo go?? Do both capital and lower case L work, ....
                         # processed_group = HandManagement.wildsHiLo(processed_group, wild_options, unassigned_wilds)
                     # At this point all wilds should have been set properly.
+                    # At this point all wilds should have been set properly, but until wildsHiLo working ones that can
+                    # go on either end of run are lost.
                 else:
                     #todo: need to sort sets?  get user feedback.
                     processed_group = card_group
+                # unlike HandAndFoot, self.played_cards includes cards played by everyone.
                 self.played_cards[k_group] = processed_group
-            # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+                '''
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)

@@ -1,6 +1,8 @@
 import random                  # will be used to assign unique names
 from time import sleep
 from common.Card import Card
+from client.RunManagement import processRuns
+from client.RunManagement import restoreRunAssignment
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
@@ -200,23 +202,73 @@ class Controller(ConnectionListener):
             return
         #todo: remove this note:
         # when debugging sometimes useful to replace 'try:' with 'if True:'  and comment out except block.
-        try:
-            self._state.playCards(self.prepared_cards, visible_scards, player_index)
+        # try:
+        if True:
+            if self._state.rules.Shared_Board:
+                # self.processCards sets card.tempnumber in runs.
+                # moved calling this method to Liverpool buttons. processed_cards = self.processCards(visible_scards)
+                # because need to call wildsHiLO between it and next call.
+                self._state.playCards(self.prepared_cards, visible_scards, player_index)
+                # todo: remove line above and else: below., but keep self._state....
+            else:
+                self._state.playCards(self.prepared_cards, visible_scards, player_index)
             self.clearPreparedCards()
             self.handleEmptyHand(False)
+            for (key, card_group) in self._state.played_cards.items():
+                print(card_group)
             self.sendPublicInfo()
+        '''
         except Exception as err:
             self.note = "{0}".format(err)
-            # In Liverpool and other shared_board games reset wilds in prepared cards, so they can be reassigned.
+            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
             if self._state.rules.Shared_Board:
                 self.resetPreparedWilds()
             return
+            '''
 
     def resetPreparedWilds(self):
         """ If prepared cards cannot be played, then the values of Aces and WildCards should be reset"""
         for card_group in self.prepared_cards.values():
             for card in card_group:
                 card.tempnumber = card.number
+
+    def processCards(self, visible_scards):
+        # Review Notes
+        # todo: move these to documentation Review question -- should I keep them here, too?
+        # Unlike in HandAndFoot, where self.played_cards was used to check rules,
+        # in Liverpool and other shared board games need to consider all of the played cards.
+        # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
+        # from controller.
+        # (Path taken by visible_scards:
+        #          Tableview gets the serialized cards every cycle to keep display up to date,
+        #          In handview.update tableview.visible_scards list is passed to handview.visible_scards
+        #          No need to process this unless playing cards, in which case visible_scards passed
+        #          to controller [and maybe?? to clientState]. When Shared_Board is True, visible_scards contains
+        #          only 1 list item, a dictionary.  Dictionary contains card_groups, and they are deserialized and put
+        #          in dictionary self.played_cards.
+        numsets = self.Meld_Threshold[self._state.round][0]
+        # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
+        # that are in runs so that positions of Wilds and Aces are maintained.
+        # This could be made obsolete by adding tempnumbers to card serialization.
+        self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
+
+        # keep in clientState.py :  rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
+        combined_cards = self._state.rules.combineCardDicts(self.played_cards, self.prepared_cards)
+        self.played_cards = {}
+        self.unassigned_wilds_dict = {}
+        for k_group, card_group in combined_cards.items():
+            # process runs from combined_cards (if k_group[1] > numsets, then it is a run).
+            if k_group[1] >= numsets:
+                processed_group, wild_options, unassigned_wilds = processRuns(card_group, self._state.rules.wild_numbers)
+                print('in controller line 256')
+                print(wild_options)
+                print(unassigned_wilds)
+                self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+            else:
+                #todo: need to sort sets?  get user feedback.
+                processed_group = card_group
+            # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+            self._state.played_cards[k_group] = processed_group
 
     def handleEmptyHand(self, isDiscard):
         """Checks for and handles empty hand. 
@@ -249,7 +301,7 @@ class Controller(ConnectionListener):
     def getName(self):
         """return player name for labeling"""
         return self._state.name
-    
+
     def isReady(self):
         """return if the player is currently ready to move on"""
         return self.ready
@@ -272,7 +324,7 @@ class Controller(ConnectionListener):
     def getDiscardInfo(self):
         """let the UI know the discard information"""
         return self._state.discard_info.copy()
-    
+
     def sendPublicInfo(self):
         """Utility method to send public information to the server"""
         serialized_cards = {key:[card.serialize() for card in card_group] for (key, card_group) in self._state.played_cards.items()}
@@ -290,16 +342,16 @@ class Controller(ConnectionListener):
     #######################################
     ### Network event/message callbacks ###
     #######################################
-    
+
     ### built in stuff ###
     def Network_connected(self, data):
         print("Connected to the server")
         self.note = "Connected to the server!"
-    
+
     def Network_error(self, data):
         print('error:', data['error'])
         connection.Close()
-    
+
     def Network_disconnected(self, data):
         print('Server disconnected')
         self.note = "Disconnected from the server :("
@@ -340,7 +392,7 @@ class Controller(ConnectionListener):
         if not self._state.rules.Buy_Option:
             self.note = "You can now play cards or discard"
         self.sendPublicInfo() #More cards in hand now, need to update public information
-    
+
     def Network_deal(self, data):
         self._state.round = data["round"]
         self._state.reset()
@@ -353,7 +405,7 @@ class Controller(ConnectionListener):
         top_card = Card.deserialize(data["top_card"])
         size = data["size"]
         self._state.updateDiscardInfo(top_card, size)
-    
+
     def Network_endRound(self, data):
         """Notification that specified player has gone out to end the round"""
         out_player = data["player"]

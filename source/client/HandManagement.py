@@ -171,21 +171,37 @@ def ManuallyAssign(hand_view):
         hand_view.num_wilds = len(hand_view.wild_cards)
     return
 
-def wildsHiLo(hand_view, processed_group, wild_options, unassigned_wilds):
+def wildsHiLo(hand_view):
     """ Used in Liverpool and other games with runs to assign wilds.
 
     Assigning wilds is as automated as possible, so this is only used to determine
     if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
     """
-    this_wild = unassigned_wilds[0]
-    if hand_view.event.key == pygame.K_l:
-        this_wild.tempnumber = wild_options[0]
-    elif hand_view.event.key == pygame.K_h:
-        this_wild.tempnumber = wild_options[1]
-    else:
-        print('invalid response in wildsHiLo, made wild card high')
-        this_wild.tempnumber = wild_options[1]
-    return processed_group
+    # hand_view.controller.unassigned_wilds_dict
+    # self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+
+    for k_group, group_info in hand_view.controller.unassigned_wilds_dict.items():
+        processed_group = group_info[0]
+        wild_options = group_info[1]
+        unassigned_wilds = group_info[2]
+        if len(unassigned_wilds) > 0:
+            this_wild = unassigned_wilds[0]
+            textnote = "For the " + str(processed_group[0].suit) + " run: "
+            for card in processed_group:
+                textnote = textnote + str(card.number) + ','
+            textnote = textnote + "should the wild be high or low?  type H or L ?"
+            hand_view.controller.note = textnote
+            print(textnote)
+            hand_view.controller.note = textnote
+            if hand_view.event.key == pygame.K_l:
+                this_wild.tempnumber = wild_options[0]
+            elif hand_view.event.key == pygame.K_h:
+                this_wild.tempnumber = wild_options[1]
+            else:
+                print('invalid response in wildsHiLo, made wild card high')
+                this_wild.tempnumber = wild_options[1]
+            hand_view.controller._state.played_cards[k_group] = processed_group.append(this_wild)
+    return
 
 
 
