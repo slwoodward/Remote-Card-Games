@@ -22,7 +22,7 @@ wild_numbers = [0]
 
 # Liverpool: number of sets and runs required to meld.  Order is important! (code relies on sets being first).
 # first element below is temporary (for testing).
-Meld_Threshold = [(1,1), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
+Meld_Threshold = [(0,2), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
 Number_Rounds = len(Meld_Threshold)  # For convenience
 Deal_Size = 11
 Hands_Per_Player = 1
@@ -103,7 +103,6 @@ def canPlayGroup(key, card_group, this_round):
 def canMeld(prepared_cards, round_index, player_index):
     """This insures that all required groups are present, but the legality of the groups is not checked until later. """
     #
-    # This section differs from HandAndFoot.
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():
@@ -117,27 +116,12 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
     return True
 
-def canPlay(processed_full_board, player_index, round_index):
-    """Confirms if playing the selected cards is legal"""
+def canPlay(processed_full_board, round_index):
+    """Confirms each group to be played meets Liverpool requirements.
 
-    played_groups = []      # Need to know if group has already been started on the board.
-    # if a player has already melded than key = (player_index,0) will have dictionary entry with cards.
-
-    # gathering all played and prepared_cards into single dictionary (needed for rule checking).
-    print('at line 143 in liverpool.py')
-    combined_cards = combineCardDicts(played_cards_dictionary, prepared_cards)
-    print(combined_cards)
-    for k_group, card_group in combined_cards.items():
-        if k_group[1] >= Meld_Threshold[round_index][0]:
-            # process runs from combined_cards
-            #todo: check if it still gets to this line. don't think it should.
-            print('at line 150 in liverpool.py  method canPlay')
-            processed_group, wild_options, unassigned_wilds = processRuns(card_group, wild_numbers)
-            if len(unassigned_wilds) > 0:
-                print(unassigned_wilds)
-        else:
-            processed_group = card_group
-        canPlayGroup(k_group, processed_group, round_index)
+    Some rule checking (such as have enough groups to meld) were checked when processed_full_board was created."""
+    for k_group, card_group in processed_full_board.items():
+        canPlayGroup(k_group, card_group, round_index)
     return
 
 def combineCardDicts(dict1, dict2):

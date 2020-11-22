@@ -24,8 +24,8 @@ class Controller(ConnectionListener):
         self.note = "Game is beginning."
         # variables needed for games with Shared_Board == True (i.e. Liverpool):
         self.Meld_Threshold = self._state.rules.Meld_Threshold
-        self.player_index = 0
-        # variables needed if Buy_Option is True
+        self.unassigned_wilds_dict = {}
+        # variable needed if Buy_Option is True
         self.buying_opportunity = False
 
     ### Player Actions ###
@@ -251,7 +251,7 @@ class Controller(ConnectionListener):
 
          Runs must be processed a fair bit to determine location of wilds--this is done in processRuns.
          Some rule checking is performed here (before prepared and cards on shared board are combined:
-         (i) Players cannot commence play by another player,   (ii) must be able to Meld.
+         (i) Players cannot commence play by another player &  (ii) must have all groups required to Meld.
          processRuns also enforces some rules (e.g. runs are continuous).
          Remaining rules are enforced by Ruleset.py.
         """
@@ -262,14 +262,14 @@ class Controller(ConnectionListener):
         for key, card_group in visible_scards[0].items():
             if len(card_group) > 0:
                 played_groups.append(key)
-        for key, card_group in prepared_cards.items():
+        for key, card_group in self.prepared_cards.items():
             if len(card_group) > 0:
                 group_key = key
-                if not group_key[0] == player_index and group_key not in played_groups:
+                if not group_key[0] == self._state.player_index and group_key not in played_groups:
                     raise Exception("You are not allowed to begin another player's sets or runs.")
         # check to see if player has previously melded, if not, check if can.
-        if (player_index, 0) not in played_groups:
-            return self._state.rules.canMeld(prepared_cards, round_index, player_index)
+        if (self._state.player_index, 0) not in played_groups:
+            self._state.rules.canMeld(self.prepared_cards, self._state.round, self._state.player_index)
 
         # Review Notes
         # todo: move these to documentation Review question -- should I keep them here, too?

@@ -2,6 +2,7 @@ import pygame
 import client.Button as Btn
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
+from time import sleep
 
 """This file contains methods used in displaying, selecting and sorting the hand"""
 
@@ -171,7 +172,7 @@ def ManuallyAssign(hand_view):
         hand_view.num_wilds = len(hand_view.wild_cards)
     return
 
-def wildsHiLo(hand_view):
+def wildsHiLo(hand_view, processed_full_board):
     """ Used in Liverpool and other games with runs to assign wilds.
 
     Assigning wilds is as automated as possible, so this is only used to determine
@@ -189,19 +190,31 @@ def wildsHiLo(hand_view):
             textnote = "For the " + str(processed_group[0].suit) + " run: "
             for card in processed_group:
                 textnote = textnote + str(card.number) + ','
-            textnote = textnote + "should the wild be high or low?  type H or L ?"
-            hand_view.controller.note = textnote
+            textnote = textnote + "should the wild be high or low?  type H or L ? (type q to quit this play entirely)."
             print(textnote)
-            hand_view.controller.note = textnote
-            if hand_view.event.key == pygame.K_l:
-                this_wild.tempnumber = wild_options[0]
-            elif hand_view.event.key == pygame.K_h:
-                this_wild.tempnumber = wild_options[1]
+            # hand_view.controller.note = textnote
+            # hand_view.display.render(textnote)
+            # todo: this is not working, may need to make it more like what was done in HandAndFoot.
+            n=0
+            if n < 10000:
+                n=n+1
+                hand_view.nextEvent()
+                if hand_view.event.type == pygame.KEYDOWN:
+                    if hand_view.event.key == pygame.K_l:
+                        this_wild.tempnumber = wild_options[0]
+                    elif hand_view.event.key == pygame.K_h:
+                        this_wild.tempnumber = wild_options[1]
+                    elif hand_view.event.key == pygame.K_q:
+                        raise Exception('You canceled this play, hit play again when ready.')
+                sleep(0.001)
             else:
-                print('invalid response in wildsHiLo, made wild card high')
+                print('Timed out or invalid response in wildsHiLo, made wild card high')
                 this_wild.tempnumber = wild_options[1]
-            hand_view.controller._state.played_cards[k_group] = processed_group.append(this_wild)
-    return
+            print('in HandManagement_wildHiLo, wild assignment:'+str(this_wild.tempnumber))
+            processed_group.append(this_wild)
+            processed_group.sort(key=lambda wc: wc.tempnumber)
+            processed_full_board[k_group] = processed_group
+    return processed_full_board
 
 
 

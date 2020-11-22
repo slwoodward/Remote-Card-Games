@@ -87,7 +87,6 @@ class ClientState:
         """Move cards from hand to board if play follows rules, else inform what rule is broken."""
 
         # First check that all the cards are in your hand.
-        self.player_index = player_index
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -102,55 +101,8 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.rules.Shared_Board:
-            self.rules.canPlay(processed_full_board, self.player_index, self.round)
-            #todo: testing moving this to controller.
-            '''
-            # Review Notes
-            # todo: move these to documentation Review question -- should I keep them here, too?
-            # Unlike in HandAndFoot, where self.played_cards was used to check rules,
-            # in Livecrpool and other shared board games need to consider all of the played cards.
-            # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
-            # from controller.
-            # (Path taken by visible_scards:
-            #          Tableview gets the serialized cards every cycle to keep display up to date,
-            #          In handview.update tableview.visible_scards list is passed to handview.visible_scards
-            #          No need to process this unless playing cards, in which case visible_scards passed
-            #          to controller and then to clientState, where only list item is deserialized and put in
-            #          dictionary self.played_cards
-            numsets = self.rules.Meld_Threshold[self.round][0]
-            # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
-            # that are in runs so that positions of Wilds and Aces are maintained.
-            # This could be made obsolete by adding tempnumbers to card serialization.
-            self.played_cards = restoreRunAssignment(visible_scards[0], self.rules.wild_numbers, numsets)
-        KEEP:  self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
-            # play is legal, so rebuild played_cards with cards appropriately sorted and tempnumbers properly assigned.
-            combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
-            self.played_cards = {}
-            for k_group, card_group in combined_cards.items():
-                # process runs from combined_cards (if k_group[1] > numsets, then it is a run).
-                if k_group[1] >= numsets:
-                    processed_group, wild_options, unassigned_wilds = processRuns(card_group, self.rules.wild_numbers)
-                    print('in client state, line 136')
-                    print(wild_options)
-                    print(unassigned_wilds)
-                    if len(unassigned_wilds) > 0:
-                        textnote = "For the " + str(processed_group[0].suit) + " run: "
-                        for card in processed_group:
-                            textnote = textnote + str(card.number) + ','
-                        textnote = textnote + "should the wild be high or low?  type H or L ?"
-                        # todo: _state doesn't know about hand_view.
-                        # hand_view.controller.note = textnote
-                        print(textnote)
-                        # todo: where should wildsHiLo go?? Do both capital and lower case L work, ....
-                        # processed_group = HandManagement.wildsHiLo(processed_group, wild_options, unassigned_wilds)
-                    # At this point all wilds should have been set properly, but until wildsHiLo working ones that can
-                    # go on either end of run are lost.
-                else:
-                    #todo: need to sort sets?  get user feedback.
-                    processed_group = card_group
-                # unlike HandAndFoot, self.played_cards includes cards played by everyone.
-                self.played_cards[k_group] = processed_group
-                '''
+            self.rules.canPlay(processed_full_board, self.round)
+            self.played_cards = processed_full_board
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
