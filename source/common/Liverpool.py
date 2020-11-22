@@ -101,20 +101,14 @@ def canPlayGroup(key, card_group, this_round):
     return True
 
 def canMeld(prepared_cards, round_index, player_index):
-    """Determines if a set of card groups is a legal meld, called from canPlay."""
+    """This insures that all required groups are present, but the legality of the groups is not checked until later. """
     #
     # This section differs from HandAndFoot.
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():
-        if key[0] == player_index:
-            if key[1] >= Meld_Threshold[round_index][0]:
-                # process runs from prepared_cards.
-                processed_group, wild_options, unassigned_wilds = processRuns(card_group, wild_numbers)
-            else:
-                processed_group = card_group
-            if canPlayGroup(key, processed_group, round_index):
-                valid_groups = valid_groups + 1
+        if key[0] == player_index and len(card_group) > 0:
+            valid_groups = valid_groups + 1
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
     return True
@@ -123,22 +117,12 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
     return True
 
-def canPlay(prepared_cards, played_cards_dictionary, player_index, round_index):
-
+def canPlay(processed_full_board, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
 
     played_groups = []      # Need to know if group has already been started on the board.
-    for key, cards in played_cards_dictionary.items():
-        if len(cards) > 0:
-            played_groups.append(key)
-    for key, cards in prepared_cards.items():
-        if len(cards) > 0:
-            group_key = key
-            if not group_key[0] == player_index and group_key not in played_groups:
-                raise Exception("You are not allowed to begin another player's sets or runs.")
     # if a player has already melded than key = (player_index,0) will have dictionary entry with cards.
-    if (player_index,0) not in played_groups:
-        return canMeld(prepared_cards, round_index, player_index)
+
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
     print('at line 143 in liverpool.py')
     combined_cards = combineCardDicts(played_cards_dictionary, prepared_cards)

@@ -159,13 +159,25 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
-        # first process cards, this will set tempnumbers properly and put them in dictionary controller.played_cards.
-        hand_view.controller.processCards(hand_view.visible_scards)
-        # if any spare wilds in runs, set them hi or low, and append them to appropriate entry in played_cards.
-        if len(hand_view.controller.unassigned_wilds_dict) > 0:
-            HandManagement.wildsHiLo(hand_view)
-        # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
-        hand_view.controller.play(hand_view.player_index, hand_view.visible_scards)
+        # Review note: This is a 3 step process:
+        # 0.
+        # 1.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
+        #    in the process, some rules of runs are verified (no repeats of cards, and Aces can't turn corners).
+        #   -verify that it's player's turn before doing this, or run risk of using obsolete version of visible_scards.
+        # 2. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
+        # 3. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
+        my_turn = hand_view.controller.turnCheck()
+        if my_turn:
+            processed_full_board = hand_view.controller.processCards(hand_view.visible_scards)
+            # if any spare wilds in runs, set them hi or low, and append them to appropriate entry in processed_full_board.
+            if len(hand_view.controller.unassigned_wilds_dict) > 0:
+                #todo: modify .wildsHiLo so that it also has processed_full_board.
+                HandManagement.wildsHiLo(hand_view, processed_full_board)
+            # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
+            # todo: modify .play so that instead of using visible_scards it uses processed_full_board.
+            hand_view.controller.play(hand_view.player_index, processed_full_board)
+        else:
+            print('tried to play when not your turn.')
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)

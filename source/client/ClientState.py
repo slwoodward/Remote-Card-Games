@@ -83,7 +83,7 @@ class ClientState:
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards, visible_scards=[{}], player_index=0):
+    def playCards(self, prepared_cards, processed_full_board={}):
         """Move cards from hand to board if play follows rules, else inform what rule is broken."""
 
         # First check that all the cards are in your hand.
@@ -95,7 +95,6 @@ class ClientState:
                     tempHand.remove(card)
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
-        # Check ruleset to determine whether self.played_cards = all visible cards or cards that this client played.
         if not self.rules.Shared_Board:
             self.rules.canPlay(prepared_cards, self.played_cards, self.round)
             for key, card_group in prepared_cards.items():
@@ -103,7 +102,7 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.rules.Shared_Board:
-            self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
+            self.rules.canPlay(processed_full_board, self.player_index, self.round)
             #todo: testing moving this to controller.
             '''
             # Review Notes
@@ -123,6 +122,7 @@ class ClientState:
             # that are in runs so that positions of Wilds and Aces are maintained.
             # This could be made obsolete by adding tempnumbers to card serialization.
             self.played_cards = restoreRunAssignment(visible_scards[0], self.rules.wild_numbers, numsets)
+        KEEP:  self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
             # play is legal, so rebuild played_cards with cards appropriately sorted and tempnumbers properly assigned.
             combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
             self.played_cards = {}
@@ -143,7 +143,6 @@ class ClientState:
                         print(textnote)
                         # todo: where should wildsHiLo go?? Do both capital and lower case L work, ....
                         # processed_group = HandManagement.wildsHiLo(processed_group, wild_options, unassigned_wilds)
-                    # At this point all wilds should have been set properly.
                     # At this point all wilds should have been set properly, but until wildsHiLo working ones that can
                     # go on either end of run are lost.
                 else:

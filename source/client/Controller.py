@@ -193,7 +193,20 @@ class Controller(ConnectionListener):
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
 
-    def play(self, player_index=0, visible_scards=[{}]):
+    def turnCheck(self):
+        """Verify it's the player's turn before processing cards,
+
+        else visible_scards may become obsolete during processing."""
+        print('in controller: ' + str(self._state.turn_phase))
+        if self._state.turn_phase != Turn_Phases[3]:
+            self.note = "You can only play on your turn after you draw"
+            print('should return False')
+            return False
+        else:
+            return True
+            print('should return False')
+
+    def play(self, processed_full_board={}):
         """Send the server the current set of played cards"""
         # player_index and visible_scards needed for rules checking in games with Shared_Board.
         #
@@ -206,12 +219,13 @@ class Controller(ConnectionListener):
         if True:
             if self._state.rules.Shared_Board:
                 # self.processCards sets card.tempnumber in runs.
+                # processed_cards = self.processCards(visible_scards)
                 # moved calling this method to Liverpool buttons. processed_cards = self.processCards(visible_scards)
                 # because need to call wildsHiLO between it and next call.
-                self._state.playCards(self.prepared_cards, visible_scards, player_index)
-                # todo: remove line above and else: below., but keep self._state....
+                # todo: CHANGING playCards -- processed_full_board should already include all the prepared cards.
+                self._state.playCards(self.prepared_cards, processed_full_board)
             else:
-                self._state.playCards(self.prepared_cards, visible_scards, player_index)
+                self._state.playCards(self.prepared_cards, {})
             self.clearPreparedCards()
             self.handleEmptyHand(False)
             for (key, card_group) in self._state.played_cards.items():
@@ -233,6 +247,30 @@ class Controller(ConnectionListener):
                 card.tempnumber = card.number
 
     def processCards(self, visible_scards):
+        """ Combine prepared cards and cards already on shared board.
+
+         Runs must be processed a fair bit to determine location of wilds--this is done in processRuns.
+         Some rule checking is performed here (before prepared and cards on shared board are combined:
+         (i) Players cannot commence play by another player,   (ii) must be able to Meld.
+         processRuns also enforces some rules (e.g. runs are continuous).
+         Remaining rules are enforced by Ruleset.py.
+        """
+        # before combining prepared cards with played cards, check that player is not BEGINNING
+        # another player's groups.
+        #todo: calling this method must be done with a try:...
+        played_groups = []    # list of keys corresponding to card groups that have been begun.
+        for key, card_group in visible_scards[0].items():
+            if len(card_group) > 0:
+                played_groups.append(key)
+        for key, card_group in prepared_cards.items():
+            if len(card_group) > 0:
+                group_key = key
+                if not group_key[0] == player_index and group_key not in played_groups:
+                    raise Exception("You are not allowed to begin another player's sets or runs.")
+        # check to see if player has previously melded, if not, check if can.
+        if (player_index, 0) not in played_groups:
+            return self._state.rules.canMeld(prepared_cards, round_index, player_index)
+
         # Review Notes
         # todo: move these to documentation Review question -- should I keep them here, too?
         # Unlike in HandAndFoot, where self.played_cards was used to check rules,
@@ -251,10 +289,17 @@ class Controller(ConnectionListener):
         # that are in runs so that positions of Wilds and Aces are maintained.
         # This could be made obsolete by adding tempnumbers to card serialization.
         self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
-
+        print('in controller.processCards, line 254, next is self.played_cards')
+        for k,g in self.played_cards.items():
+            print(k)
+            print(g)
         # keep in clientState.py :  rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
         combined_cards = self._state.rules.combineCardDicts(self.played_cards, self.prepared_cards)
-        self.played_cards = {}
+        print('in controller.processCards, next is combineCardDicts')
+        for k, g in combined_cards.items():
+            print(k)
+            print(g)
+        processed_full_board = {}
         self.unassigned_wilds_dict = {}
         for k_group, card_group in combined_cards.items():
             # process runs from combined_cards (if k_group[1] > numsets, then it is a run).
@@ -268,7 +313,9 @@ class Controller(ConnectionListener):
                 #todo: need to sort sets?  get user feedback.
                 processed_group = card_group
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
-            self._state.played_cards[k_group] = processed_group
+            processed_full_board[k_group] = processed_group
+        # if get through all prepared cards w/o error then update _state.played_cards.
+        return processed_full_board  # self._state.played_cards = build_played_cards
 
     def handleEmptyHand(self, isDiscard):
         """Checks for and handles empty hand. 
