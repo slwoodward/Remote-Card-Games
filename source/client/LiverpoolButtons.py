@@ -160,7 +160,9 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
-        # in Liverpool 
+        # todo: Review question  - in Liverpool process of playing cards a bit more complicated than in HandAndFoot,
+        #  this will be true for other games with a SharedBoard.
+        #  Perhaps should create method in controller that combines all the steps below?
         # Review note: Playing cards is a 3 step process:
         # 0.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
         # 1.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
@@ -181,6 +183,7 @@ def ClickedButton(hand_view, pos):
             # hand_view.nextEvents will only look for keystrokes until hand_view.num_wilds is zero.
             if hand_view.num_wilds > 0:
                 hand_view.controller.note = 'Play will not complete until you designate wild cards using key strokes.'
+                HandManagement.wildsHiLo_step1(hand_view)
             else:
                 # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
                 hand_view.controller.play()

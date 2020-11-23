@@ -123,10 +123,7 @@ class HandView:
             for self.event in pygame.event.get():
                 # in Shared_Board games, check if there are wilds that need to be updated. All other events are ignored
                 # until play is finished.
-                print('short circuit works, now stuck in infinite loop...')
-                hand_view.controller.processed_full_board = HandManagement.wildsHiLo(hand_view)
-
-
+                self.controller.processed_full_board = HandManagement.wildsHiLo_step2(self)
         else:
             self.nextEventOriginal()
 
