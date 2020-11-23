@@ -20,6 +20,7 @@ This file is game specific because different games need different buttons, and m
 def CreateButtons(hand_view, num_players=1):
     hand_view.num_players = num_players
     """This creates the buttons and text used for game. """
+    print('in LiverpoolButtons.py createButtons')
     hand_view.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
     hand_view.ready_yes_btn = \
         Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 70), 125, 25, text='Ready:YES')
@@ -159,6 +160,7 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
+        # in Liverpool 
         # Review note: Playing cards is a 3 step process:
         # 0.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
         # 1.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
@@ -167,25 +169,21 @@ def ClickedButton(hand_view, pos):
         # 2. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
         # 3. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
         my_turn = hand_view.controller.turnCheck()
-        # processed_full_board = {}
+        hand_view.controller.processed_full_board = {}
         if my_turn:
             try:
-                processed_full_board = hand_view.controller.processCards(hand_view.visible_scards)
+                # calculate  hand_view.controller.processed_full_board
+                hand_view.controller.processCards(hand_view.visible_scards)
             except Exception as err:
                 hand_view.controller.note = "{0}".format(err)
                 return
-            # if any spare wilds in runs, set them hi or low, and append them to appropriate entry in processed_full_board.
-            if len(hand_view.controller.unassigned_wilds_dict.items()) > 0:
+            hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
+            # hand_view.nextEvents will only look for keystrokes until hand_view.num_wilds is zero.
+            if hand_view.num_wilds > 0:
                 hand_view.controller.note = 'Play will not complete until you designate wild cards using key strokes.'
-                hand_view.controller._state.turn_phase = 'forcedAction'
-                #todo: write code so that if state is forcedAction and SharedBoard you keep getting events and
-                # setting wildsHiLo.
-                # weird bugs that arose while forcedAction fix not in place:
-                #todo: debug why jokers are always low (w/o forcedAction fix)
-                #todo: debug why you cannot play natural card on Joker when it's the low card.
-                processed_full_board = HandManagement.wildsHiLo(hand_view, processed_full_board)
-            # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
-            hand_view.controller.play(processed_full_board)
+            else:
+                # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
+                hand_view.controller.play()
         else:
             print('tried to play when not your turn.')
     elif hand_view.clear_prepared_cards_btn.isOver(pos):

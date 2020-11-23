@@ -43,6 +43,10 @@ class HandView:
             self.deal_size = Deal_Size_HF
             self.help_text = help_text_HF
         self.controller = controller
+        # todo: debugging -- remove print statements below once debugged.
+        print('in handview init')
+        print(self.controller._state.rules.Shared_Board)
+        print(self.controller._state.turn_phase)
         self.display = display
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
         self.current_hand = []
@@ -109,6 +113,24 @@ class HandView:
         self.RuleSetsButtons.ButtonDisplay(self)
 
     def nextEvent(self):
+        """This short circuits next when Shared_Board is True and turn phase = forced play.
+
+        It is looking for key strokes to designate ambiguous wild cards in runs.
+        The mouse is ignored until you designate all the wilds (turn phase goes back to play)
+        or cancel playing the currently prepared cards entirely."""
+
+        if self.controller._state.rules.Shared_Board and self.num_wilds > 0:
+            for self.event in pygame.event.get():
+                # in Shared_Board games, check if there are wilds that need to be updated. All other events are ignored
+                # until play is finished.
+                print('short circuit works, now stuck in infinite loop...')
+                hand_view.controller.processed_full_board = HandManagement.wildsHiLo(hand_view)
+
+
+        else:
+            self.nextEventOriginal()
+
+    def nextEventOriginal(self):
         """This submits the next user input to the controller,
 
         In games with Shared_Board = False (e.g. HandAndFoot) key strokes don't do anything
@@ -116,7 +138,7 @@ class HandView:
         unless you want to clear the prepared cards."""
 
         for self.event in pygame.event.get():
-            if self.num_wilds > 0:
+            if not self.controller._state.rules.Shared_Board and self.num_wilds > 0:
                 wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
                 wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
                 self.controller.note = wild_instructions

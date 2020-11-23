@@ -172,7 +172,7 @@ def ManuallyAssign(hand_view):
         hand_view.num_wilds = len(hand_view.wild_cards)
     return
 
-def wildsHiLo(hand_view, processed_full_board):
+def wildsHiLo(hand_view):
     """ Used in Liverpool and other games with runs to assign wilds.
 
     Assigning wilds is as automated as possible, so this is only used to determine
@@ -192,13 +192,10 @@ def wildsHiLo(hand_view, processed_full_board):
                 textnote = textnote + str(card.number) + ','
             textnote = textnote + "should the wild be high or low?  type H or L ? (type q to quit this play entirely)."
             print(textnote)
-            # hand_view.controller.note = textnote
-            # hand_view.display.render(textnote)
-            # todo: this is not working, may need to make it more like what was done in HandAndFoot.
-            n=0
-            if n < 10000:
-                n=n+1
-                hand_view.nextEvent()
+            hand_view.controller.note = textnote
+            hand_view.display.render(textnote)
+            """
+
                 if hand_view.event.type == pygame.KEYDOWN:
                     if hand_view.event.key == pygame.K_l:
                         this_wild.tempnumber = wild_options[0]
@@ -213,8 +210,9 @@ def wildsHiLo(hand_view, processed_full_board):
             print('in HandManagement_wildHiLo, wild assignment:'+str(this_wild.tempnumber))
             processed_group.append(this_wild)
             processed_group.sort(key=lambda wc: wc.tempnumber)
-            processed_full_board[k_group] = processed_group
-    return processed_full_board
+            hand_view.controller.processed_full_board[k_group] = processed_group
+            """
+    return
 
 
 

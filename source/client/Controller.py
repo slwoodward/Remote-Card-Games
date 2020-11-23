@@ -18,7 +18,8 @@ class Controller(ConnectionListener):
 
     def __init__(self, clientState):
         self._state = clientState
-        self.prepared_cards = {}     #This is the dict of cards prepared to be played
+        self.prepared_cards = {}     #This is the dict of cards prepared to be played.
+        self.processed_full_board = {}  #in games with Shared Board, this is the dict of processed cards.
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
@@ -206,7 +207,7 @@ class Controller(ConnectionListener):
             return True
             print('should return False')
 
-    def play(self, processed_full_board={}):
+    def play(self):
         """Send the server the current set of played cards"""
         # player_index and visible_scards needed for rules checking in games with Shared_Board.
         #
@@ -222,8 +223,7 @@ class Controller(ConnectionListener):
                 # processed_cards = self.processCards(visible_scards)
                 # moved calling this method to Liverpool buttons. processed_cards = self.processCards(visible_scards)
                 # because need to call wildsHiLO between it and next call.
-                # todo: CHANGING playCards -- processed_full_board should already include all the prepared cards.
-                self._state.playCards(self.prepared_cards, processed_full_board)
+                self._state.playCards(self.prepared_cards, self.processed_full_board)
             else:
                 self._state.playCards(self.prepared_cards, {})
             self.clearPreparedCards()
@@ -299,23 +299,22 @@ class Controller(ConnectionListener):
         for k, g in combined_cards.items():
             print(k)
             print(g)
-        processed_full_board = {}
+        self.processed_full_board = {}
         self.unassigned_wilds_dict = {}
         for k_group, card_group in combined_cards.items():
             # process runs from combined_cards (if k_group[1] > numsets, then it is a run).
             if k_group[1] >= numsets:
                 processed_group, wild_options, unassigned_wilds = processRuns(card_group, self._state.rules.wild_numbers)
                 print('in controller line 256')
-                print(wild_options)
-                print(unassigned_wilds)
-                self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+                if len(unassigned_wilds) > 0:
+                    self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             else:
                 #todo: need to sort sets?  get user feedback.
                 processed_group = card_group
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
-            processed_full_board[k_group] = processed_group
+            self.processed_full_board[k_group] = processed_group
         # if get through all prepared cards w/o error then update _state.played_cards.
-        return processed_full_board  # self._state.played_cards = build_played_cards
+        return  # processed_full_board  # self._state.played_cards = build_played_cards
 
     def handleEmptyHand(self, isDiscard):
         """Checks for and handles empty hand. 

@@ -27,8 +27,8 @@ Number_Rounds = len(Meld_Threshold)  # For convenience
 Deal_Size = 11
 Hands_Per_Player = 1
 notes = ["Clicking on pile only works on your turn. If you are eligible to buy a card, then click on y (for yes)."]
-
-help_text = ['Welcome to a Liverpool!  Meld requirement is: (1,1)   (= 1 set, 1 run).',
+temp_string =str(Meld_Threshold[0]) + '  (= ' +str(Meld_Threshold[0][0])+' sets, ' + str(Meld_Threshold[0][1]) +' runs).'
+help_text = ['Welcome to a Liverpool!  Meld requirement is: '+temp_string,
                               '# decks = ceil(# players *0.6), To draw click on the deck of cards (upper left).',
                               'To discard select ONE card & double click on discard button. ',
                               'To prepare cards click on appropriate Run/Set button (they will appear after you click OK)',
@@ -106,6 +106,8 @@ def canMeld(prepared_cards, round_index, player_index):
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():
+        print(key)
+        print(card_group)
         if key[0] == player_index and len(card_group) > 0:
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
