@@ -77,7 +77,6 @@ def RunClient():
         connection.Pump()
         gameControl.Pump()
         tableView.Pump()
-        #todo: what is 'this_round' < is this what got broken?
         tableView.playerByPlayer(this_round)
         if  clientState.rules.Shared_Board:
             player_index = tableView.player_names.index(playername)

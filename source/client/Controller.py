@@ -198,14 +198,11 @@ class Controller(ConnectionListener):
         """Verify it's the player's turn before processing cards,
 
         else visible_scards may become obsolete during processing."""
-        print('in controller: ' + str(self._state.turn_phase))
         if self._state.turn_phase != Turn_Phases[3]:
-            self.note = "You can only play on your turn after you draw"
-            print('should return False')
+            self.note = "You can only play on your turn and only after you draw"
             return False
         else:
             return True
-            print('should return False')
 
     def play(self):
         """Send the server the current set of played cards"""
@@ -216,8 +213,9 @@ class Controller(ConnectionListener):
             return
         #todo: remove this note:
         # when debugging sometimes useful to replace 'try:' with 'if True:'  and comment out except block.
-        # try:
-        if True:
+        #
+        try:
+        # if True:
             if self._state.rules.Shared_Board:
                 # self.processCards sets card.tempnumber in runs.
                 # processed_cards = self.processCards(visible_scards)
@@ -231,14 +229,14 @@ class Controller(ConnectionListener):
             for (key, card_group) in self._state.played_cards.items():
                 print(card_group)
             self.sendPublicInfo()
-        '''
+        # '''
         except Exception as err:
             self.note = "{0}".format(err)
             # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
             if self._state.rules.Shared_Board:
                 self.resetPreparedWilds()
             return
-            '''
+            # '''
 
     def resetPreparedWilds(self):
         """ If prepared cards cannot be played, then the values of Aces and WildCards should be reset"""
@@ -289,32 +287,23 @@ class Controller(ConnectionListener):
         # that are in runs so that positions of Wilds and Aces are maintained.
         # This could be made obsolete by adding tempnumbers to card serialization.
         self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
-        print('in controller.processCards, line 254, next is self.played_cards')
-        for k,g in self.played_cards.items():
-            print(k)
-            print(g)
-        # keep in clientState.py :  rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
         combined_cards = self._state.rules.combineCardDicts(self.played_cards, self.prepared_cards)
-        print('in controller.processCards, next is combineCardDicts')
-        for k, g in combined_cards.items():
-            print(k)
-            print(g)
         self.processed_full_board = {}
         self.unassigned_wilds_dict = {}
         for k_group, card_group in combined_cards.items():
             # process runs from combined_cards (if k_group[1] > numsets, then it is a run).
             if k_group[1] >= numsets:
                 processed_group, wild_options, unassigned_wilds = processRuns(card_group, self._state.rules.wild_numbers)
-                print('in controller line 256')
                 if len(unassigned_wilds) > 0:
                     self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             else:
                 #todo: need to sort sets?  get user feedback.
                 processed_group = card_group
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+            # have gone through all prepared cards w/o error, will use processed_full_board to update
+            # _state.played_cards once all wilds assigned (unassigned wilds found in self.unassigned_wilds_dict)
             self.processed_full_board[k_group] = processed_group
-        # if get through all prepared cards w/o error then update _state.played_cards.
-        return  # processed_full_board  # self._state.played_cards = build_played_cards
+        return
 
     def handleEmptyHand(self, isDiscard):
         """Checks for and handles empty hand. 

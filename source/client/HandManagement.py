@@ -206,6 +206,7 @@ def wildsHiLo_step2(hand_view):
     key_list = []
     for k_group in hand_view.controller.unassigned_wilds_dict.keys():
         key_list.append(k_group)
+    print('in HandManagement at line 208, next line is key_list')
     print(key_list)
     if len(key_list) > 0:
         k_group = key_list[0]
@@ -234,14 +235,20 @@ def wildsHiLo_step2(hand_view):
                 print('in HandManagement_wildHiLo, wild assignment:'+str(this_wild.tempnumber))
                 processed_group.append(this_wild)
                 processed_group.sort(key=lambda wc: wc.tempnumber)
-                print(processed_group)
-                for k,clist in hand_view.controller.processed_full_board.items():
-                    print(k)
-                    print(clist)
                 hand_view.controller.processed_full_board[k_group] = processed_group
             hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
             if hand_view.num_wilds > 0:
                 wildsHiLo_step1(hand_view)
+            else:
+                print("look at these todos")
+                # todo: this is where cards should be played.  As code now stands cards get played once they're processed
+                # todo: even if num_wilds > 0.  Need to simply put if statement there, too.
+                # todo: as it is currently written cards are played before wilds are set (I think) and
+                #  need to click on play again.
+                # todo: another bug -- had wild, j, q, wild, played k and wild disappeared.
+                # todo,yet another, tried to play Ace hi on one run and it couldn't, then tried to play it low
+                #  on another and got the message that there was too big a gap.  Need to reset values on Aces and
+                #  jokers when clear prepared cards.
         else:
             print('In HandManagement.wildsHiLo_step2.')
             print('Why is there an entry in hand_view.controller.unassigned_wilds_dict with no unassigned_wilds?')

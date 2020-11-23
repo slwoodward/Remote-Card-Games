@@ -43,10 +43,6 @@ class HandView:
             self.deal_size = Deal_Size_HF
             self.help_text = help_text_HF
         self.controller = controller
-        # todo: debugging -- remove print statements below once debugged.
-        print('in handview init')
-        print(self.controller._state.rules.Shared_Board)
-        print(self.controller._state.turn_phase)
         self.display = display
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
         self.current_hand = []

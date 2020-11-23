@@ -20,8 +20,6 @@ def processRuns(card_group, wild_numbers):
     # it DOES presume that if Aces are not wild, then they are hi or low, but not both.
     # IF ACE CAN BE HIGH OR LOW (very unusual) THAN AUTOMATICALLY MAKING IT LOW.
     """
-    #todo: remove print statements used in debugging.
-    # todo:  implement choosing whether joker goes hi or low (currently simply lost)
     # todo:  implement choosing whether Ace goes hi or low. (currently goes low)
     print(card_group)
     card_group.sort(key=lambda wc: wc.tempnumber)
@@ -31,7 +29,6 @@ def processRuns(card_group, wild_numbers):
     temp_run_group = []
     aces_list =[]
     for card in card_group:                    # separate unassigned wilds and Aces from rest of run.
-        print('card, tempnumber: '+str(card.number)+', '+ str(card.tempnumber))
         # pull out wilds that have not been assigned (do this before Aces, in case rules changed so that Aces are wild).
         if card.tempnumber in wild_numbers:
             groups_wilds.append(card)
@@ -40,12 +37,6 @@ def processRuns(card_group, wild_numbers):
             aces_list.append(card)
         else:
             temp_run_group.append(card)
-    print('temp_run_group ')
-    print(temp_run_group)
-    print('aces_list ')
-    print(aces_list)
-    print('groups_wilds ')
-    print(groups_wilds)
     card_group  = []                         # rebuild card_group below
     for card in temp_run_group:
         if first_card:
@@ -119,7 +110,6 @@ def processRuns(card_group, wild_numbers):
             if card_group[0].tempnumber == 3 and not isWild(card_group[0], wild_numbers) \
                     and not isWild(card_group[1], wild_numbers):
                 print('Using Joker to put Ace in run (if possible to play low or high, will play low)')
-                # todo: modify so that choose if both possible.
                 this_wild = groups_wilds.pop(0)
                 this_wild.tempnumber = 2
                 card_group.insert(0, this_wild)
@@ -159,11 +149,8 @@ def processRuns(card_group, wild_numbers):
         if num_remaining_wilds == 2:
             groups_wilds[0].tempnumber = possible_wild_assignments[0]
             groups_wilds[1].tempnumber = possible_wild_assignments[1]
-            print(card_group)
             card_group.insert(0, groups_wilds[0])
-            print(card_group)
             card_group.append(groups_wilds[1])
-            print(card_group)
             groups_wilds=[]
             possible_wild_assignments=[]
         elif num_remaining_wilds == 1 and len(possible_wild_assignments) == 1:
@@ -178,10 +165,12 @@ def processRuns(card_group, wild_numbers):
         # Double check that don't have wilds too close together.
         # Then, if necessary, have controller ask player where to play wild.
         if num_remaining_wilds == 1 and len(possible_wild_assignments) == 2:
-            print('Might need to ask player whether to play high or low')
+            #todo: make next print statement a comment.
+            print('Will need to ask player whether to play high or low.')
         elif num_remaining_wilds == 0:
             possible_wild_assignments = []
-    # Doublecheck that wild placement did not result in wilds too close together (already considered in possible_wild_assignments).
+    # Final rules check in processRuns: double check that wilds are not placed too close together (final rules check).
+    # (In creating possible_wild_assignments checked that assignments won't violate this rule.
     last_card_wild = False
     second2last_card_wild = False
     for card in card_group:

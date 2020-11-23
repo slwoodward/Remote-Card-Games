@@ -91,7 +91,6 @@ def canPlayGroup(key, card_group, this_round):
             raise Exception("Too few cards in run - minimum is 2 (for now) 4 (final version)")
         suits_in_run = []
         for card in card_group:
-            print(card)  #todo: debug
             if not isWild(card):
                 suits_in_run.append(card.suit)
         unique_suits = list(set(suits_in_run))
@@ -106,8 +105,6 @@ def canMeld(prepared_cards, round_index, player_index):
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():
-        print(key)
-        print(card_group)
         if key[0] == player_index and len(card_group) > 0:
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
@@ -138,8 +135,6 @@ def combineCardDicts(dict1, dict2):
         for card in dict2.setdefault(key, []):
             combo_list.append(card)
         combined_cards[key] = combo_list
-    print('in combineCardDicts')
-    print(combined_cards)
     return combined_cards
 
 

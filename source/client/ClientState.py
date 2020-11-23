@@ -2,9 +2,6 @@ import importlib
 from common.Card import Card
 # from client.RunManagement import processRuns
 # from client.RunManagement import restoreRunAssignment
-# todo: where should wildsHiLo live? from client.RunManagement import wildsHiLo
-
-
 
 class ClientState:
     """ This class store client state for access by different listeners
