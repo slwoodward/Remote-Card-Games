@@ -123,7 +123,9 @@ class HandView:
             for self.event in pygame.event.get():
                 # in Shared_Board games, check if there are wilds that need to be updated. All other events are ignored
                 # until play is finished.
-                self.controller.processed_full_board = HandManagement.wildsHiLo_step2(self)
+                HandManagement.wildsHiLo_step2(self)
+                #todo: remove next line once stable...
+                print('in handview, line 130.')
         else:
             self.nextEventOriginal()
 

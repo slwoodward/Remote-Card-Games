@@ -203,7 +203,13 @@ def wildsHiLo_step2(hand_view):
     # hand_view.controller.unassigned_wilds_dict
     # self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
 
-    for k_group, group_info in hand_view.controller.unassigned_wilds_dict.items():
+    key_list = []
+    for k_group in hand_view.controller.unassigned_wilds_dict.keys():
+        key_list.append(k_group)
+    print(key_list)
+    if len(key_list) > 0:
+        k_group = key_list[0]
+        group_info = hand_view.controller.unassigned_wilds_dict[k_group]
         processed_group = group_info[0]
         wild_options = group_info[1]
         unassigned_wilds = group_info[2]
@@ -222,16 +228,23 @@ def wildsHiLo_step2(hand_view):
                 else:
                     hand_view.bad_strokes = hand_view.bad_strokes + 1
                     if hand_view.bad_strokes > 4:
-                        print('Invalid response more than 3 times, made wild card high')
+                        hand_view.controller.note = 'Invalid response more than 3 times, made wild card high'
                         this_wild.tempnumber = wild_options[1]
                         del hand_view.controller.unassigned_wilds_dict[k_group]
-            print('in HandManagement_wildHiLo, wild assignment:'+str(this_wild.tempnumber))
-            processed_group.append(this_wild)
-            processed_group.sort(key=lambda wc: wc.tempnumber)
-            hand_view.controller.processed_full_board[k_group] = processed_group
+                print('in HandManagement_wildHiLo, wild assignment:'+str(this_wild.tempnumber))
+                processed_group.append(this_wild)
+                processed_group.sort(key=lambda wc: wc.tempnumber)
+                print(processed_group)
+                for k,clist in hand_view.controller.processed_full_board.items():
+                    print(k)
+                    print(clist)
+                hand_view.controller.processed_full_board[k_group] = processed_group
             hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
             if hand_view.num_wilds > 0:
                 wildsHiLo_step1(hand_view)
+        else:
+            print('In HandManagement.wildsHiLo_step2.')
+            print('Why is there an entry in hand_view.controller.unassigned_wilds_dict with no unassigned_wilds?')
     return
 
 
