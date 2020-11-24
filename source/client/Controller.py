@@ -239,6 +239,35 @@ class Controller(ConnectionListener):
             for card in card_group:
                 card.tempnumber = card.number
 
+    def sharedBoardPrepAndPlay(self, visible_scards):
+        # todo: is my_turn really necessary -- HandAndFoot also required that it be your turn to play...
+        # Review note: Playing cards is a 3 step process:
+        # 0.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
+        # 1.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
+        #    in the process, some rules of runs are verified (have meld requirement, not playing on other players,
+        #    no repeats of cards in runs, and Aces can't turn corners).
+        # 2. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
+        # 3. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
+        my_turn = self.turnCheck()
+        self.processed_full_board = {}
+        if my_turn:
+            try:
+                # calculate  self.processed_full_board
+                self.processCards(visible_scards)
+            except Exception as err:
+                self.note = "{0}".format(err)
+                return
+            finally:
+                # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
+                self.resetPreparedWildsAces()
+            num_wilds = len(self.unassigned_wilds_dict.keys())
+            if num_wilds > 0:
+                # self.note = 'Play will not complete until you designate wild cards using key strokes.'
+                # HandManagement.wildsHiLo_step1(hand_view)
+                self.note = 'In this branch of code you should never get here, as wilds automatically played high....'
+            else:
+                # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
+                self.play()
 
     def processCards(self, visible_scards):
         """ Combine prepared cards and cards already on shared board.

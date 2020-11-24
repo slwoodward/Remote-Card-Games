@@ -159,6 +159,8 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
+        hand_view.controller.sharedBoardPrepAndPlay(hand_view.visible_scards)
+        '''
         # todo: Review question  - in Liverpool process of playing cards a bit more complicated than in HandAndFoot,
         #  this will be true for other games with a SharedBoard.
         #  Perhaps should create method in controller that combines all the steps below?
@@ -192,6 +194,7 @@ def ClickedButton(hand_view, pos):
             else:
                 # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
                 hand_view.controller.play()
+        '''
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)
