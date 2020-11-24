@@ -20,7 +20,6 @@ This file is game specific because different games need different buttons, and m
 def CreateButtons(hand_view, num_players=1):
     hand_view.num_players = num_players
     """This creates the buttons and text used for game. """
-    print('in LiverpoolButtons.py createButtons')
     hand_view.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
     hand_view.ready_yes_btn = \
         Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 70), 125, 25, text='Ready:YES')
@@ -179,16 +178,18 @@ def ClickedButton(hand_view, pos):
             except Exception as err:
                 hand_view.controller.note = "{0}".format(err)
                 return
+            finally:
+                # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
+                hand_view.controller.resetPreparedWildsAces()
             hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
             # hand_view.nextEvents will only look for keystrokes until hand_view.num_wilds is zero.
             if hand_view.num_wilds > 0:
-                hand_view.controller.note = 'Play will not complete until you designate wild cards using key strokes.'
-                HandManagement.wildsHiLo_step1(hand_view)
+                # hand_view.controller.note = 'Play will not complete until you designate wild cards using key strokes.'
+                # HandManagement.wildsHiLo_step1(hand_view)
+                hand_view.controller.note = 'In this branch of code you should never get here...'
             else:
                 # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
                 hand_view.controller.play()
-        else:
-            print('tried to play when not your turn.')
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)

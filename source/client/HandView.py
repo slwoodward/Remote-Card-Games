@@ -107,10 +107,11 @@ class HandView:
             self.hand_info = HandManagement.WrapHand(self, self.current_hand, self.hand_info)
         HandManagement.ShowHolding(self, self.hand_info)  # displays hand
         self.RuleSetsButtons.ButtonDisplay(self)
-
+    '''
     def nextEvent(self):
         """This short circuits next when Shared_Board is True and turn phase = forced play.
 
+        IN this scheme nextEvent below is renamed nextEventOriginal.  Not at all certain this is the right approach.
         It is looking for key strokes to designate ambiguous wild cards in runs.
         The mouse is ignored until you designate all the wilds (turn phase goes back to play)
         or cancel playing the currently prepared cards entirely."""
@@ -124,8 +125,8 @@ class HandView:
                 print('in handview, line 130.')
         else:
             self.nextEventOriginal()
-
-    def nextEventOriginal(self):
+    '''
+    def nextEvent(self):
         """This submits the next user input to the controller,
 
         In games with Shared_Board = False (e.g. HandAndFoot) key strokes don't do anything

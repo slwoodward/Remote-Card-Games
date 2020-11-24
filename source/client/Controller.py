@@ -211,7 +211,7 @@ class Controller(ConnectionListener):
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
-        #todo: remove this note:
+        #todo: remove this note, and if True: statement.
         # when debugging sometimes useful to replace 'try:' with 'if True:'  and comment out except block.
         #
         try:
@@ -232,17 +232,21 @@ class Controller(ConnectionListener):
         # '''
         except Exception as err:
             self.note = "{0}".format(err)
-            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
-            if self._state.rules.Shared_Board:
-                self.resetPreparedWilds()
             return
             # '''
+        # Review note, tried to put this in exception block above, but it wasn't called....
+        #todo: still not called, see if can figure out why....is there another try: statement?
+        finally:
+        # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
+            if self._state.rules.Shared_Board:
+                self.resetPreparedWildsAces()
 
-    def resetPreparedWilds(self):
-        """ If prepared cards cannot be played, then the values of Aces and WildCards should be reset"""
+    def resetPreparedWildsAces(self):
+        """ If prepared cards cannot be played, then the values of WildCards and Aces should be reset"""
         for card_group in self.prepared_cards.values():
             for card in card_group:
                 card.tempnumber = card.number
+
 
     def processCards(self, visible_scards):
         """ Combine prepared cards and cards already on shared board.
@@ -295,7 +299,17 @@ class Controller(ConnectionListener):
             if k_group[1] >= numsets:
                 processed_group, wild_options, unassigned_wilds = processRuns(card_group, self._state.rules.wild_numbers)
                 if len(unassigned_wilds) > 0:
-                    self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+                    # wilds is unassigned only when it can be played at either end. Hence there should be only 1.
+                    if len(unassigned_wilds) > 1:
+                        print("How odd --wild is unassigned only when it can be played at either end. Hence there should be only 1.")
+                        print(processed_group)
+                    else:
+                        # todo:  for now arbitrarily having unassigned_wilds assigned to be high. Eventually player should choose.
+                        this_wild = unassigned_wilds[0]
+                        this_wild.tempnumber = wild_options[1]
+                        processed_group.append(this_wild)
+                        #  todo: unassigned_wilds_dict should prove useful when get wildsHiLo working.
+                        #   self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             else:
                 #todo: need to sort sets?  get user feedback.
                 processed_group = card_group

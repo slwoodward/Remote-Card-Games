@@ -20,10 +20,10 @@ def processRuns(card_group, wild_numbers):
     # it DOES presume that if Aces are not wild, then they are hi or low, but not both.
     # IF ACE CAN BE HIGH OR LOW (very unusual) THAN AUTOMATICALLY MAKING IT LOW.
     """
-    # todo:  implement choosing whether Ace goes hi or low. (currently goes low)
-    print(card_group)
+    # print("in RunManagement, processRuns")
+    # print(card_group)
     card_group.sort(key=lambda wc: wc.tempnumber)
-    print(card_group)
+    # print(card_group)
     first_card = True
     groups_wilds = []
     temp_run_group = []
@@ -106,10 +106,10 @@ def processRuns(card_group, wild_numbers):
                 aces_list[1].tempnumber = 14
                 card_group.append(aces_list[1])
                 aces_list = []
+                # will check that don't have jokers too close together later.
         elif len(aces_list) == 1:
             if card_group[0].tempnumber == 3 and not isWild(card_group[0], wild_numbers) \
                     and not isWild(card_group[1], wild_numbers):
-                print('Using Joker to put Ace in run (if possible to play low or high, will play low)')
                 this_wild = groups_wilds.pop(0)
                 this_wild.tempnumber = 2
                 card_group.insert(0, this_wild)
@@ -162,15 +162,13 @@ def processRuns(card_group, wild_numbers):
             groups_wilds=[]
             possible_wild_assignments=[]
         num_remaining_wilds = len(groups_wilds)
-        # Double check that don't have wilds too close together.
-        # Then, if necessary, have controller ask player where to play wild.
-        if num_remaining_wilds == 1 and len(possible_wild_assignments) == 2:
-            #todo: make next print statement a comment.
-            print('Will need to ask player whether to play high or low.')
-        elif num_remaining_wilds == 0:
+        if num_remaining_wilds == 0:
             possible_wild_assignments = []
-    # Final rules check in processRuns: double check that wilds are not placed too close together (final rules check).
-    # (In creating possible_wild_assignments checked that assignments won't violate this rule.
+        # if num_remaining_wilds == 1 and len(possible_wild_assignments) == 2:
+        # Will need to ask player whether to play high or low, controller handles that.
+    # Final rules check in processRuns: double check that wilds are not placed too close together.
+    # (Note that in creating possible_wild_assignments checked that assignments won't violate this rule, but didn't
+    # check this everywhere).
     last_card_wild = False
     second2last_card_wild = False
     for card in card_group:

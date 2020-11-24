@@ -171,7 +171,7 @@ def ManuallyAssign(hand_view):
             hand_view.wild_cards = hand_view.wild_cards[1:]
         hand_view.num_wilds = len(hand_view.wild_cards)
     return
-
+'''
 def wildsHiLo_step1(hand_view):
     """ Used in Liverpool and other games with runs to assign wilds.
 
@@ -243,16 +243,10 @@ def wildsHiLo_step2(hand_view):
                 print("look at these todos")
                 # todo: this is where cards should be played.  As code now stands cards get played once they're processed
                 # todo: even if num_wilds > 0.  Need to simply put if statement there, too.
-                # todo: as it is currently written cards are played before wilds are set (I think) and
-                #  need to click on play again.
-                # todo: another bug -- had wild, j, q, wild, played k and wild disappeared.
-                # todo,yet another, tried to play Ace hi on one run and it couldn't, then tried to play it low
-                #  on another and got the message that there was too big a gap.  Need to reset values on Aces and
-                #  jokers when clear prepared cards.
         else:
             print('In HandManagement.wildsHiLo_step2.')
             print('Why is there an entry in hand_view.controller.unassigned_wilds_dict with no unassigned_wilds?')
     return
-
+'''
 
 

@@ -60,7 +60,7 @@ def RunClient():
             try:
                 clientState.player_index = tableView.player_names.index(playername)
             except Exception as err:
-                print('at line 63 '+ str(clientState.player_index))
+                print('at line 63 in RunClient'+ str(clientState.player_index))
                 note = "{0}   waiting for name in player_names to update...".format(err)
             gameboard.refresh()
             connection.Pump()
