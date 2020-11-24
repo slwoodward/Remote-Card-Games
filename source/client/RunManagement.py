@@ -59,6 +59,7 @@ def processRuns(card_group, wild_numbers):
                     this_wild = card_group.pop(-1)
                     this_wild.tempnumber = this_wild.number
                     groups_wilds.append(this_wild)
+                    card_group.append(card)
                 else:
                     raise Exception('Card value already in the run.')
             else:
