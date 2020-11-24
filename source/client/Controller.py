@@ -194,16 +194,6 @@ class Controller(ConnectionListener):
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
 
-    def turnCheck(self):
-        """Verify it's the player's turn before processing cards,
-
-        else visible_scards may become obsolete during processing."""
-        if self._state.turn_phase != Turn_Phases[3]:
-            self.note = "You can only play on your turn and only after you draw"
-            return False
-        else:
-            return True
-
     def play(self):
         """Send the server the current set of played cards"""
         # player_index and visible_scards needed for rules checking in games with Shared_Board.
@@ -248,26 +238,29 @@ class Controller(ConnectionListener):
         #    no repeats of cards in runs, and Aces can't turn corners).
         # 2. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
         # 3. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
-        my_turn = self.turnCheck()
+
+        # Verify it's the player's turn before processing cards, else visible_scards may become obsolete during processing.
+        if self._state.turn_phase != Turn_Phases[3]:
+            self.note = "You can only play on your turn and only after you draw"
+            return
         self.processed_full_board = {}
-        if my_turn:
-            try:
-                # calculate  self.processed_full_board
-                self.processCards(visible_scards)
-            except Exception as err:
-                self.note = "{0}".format(err)
-                return
-            finally:
-                # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
-                self.resetPreparedWildsAces()
-            num_wilds = len(self.unassigned_wilds_dict.keys())
-            if num_wilds > 0:
-                # self.note = 'Play will not complete until you designate wild cards using key strokes.'
-                # HandManagement.wildsHiLo_step1(hand_view)
-                self.note = 'In this branch of code you should never get here, as wilds automatically played high....'
-            else:
-                # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
-                self.play()
+        try:
+            # calculate  self.processed_full_board
+            self.processCards(visible_scards)
+        except Exception as err:
+            self.note = "{0}".format(err)
+            return
+        finally:
+            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
+            self.resetPreparedWildsAces()
+        num_wilds = len(self.unassigned_wilds_dict.keys())
+        if num_wilds > 0:
+            # self.note = 'Play will not complete until you designate wild cards using key strokes.'
+            # HandManagement.wildsHiLo_step1(hand_view)
+            self.note = 'In this branch of code you should never get here, as wilds automatically played high....'
+        else:
+            # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
+            self.play()
 
     def processCards(self, visible_scards):
         """ Combine prepared cards and cards already on shared board.
