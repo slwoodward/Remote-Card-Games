@@ -273,8 +273,7 @@ class Controller(ConnectionListener):
         """
         # before combining prepared cards with played cards, check that player is not BEGINNING
         # another player's groups.
-        #todo: calling this method must be done with a try:...
-        played_groups = []    # list of keys corresponding to card groups that have been begun.
+        played_groups = []    # will contain list of keys corresponding to card groups that have been begun.
         for key, card_group in visible_scards[0].items():
             if len(card_group) > 0:
                 played_groups.append(key)
