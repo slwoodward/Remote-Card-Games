@@ -203,17 +203,12 @@ class Controller(ConnectionListener):
             return
         try:
             if self._state.rules.Shared_Board:
-                # self.processCards sets card.tempnumber in runs.
-                # processed_cards = self.processCards(visible_scards)
-                # moved calling this method to Liverpool buttons. processed_cards = self.processCards(visible_scards)
-                # because need to call wildsHiLO between it and next call.
+                # Some rule checking on runs is performed in self.processCards (called before this).
                 self._state.playCards(self.prepared_cards, self.processed_full_board)
             else:
                 self._state.playCards(self.prepared_cards, {})
             self.clearPreparedCards()
             self.handleEmptyHand(False)
-            for (key, card_group) in self._state.played_cards.items():
-                print(card_group)
             self.sendPublicInfo()
         except Exception as err:
             self.note = "{0}".format(err)
@@ -230,14 +225,13 @@ class Controller(ConnectionListener):
                 card.tempnumber = card.number
 
     def sharedBoardPrepAndPlay(self, visible_scards):
-        # todo: is my_turn really necessary -- HandAndFoot also required that it be your turn to play...
-        # Review note: Playing cards is a 3 step process:
-        # 0.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
-        # 1.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
+        # Review note: Playing cards is a 4 step process:
+        # 1.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
+        # 2.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
         #    in the process, some rules of runs are verified (have meld requirement, not playing on other players,
         #    no repeats of cards in runs, and Aces can't turn corners).
-        # 2. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
-        # 3. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
+        # 3. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
+        # 4. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
 
         # Verify it's the player's turn before processing cards, else visible_scards may become obsolete during processing.
         if self._state.turn_phase != Turn_Phases[3]:
@@ -251,7 +245,8 @@ class Controller(ConnectionListener):
             self.note = "{0}".format(err)
             return
         finally:
-            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
+            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards,
+            # so they can be reassigned if play fails.
             self.resetPreparedWildsAces()
         num_wilds = len(self.unassigned_wilds_dict.keys())
         if num_wilds > 0:
