@@ -250,9 +250,8 @@ class Controller(ConnectionListener):
             self.resetPreparedWildsAces()
         num_wilds = len(self.unassigned_wilds_dict.keys())
         if num_wilds > 0:
-            # self.note = 'Play will not complete until you designate wild cards using key strokes.'
-            # HandManagement.wildsHiLo_step1(hand_view)
-            self.note = 'In this branch of code you should never get here, as wilds automatically played high....'
+            self.note = 'Play will not complete until you designate wild cards using key strokes.'
+            #todo: board had 3,wild,5,6, tried to play 4.  Program gets here, but doesn't get to wildsHiLostep1. 4 doesn't play.
         else:
             # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
             self.play()
@@ -312,12 +311,12 @@ class Controller(ConnectionListener):
                         print("How odd --wild is unassigned only when it can be played at either end. Hence there should be only 1.")
                         print(processed_group)
                     else:
-                        # todo:  for now arbitrarily having unassigned_wilds assigned to be high. Eventually player should choose.
-                        this_wild = unassigned_wilds[0]
-                        this_wild.tempnumber = wild_options[1]
-                        processed_group.append(this_wild)
+                        # todo:  this is where I previously arbitrarily having unassigned_wilds assigned to be high. Eventually player should choose.
+                        # this_wild = unassigned_wilds[0]
+                        # this_wild.tempnumber = wild_options[1]
+                        # processed_group.append(this_wild)
                         #  todo: unassigned_wilds_dict should prove useful when get wildsHiLo working.
-                        #   self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+                        self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             else:
                 #todo: need to sort sets?  get user feedback.
                 processed_group = card_group
