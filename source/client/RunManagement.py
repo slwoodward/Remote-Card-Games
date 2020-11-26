@@ -28,6 +28,7 @@ def processRuns(card_group, wild_numbers):
     groups_wilds = []
     temp_run_group = []
     aces_list =[]
+    gap_flag = False
     for card in card_group:                    # separate unassigned wilds and Aces from rest of run.
         # pull out wilds that have not been assigned (do this before Aces, in case rules changed so that Aces are wild).
         if card.tempnumber in wild_numbers:
@@ -62,8 +63,28 @@ def processRuns(card_group, wild_numbers):
                     card_group.append(card)
                 else:
                     raise Exception('Card value already in the run.')
-            else:
+            # todo: found bug -- if free up a wild later in run then gap of 1 card can be closed.
+            elif card.tempnumber > (abs_temp_number + 2):
                 raise Exception('too big a gap between numbers')
+            else:
+                # gap must be 1 card. It's possible to free up a wild later in run then gap of 1 can be closed.
+                gap_flag =True
+    if gap_flag and len(groups_wilds) > 0:
+        temp_run_group = card_group
+        card_group = []
+        card_group.append(temp_run_group[0])
+        for indx in range(len(temp_run_group)-1):
+            card = temp_run_group[indx+1]
+            if temp_run_group[indx].tempnumber == card.tempnumber + 1:
+                card_group.append(card)
+            elif temp_run_group[indx].tempnumber == card.tempnumber + 2:
+                if len(groups_wilds) > 0:
+                    this_wild.pop(groups_wilds[0])
+                    card_group.append(this_wild)
+                    card_group.append(card)
+                else:
+                    raise Exception('too big a gap between numbers')
+
     #  Review note - Handle Aces after other cards, else ran into problem when wanted Ace, Joker, 3...
     # Rare for Ace Hi and Ace low to both be options. If they are, does it make a difference which one they are?
     # If run is A?,2,Wild,4...J,Q,K,A? then it does (wild could still be played above King, but not below 2).
