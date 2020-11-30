@@ -109,9 +109,8 @@ class HandView:
         self.RuleSetsButtons.ButtonDisplay(self)
 
     def nextEventWildsOnBoard(self):
-        """This short circuits next when Shared_Board is True and there are ambiguous wild cards.
+        """This replaces most of nextEvent when Shared_Board is True and there are ambiguous wild cards.
 
-        IN this scheme nextEvent below is renamed nextEventOriginal.  Not at all certain this is the right approach.
         It is looking for key strokes to designate ambiguous wild cards in runs.
         The mouse is ignored until you designate all the wilds (turn phase goes back to play)
         or cancel playing the currently prepared cards entirely."""
@@ -127,8 +126,6 @@ class HandView:
                     # in Shared_Board games, check if there are wilds that need to be updated.
                     # All other events are ignored until play is finished.
                     HandManagement.wildsHiLo_step2(self)
-                    #todo: remove next line once stable...
-                    print('in handview, line 130.')
 
     def nextEvent(self):
         """This submits the next user input to the controller,
@@ -141,8 +138,10 @@ class HandView:
         it must be designated before play is completed.
         This is done in nextEvenWildsOnBoard.  All other events are ignored until num_wilds == 0 OR play is canceled."""
 
-        if self.controller._state.rules.Shared_Board and self.num_wilds > 0:
-            self.nextEventWildsOnBoard()
+        if self.controller._state.rules.Shared_Board:
+            self.num_wilds = len(self.controller.unassigned_wilds_dict.keys())
+            if self.num_wilds > 0:
+                self.nextEventWildsOnBoard()
 
         for self.event in pygame.event.get():
             if self.event.type == pygame.QUIT:

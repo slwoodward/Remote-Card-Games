@@ -136,7 +136,6 @@ def ManuallyAssign(hand_view):
     Used in HandAndFoot (HandAndFootButtons.py contains methods that eventually trigger this method).
     Only wild cards need to be manually assigned.
     For other games it may be more complex (e.g. games with runs and sets)
-    At this time only set-based games like HandAndFoot are supported.
     """
     textnote = "Designate one of " + str(hand_view.num_wilds) + "  wildcard(s)"
     textnote = textnote + " enter value by typing:  1-9, 0 (for ten), j, q, k or a. "
@@ -179,8 +178,7 @@ def wildsHiLo_step1(hand_view):
     Assigning wilds is as automated as possible, so this is only used to determine
     if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
     """
-    # hand_view.controller.unassigned_wilds_dict
-    # self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+    # hand_view.controller.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
 
     for k_group, group_info in hand_view.controller.unassigned_wilds_dict.items():
         processed_group = group_info[0]
@@ -189,10 +187,10 @@ def wildsHiLo_step1(hand_view):
             textnote = "USE KEY STROKES!! For the " + str(processed_group[1].suit) + " run: "
             for card in processed_group:
                 textnote = textnote + str(card.number) + ','
-            textnote = textnote + "should the wild be high or low?  type H or L ? (type q to cancel this play entirely)."
+            textnote = textnote + "should the wild be high or low?  type H or L ?"
             print(textnote)
             hand_view.controller.note = textnote
-            hand_view.bad_strokes = 0
+            hand_view.bad_strokes = 0   # if too many bad key-strokes, make wild automatically high.
     return
 
 def wildsHiLo_step2(hand_view):
@@ -201,14 +199,11 @@ def wildsHiLo_step2(hand_view):
     Assigning wilds is as automated as possible, so this is only used to determine
     if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
     """
-    # hand_view.controller.unassigned_wilds_dict
-    # self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+    # hand_view.controller.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
 
     key_list = []
     for k_group in hand_view.controller.unassigned_wilds_dict.keys():
         key_list.append(k_group)
-    print('in HandManagement at line 208, next line is key_list')
-    print(key_list)
     if len(key_list) > 0:
         k_group = key_list[0]
         group_info = hand_view.controller.unassigned_wilds_dict[k_group]
@@ -224,11 +219,9 @@ def wildsHiLo_step2(hand_view):
                 elif hand_view.event.key == pygame.K_h:
                     this_wild.tempnumber = wild_options[1]
                     del hand_view.controller.unassigned_wilds_dict[k_group]
-                elif hand_view.event.key == pygame.K_q:
-                    hand_view.controller.unassigned_wilds_dict = {}
-                    raise Exception('You canceled this play, hit play again when ready.')
                 else:
                     hand_view.bad_strokes = hand_view.bad_strokes + 1
+                    hand_view.controller.note = hand_view.controller.note + 'INVALID KEY STROKE'
                     if hand_view.bad_strokes > 4:
                         hand_view.controller.note = 'Invalid response more than 3 times, made wild card high'
                         this_wild.tempnumber = wild_options[1]
@@ -237,7 +230,9 @@ def wildsHiLo_step2(hand_view):
                 processed_group.append(this_wild)
                 processed_group.sort(key=lambda wc: wc.tempnumber)
                 hand_view.controller.processed_full_board[k_group] = processed_group
+            # reset count of num_wilds.
             hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
+            print(hand_view.num_wilds)
             if hand_view.num_wilds > 0:
                 wildsHiLo_step1(hand_view)
             else:

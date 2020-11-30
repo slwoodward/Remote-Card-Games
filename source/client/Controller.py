@@ -243,15 +243,14 @@ class Controller(ConnectionListener):
             self.processCards(visible_scards)
         except Exception as err:
             self.note = "{0}".format(err)
-            return
-        finally:
-            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards,
-            # so they can be reassigned if play fails.
+            # if play fails reset Aces and Wilds in prepared cards so they can be reassigned.
             self.resetPreparedWildsAces()
-        num_wilds = len(self.unassigned_wilds_dict.keys())
-        if num_wilds > 0:
-            self.note = 'Play will not complete until you designate wild cards using key strokes.'
-            #todo: board had 3,wild,5,6, tried to play 4.  Program gets here, but doesn't get to wildsHiLostep1. 4 doesn't play.
+            return
+        self.num_wilds = len(self.unassigned_wilds_dict.keys())
+        print('in controller, self.num_wilds = '+str(self.num_wilds))
+        if self.num_wilds > 0:
+            self.note = 'Play will not complete until you designate wild cards using key strokes' \
+                        ' [h for hi, l for low].'
         else:
             # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
             self.play()
