@@ -247,7 +247,6 @@ class Controller(ConnectionListener):
             self.resetPreparedWildsAces()
             return
         self.num_wilds = len(self.unassigned_wilds_dict.keys())
-        print('in controller, self.num_wilds = '+str(self.num_wilds))
         if self.num_wilds > 0:
             self.note = 'Play will not complete until you designate wild cards using key strokes' \
                         ' [h for hi, l for low].'

@@ -109,11 +109,10 @@ class HandView:
         self.RuleSetsButtons.ButtonDisplay(self)
 
     def nextEventWildsOnBoard(self):
-        """This replaces most of nextEvent when Shared_Board is True and there are ambiguous wild cards.
+        """This runs instead of most of nextEvent when Shared_Board is True and there are ambiguous wild cards.
 
         It is looking for key strokes to designate ambiguous wild cards in runs.
-        The mouse is ignored until you designate all the wilds (turn phase goes back to play)
-        or cancel playing the currently prepared cards entirely."""
+        The mouse is ignored until you designate all the wilds (turn phase goes back to play)."""
 
         if self.controller._state.rules.Shared_Board and self.num_wilds > 0:
             for self.event in pygame.event.get():
