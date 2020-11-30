@@ -63,7 +63,6 @@ def processRuns(card_group, wild_numbers):
                     card_group.append(card)
                 else:
                     raise Exception('Card value already in the run.')
-            # todo: found bug -- if free up a wild later in run then gap of 1 card can be closed.
             elif card.tempnumber > (abs_temp_number + 2):
                 raise Exception('too big a gap between numbers')
             else:

@@ -310,11 +310,6 @@ class Controller(ConnectionListener):
                         print("How odd --wild is unassigned only when it can be played at either end. Hence there should be only 1.")
                         print(processed_group)
                     else:
-                        # todo:  this is where I previously arbitrarily having unassigned_wilds assigned to be high. Eventually player should choose.
-                        # this_wild = unassigned_wilds[0]
-                        # this_wild.tempnumber = wild_options[1]
-                        # processed_group.append(this_wild)
-                        #  todo: unassigned_wilds_dict should prove useful when get wildsHiLo working.
                         self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             else:
                 #todo: need to sort sets?  get user feedback.
