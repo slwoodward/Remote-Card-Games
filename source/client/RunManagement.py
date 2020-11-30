@@ -91,10 +91,20 @@ def processRuns(card_group, wild_numbers):
     if len(aces_list) > 0:
         if len(aces_list) > 2:
             raise Exception('Cannot play more than 2 Aces in a single run.')
-        elif card_group[-1].tempnumber == 13 and not card_group[0].tempnumber == 2:
+        # Possible Ace(s) replacing a wild card with tempnumber 13 or -1.
+        # If have wild in Ace slot then remove it from run.  It will be placed back in run after Aces placed.
+        if isWild(card_group[0], wild_numbers) and abs(card_group[0].tempnumber) == 1:
+            this_wild = card_group.pop(0)
+            groups_wilds.append(this_wild)
+        if isWild(card_group[-1], wild_numbers) and card_group[-1].tempnumber == 13:
+            this_wild = card_group.pop(-1)
+            groups_wilds.append(this_wild)
+        # Can Ace go high but not low?
+        if card_group[-1].tempnumber == 13 and not card_group[0].tempnumber == 2:
             this_ace = aces_list.pop(0)
             this_ace.tempnumber = 14
             card_group.append(this_ace)
+            # Can Ace go low but not high?
         elif not card_group[-1].tempnumber == 13 and card_group[0].tempnumber == 2:
             this_ace = aces_list.pop(0)
             this_ace.tempnumber = -1
@@ -112,7 +122,6 @@ def processRuns(card_group, wild_numbers):
                 this_ace = aces_list.pop(0)
                 this_ace.tempnumber = 14
                 card_group.append(0, this_ace)
-    # Might be possible to assign any remaining Aces if there are any remaining wildcards.
     if len(aces_list) > 0 and len(groups_wilds) > 0:
         # Can Aces that previously could not be played now be played?
         if len(aces_list) == 2:
