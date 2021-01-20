@@ -36,7 +36,20 @@ def RunClient():
     # todo: check that server and client agree on game being played -- perhaps get ruleset from server?
     print(ruleset)
     connection.DoConnect((host, int(port)))
+    '''
+    # Get game from server.
+    connection.Pump()
+    ruleset = 'tbd'
+    while ruleset == 'tbd':
+        connection.Pump()
+        ruleset = data
+        sleep(0.001)
+    '''
+    # Back to code...
     clientState = ClientState(ruleset)
+    # next two lines added in latest branch, first st
+    rule_module = "common." + ruleset
+    clientState.importRules(rule_module)
     gameControl = Controller(clientState)
     playername = gameControl.getName()
     gameboard = CreateDisplay(playername)
@@ -50,7 +63,8 @@ def RunClient():
         gameControl.Pump()
         tableView.Pump()
         tableView.playerByPlayer(current_round)
-        note = "This may take a moment. If it seems too long, then it is possible you have the wrong server or port#..."
+        note = "Waiting for all current players to pick legit names. If it seems too long, " \
+               "then it is possible you have the wrong server or port#..."
         gameboard.render(note)
     playername = gameControl.checkNames(tableView.player_names)
     # games with Shared_Board=True need to insure name on server and client agree.

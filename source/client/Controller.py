@@ -413,6 +413,11 @@ class Controller(ConnectionListener):
         connection.Close()
 
     ### Gameplay messages ###
+
+    def Network_defineGame(self, data):
+        ruleset = data["ruleset"]
+        return ruleset
+
     def Network_startTurn(self, data):
         if self._state.round == -1:
             #Ignore turns when between rounds
