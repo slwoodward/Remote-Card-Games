@@ -8,17 +8,18 @@ class ClientState:
     It stores what is needed to compute scores and decide on move legality
     """
 
-    def __init__(self, ruleset = None):
+    def __init__(self, ruleset = 'tbd'):
         """Initialize a state tracker for a given client"""
         if ruleset is 'tbd':
             print('in client state, line 14')
+            self.rule_module = 'tbd'
             # get ruleset
-        elif ruleset is not None:
-            rule_module = "common." + ruleset
+        elif ruleset is not 'test':
+            self.rule_module = "common." + ruleset
         else:
             #This is the unit test case - we may want to put a dummy ruleset in
             print("In unittest mode - using HandAndFoot rules")
-            rule_module = "common.HandAndFoot"
+            self.rule_module = "common.HandAndFoot"
 
         # moved to separate method: self.rules = importlib.import_module(rule_module)
 
@@ -30,10 +31,8 @@ class ClientState:
         self.reset()  # Start with state cleared for a fresh round
         self.rule_module = 'tbd'
 
-    def importRules(self, rule_module):
-        if self.rule_module == 'tbd' and not rule_module == 'tbd':
-            self.rule_module = rule_module
-            self.rules = importlib.import_module(rule_module)
+    def importRules(self):
+        self.rules = importlib.import_module(rule_module)
 
     def getPlayerIndex(self, player_names):
         """This will udpate player index if another player drops out. """

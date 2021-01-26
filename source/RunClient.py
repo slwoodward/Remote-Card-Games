@@ -27,35 +27,39 @@ def RunClient():
     host, port = hostinfo.split(":")
     print(host)
     print(port)
+    ruleset = str(input("Hit enter to have client get game from server (recommended)") or "tbd")
+    """
     ruleset = str(input("Do you want to play HandAndFoot or Liverpool? (HandAndFoot = default)") or "HandAndFoot")
-    if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
+    if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot' and not ruleset == 'test':
         print(ruleset + ' is not supported.')
         ruleset = str(input("Enter Liverpool OR HandAndFoot (<CR> implies HandAndFoot) ") or "HandAndFoot")
         if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
             exit()
+    """
     # todo: check that server and client agree on game being played -- perhaps get ruleset from server?
     print(ruleset)
     connection.DoConnect((host, int(port)))
-    '''
-    # Get game from server.
-    connection.Pump()
-    ruleset = 'tbd'
-    while ruleset == 'tbd':
-        connection.Pump()
-        ruleset = data
-        sleep(0.001)
-    '''
-    # Back to code...
+    #
     clientState = ClientState(ruleset)
-    # next two lines added in latest branch, first st
-    rule_module = "common." + ruleset
-    clientState.importRules(rule_module)
     gameControl = Controller(clientState)
+    #todo: get consisitent on what to call this - is it gameControl.ruleset or clientState.rule_module!!!
+    # ruleset = gameControl.ruleset
+    while clientState.rule_module == "tbd":
+        print('at line 48')
+        gameControl.Network_defineGame({})
+        print(clientState.rule_module)
+        connection.Pump()
+        gameControl.Pump()
+        sleep(0.001)
+    clientState.importRules
+    # clientState.importRules(rule_module)
     playername = gameControl.getName()
     gameboard = CreateDisplay(playername)
     tableView = TableView(gameboard.display, ruleset)
     handView = HandView(gameControl, gameboard.display, ruleset)
     current_round = handView.round_index
+    # Get game from server.
+    connection.Pump()
     while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
         # Note that if two people join with the same name almost simultaneously, then both might be renamed.
         gameboard.refresh()

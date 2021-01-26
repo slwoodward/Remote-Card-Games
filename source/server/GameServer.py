@@ -32,7 +32,7 @@ class GameServer(Server, ServerState):
         else:
             self.players.append(channel)
             self.Send_publicInfo()
-            self.Send_defineGame(self.ruleset)
+            #todo: remove this -- send this info when sending names of players.  self.Send_defineGame(self.ruleset)
             print(channel, "Client connected")
             if self.round >= 0:
                 print(channel, 'a client joined between rounds')
@@ -170,9 +170,12 @@ class GameServer(Server, ServerState):
         """Send data to every connected player"""
         [p.Send(data) for p in self.players]
 
-    def Send_defineGame(self, ruleset):
-        self.Send_broadcast({"action": "defineGame", "ruleset": ruleset})
-
+    def Send_defineGame(self, player):
+        """Send name of game (ruleset) to player"""
+        print('in GameServer, Send_defineGame '+ self.ruleset)
+        ruleset = 'HandAndFoot'
+        print('for testing: reset ruleset to: '+ ruleset)
+        player.Send({"action": "defineGame", "ruleset": ruleset})
 
     def Send_endRound(self, player_name):
         """Notifies players that player_name has gone out and the round is over"""

@@ -45,8 +45,16 @@ class PlayerChannel(Channel):
     ### Network callbacks          ###
     ##################################
 
+    def Network_defineGame(self, data):
+        """Server provides name of game to be played (ruleset)."""
+        # todo -- self.ruleset should be self._server.ruleset.
+        self._server.Send_defineGame(self)
+        self.Send({"action": "defineGame", "ruleset": data['ruleset']})
+
     def Network_displayName(self, data):
-        """Player submitted their display name"""
+        """Player submitted their display name, send that to everyone, this is also where player learns name of game."""
+        # todo: rename this method since it now does more.
+        # todo Fix bug -- self.ruleset should be self._server.ruleset.
         self.name = data['name']
         self._server.Send_publicInfo()
 
