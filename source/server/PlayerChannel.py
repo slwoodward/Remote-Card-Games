@@ -45,11 +45,11 @@ class PlayerChannel(Channel):
     ### Network callbacks          ###
     ##################################
 
-    def Network_defineGame(self, data):
+    def Network_sendNameOfGame(self, data):
         """Server provides name of game to be played (ruleset)."""
-        # todo -- self.ruleset should be self._server.ruleset.
-        self._server.Send_defineGame(self)
-        self.Send({"action": "defineGame", "ruleset": data['ruleset']})
+        print('in playerChannel, Network_sendNameOfGame '+ self._server.ruleset)
+        self.Send({"action": "defineGame", "ruleset": self._server.ruleset})
+        # self.Send(self._server.ruleset)
 
     def Network_displayName(self, data):
         """Player submitted their display name, send that to everyone, this is also where player learns name of game."""

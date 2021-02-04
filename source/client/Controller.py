@@ -29,6 +29,10 @@ class Controller(ConnectionListener):
         self.buying_opportunity = False
 
     ### Player Actions ###
+    def askForGame(self):
+        """Ask the server what game is being played."""
+        connection.Send({"action": "sendNameOfGame"})
+
     def setName(self):
         """Set up a display name and send it to the server"""
 
@@ -415,8 +419,13 @@ class Controller(ConnectionListener):
     ### Gameplay messages ###
 
     def Network_defineGame(self, data):
-        self.ruleset = data["ruleset"]
-        print('in controller, def Network_defineGame')
+        if len(data) > 0:
+            self._state.ruleset = data["ruleset"]
+            print('in controller, def Network_defineGame, defining ruleset: '+ self._state.ruleset)
+        else:
+            print('in controller, data empty, must do further debugging (above worked at least once)')
+            print('for now setting ruleset to HandAndFoot')
+            self_state.ruleset = 'HandAndFoot'
 
     def Network_startTurn(self, data):
         if self._state.round == -1:

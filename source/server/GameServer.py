@@ -170,12 +170,13 @@ class GameServer(Server, ServerState):
         """Send data to every connected player"""
         [p.Send(data) for p in self.players]
 
-    def Send_defineGame(self, player):
+    '''def Send_defineGame(self, player):
         """Send name of game (ruleset) to player"""
         print('in GameServer, Send_defineGame '+ self.ruleset)
         ruleset = 'HandAndFoot'
         print('for testing: reset ruleset to: '+ ruleset)
         player.Send({"action": "defineGame", "ruleset": ruleset})
+    '''
 
     def Send_endRound(self, player_name):
         """Notifies players that player_name has gone out and the round is over"""

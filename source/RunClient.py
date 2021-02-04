@@ -44,19 +44,22 @@ def RunClient():
     gameControl = Controller(clientState)
     #todo: get consisitent on what to call this - is it gameControl.ruleset or clientState.rule_module!!!
     # ruleset = gameControl.ruleset
-    while clientState.rule_module == "tbd":
-        print('at line 48')
-        gameControl.Network_defineGame({})
-        print(clientState.rule_module)
+    gameControl.askForGame()
+    while clientState.ruleset == "tbd":
+        # print('at line 48')
+        # gameControl.Network_defineGame({})
+        # print(clientState.rule_module)
         connection.Pump()
         gameControl.Pump()
         sleep(0.001)
-    clientState.importRules
+    print('about to import rules')
+    clientState.importRules(clientState.ruleset)
+    print('returned from importRules')
     # clientState.importRules(rule_module)
     playername = gameControl.getName()
     gameboard = CreateDisplay(playername)
-    tableView = TableView(gameboard.display, ruleset)
-    handView = HandView(gameControl, gameboard.display, ruleset)
+    tableView = TableView(gameboard.display, clientState.ruleset)
+    handView = HandView(gameControl, gameboard.display, clientState.ruleset)
     current_round = handView.round_index
     # Get game from server.
     connection.Pump()
