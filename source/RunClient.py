@@ -70,7 +70,8 @@ def RunClient():
         gameboard.render(note)
         sleep(0.01)
     playername = gameControl.checkNames(tableView.player_names)
-    # games with Shared_Board=True need to insure name on server and client are unique.
+    # todo: evaluate whether next section with 'if' and 'while'is necessary.
+    # games with Shared_Board=True need to insure name on server and client are the same.
     if clientState.rules.Shared_Board:
         clientState.player_index = -99
         while clientState.player_index == -99:
