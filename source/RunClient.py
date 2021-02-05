@@ -30,12 +30,9 @@ def RunClient():
     (v) player provides name
     (vi) game window created
     (vii) tableView and handView initialized
-    (viii) playername confirmed with server 
+    (viii) playername confirmed with server and player_index found.
     (ix) main game loop
     """
-    # todo: note for reviewer: host name more stable than port#, so changed code so ask for host and port # separately.
-    #  hostinfo = str(input("Enter the host:port[localhost:12345] ") or "localhost:12345")
-    #  host, port = hostinfo.split(":")
     # (i) Connect to server:
     host = str(input("Enter the host [localhost] ") or "localhost")
     port = str(input("Enter the port[12345] ") or "12345")
@@ -57,7 +54,6 @@ def RunClient():
     tableView = TableView(gameboard.display, clientState.ruleset)
     handView = HandView(gameControl, gameboard.display, clientState.ruleset)
     current_round = handView.round_index
-    print(tableView.player_names)
     while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
         # Note that if two people join with the same name almost simultaneously, then both might be renamed.
         gameboard.refresh()
@@ -70,8 +66,8 @@ def RunClient():
         gameboard.render(note)
         sleep(0.01)
     playername = gameControl.checkNames(tableView.player_names)
-    # todo: evaluate whether next section with 'if' and 'while'is necessary.
-    # games with Shared_Board=True need to insure name on server and client are the same.
+    # games with Shared_Board=True need player_index, first must insure that server is reporting correct name.
+    # This can take a few cycles.
     if clientState.rules.Shared_Board:
         clientState.player_index = -99
         while clientState.player_index == -99:
