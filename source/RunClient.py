@@ -21,48 +21,43 @@ def RunClient():
         os.chdir(sys._MEIPASS)
     """This is the launch point for the client.
     
-    It sets up the various classes and starts the game loop
+    It sets up the various classes and starts the game loop.
+    Steps -- 
+    (i) player provides host:port info, and connection to server established.
+    (ii) clientState initialized 
+    (iii) controller initialized
+    (iv) ruleset imported 
+    (v) player provides name
+    (vi) game window created
+    (vii) tableView and handView initialized
+    (viii) playername confirmed with server 
+    (ix) main game loop
     """
-    hostinfo = str(input("Enter the host:port[localhost:12345] ") or "localhost:12345")
-    host, port = hostinfo.split(":")
-    print(host)
-    print(port)
-    ruleset = str(input("Hit enter to have client get game from server (recommended)") or "tbd")
-    """
-    ruleset = str(input("Do you want to play HandAndFoot or Liverpool? (HandAndFoot = default)") or "HandAndFoot")
-    if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot' and not ruleset == 'test':
-        print(ruleset + ' is not supported.')
-        ruleset = str(input("Enter Liverpool OR HandAndFoot (<CR> implies HandAndFoot) ") or "HandAndFoot")
-        if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
-            exit()
-    """
-    # todo: check that server and client agree on game being played -- perhaps get ruleset from server?
-    print(ruleset)
+    # todo: note for reviewer: host name more stable than port#, so changed code so ask for host and port # separately.
+    #  hostinfo = str(input("Enter the host:port[localhost:12345] ") or "localhost:12345")
+    #  host, port = hostinfo.split(":")
+    # (i) Connect to server:
+    host = str(input("Enter the host [localhost] ") or "localhost")
+    port = str(input("Enter the port[12345] ") or "12345")
     connection.DoConnect((host, int(port)))
-    #
+    # (ii)-(iv) initialize clientState and gameControl.  Will get name of game from server
+    ruleset = "tbd"  # ruleset will be obtained from server. If wish to run in test mode than change "tbd" to "test"
     clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
-    #todo: get consisitent on what to call this - is it gameControl.ruleset or clientState.rule_module!!!
-    # ruleset = gameControl.ruleset
-    gameControl.askForGame()
+    gameControl.askForGame()    # Ask server for name of game to be played.
     while clientState.ruleset == "tbd":
-        # print('at line 48')
-        # gameControl.Network_defineGame({})
-        # print(clientState.rule_module)
         connection.Pump()
         gameControl.Pump()
         sleep(0.001)
-    print('about to import rules')
-    clientState.importRules(clientState.ruleset)
-    print('returned from importRules')
-    # clientState.importRules(rule_module)
-    playername = gameControl.getName()
+    clientState.importRules(clientState.ruleset)   # Have rec'd ruleset name from server, so import the rules.
+    #
+    gameControl.setName()                        # Ask the player their name, and confirm it is acceptable.
+    playername = gameControl.getName()           # Confirm server has player name.
     gameboard = CreateDisplay(playername)
     tableView = TableView(gameboard.display, clientState.ruleset)
     handView = HandView(gameControl, gameboard.display, clientState.ruleset)
     current_round = handView.round_index
-    # Get game from server.
-    connection.Pump()
+    print(tableView.player_names)
     while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
         # Note that if two people join with the same name almost simultaneously, then both might be renamed.
         gameboard.refresh()
@@ -70,11 +65,12 @@ def RunClient():
         gameControl.Pump()
         tableView.Pump()
         tableView.playerByPlayer(current_round)
-        note = "Waiting for all current players to pick legit names. If it seems too long, " \
+        note = "Waiting for all current players to pick legit names. If wait seems too long, " \
                "then it is possible you have the wrong server or port#..."
         gameboard.render(note)
+        sleep(0.01)
     playername = gameControl.checkNames(tableView.player_names)
-    # games with Shared_Board=True need to insure name on server and client agree.
+    # games with Shared_Board=True need to insure name on server and client are unique.
     if clientState.rules.Shared_Board:
         clientState.player_index = -99
         while clientState.player_index == -99:

@@ -19,11 +19,9 @@ class Controller(ConnectionListener):
         self._state = clientState
         self.prepared_cards = {}     #This is the dict of cards prepared to be played.
         self.processed_full_board = {}  #in games with Shared Board, this is the dict of processed cards.
-        self.setName()
+        # self.setName() < do this in RunClient after getting rules(askForGame)
         self.ready = False
         self.note = "Game is beginning."
-        # variables needed for games with Shared_Board == True (i.e. Liverpool):
-        # moved to importRules self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.unassigned_wilds_dict = {}
         # variable needed if Buy_Option is True
         self.buying_opportunity = False
@@ -419,13 +417,11 @@ class Controller(ConnectionListener):
     ### Gameplay messages ###
 
     def Network_defineGame(self, data):
+        #todo: is this if statement necessary?
         if len(data) > 0:
             self._state.ruleset = data["ruleset"]
-            print('in controller, def Network_defineGame, defining ruleset: '+ self._state.ruleset)
         else:
-            print('in controller, data empty, must do further debugging (above worked at least once)')
-            print('for now setting ruleset to HandAndFoot')
-            self_state.ruleset = 'HandAndFoot'
+            print('in controller, server did not return ruleset')
 
     def Network_startTurn(self, data):
         if self._state.round == -1:

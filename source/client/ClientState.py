@@ -11,16 +11,6 @@ class ClientState:
     def __init__(self, ruleset = 'tbd'):
         """Initialize a state tracker for a given client"""
         self.ruleset = ruleset
-        if ruleset is 'tbd':
-            print('Getting name of game to be played from the server.')
-        elif ruleset is not 'test':
-            self.rule_module = "common." + ruleset
-        else:
-            #This is the unit test case - we may want to put a dummy ruleset in
-            print("In unittest mode - using HandAndFoot rules")
-            self.rule_module = "common.HandAndFoot"
-
-        # moved to separate method: self.rules = importlib.import_module(rule_module)
 
         # Turn phase handled by controller
         self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
@@ -31,10 +21,13 @@ class ClientState:
         self.rule_module = 'tbd'
 
     def importRules(self, ruleset):
-        rule_module = "common." + ruleset
-        print('in import rules, '+ rule_module)
+        if ruleset is not 'test':
+            rule_module = "common." + ruleset
+        else:
+            # This is the unit test case - we may want to put a dummy ruleset in
+            print("In unittest mode - using HandAndFoot rules")
+            rule_module = "common.HandAndFoot"
         self.rules = importlib.import_module(rule_module)
-        print('debug: should have just imported rules')
 
     def getPlayerIndex(self, player_names):
         """This will udpate player index if another player drops out. """
