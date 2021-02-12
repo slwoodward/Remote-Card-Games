@@ -203,8 +203,6 @@ class TableView(ConnectionListener):
         bk_grd_rect = screen_loc_info[0]
         y_coord = screen_loc_info[1]
         players_sp_w = bk_grd_rect[2]
-        print('bk_grd_rect')
-        print(bk_grd_rect)
         for key in melded_summary:
             if melded_summary[key][0] > 0:
                 detail_str = str(melded_summary[key][0])
