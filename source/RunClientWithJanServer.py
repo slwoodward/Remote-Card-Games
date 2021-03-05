@@ -35,7 +35,6 @@ def RunClient():
     (ix) main game loop
     """
     # (i) Connect to server:
-    port = str(input("Enter the port[12345] ") or "12345")
     host = str(input("Enter the host [xxxxx.net] ") or "xxxxx.net")
     port = str(input("Enter the port[8080] ") or "8080")
     connection.DoConnect((host, int(port)))
