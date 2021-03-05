@@ -36,7 +36,7 @@ pygame.font.init()
 Font_File = os.path.join('bundle_data', 'FreeSans-LrmZ.ttf')
 Small_Font_Sz = 14
 Small_Text = pygame.font.Font(Font_File, Small_Font_Sz)
-Small_Text_Feed = int(14* 1.5)
+Small_Text_Feed = int(14* 1.3)
 Medium_Text = pygame.font.Font(Font_File, 16)
 Medium_Text_Feed = int(16* 1.3)
 Big_Font_Sz = 20

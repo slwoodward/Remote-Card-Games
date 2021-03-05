@@ -35,8 +35,9 @@ def RunClient():
     (ix) main game loop
     """
     # (i) Connect to server:
-    host = str(input("Enter the host [localhost] ") or "localhost")
     port = str(input("Enter the port[12345] ") or "12345")
+    host = str(input("Enter the host [xxxxx.net] ") or "xxxxx.net")
+    port = str(input("Enter the port[8080] ") or "8080")
     connection.DoConnect((host, int(port)))
     # (ii)-(iv) initialize clientState and gameControl.  Will get name of game from server
     ruleset = "tbd"  # ruleset will be obtained from server. If wish to run in test mode than change "tbd" to "test"
