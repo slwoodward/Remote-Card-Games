@@ -75,7 +75,7 @@ class GameServer(Server, ServerState):
         """Safely remove a player from the turn order
         
         Checks for game over if no more players and quits server
-        Moves turn forward if it was deleted players turn
+        Moves turn forward if it was deleted players turn.
         """
         player_index = self.players.index(player)
         self.players.remove(player)
@@ -103,7 +103,9 @@ class GameServer(Server, ServerState):
         if self.turn_index == player_index and self.in_round:
             self.turn_index = self.turn_index % len(self.players) 
             self.players[self.turn_index].Send({"action": "startTurn"})
-
+        #Reset turn_index to insure that a player doesn't lose their turn:
+        if self.turn_index > player_index and self.in_round:
+            self.turn_index = self.turn_index - 1 % len(self.players)
 
     def nextTurn(self):
         """Advance to the next turn"""
@@ -192,7 +194,6 @@ class GameServer(Server, ServerState):
             # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards,
             # so p.visible_cards only contains that player p's fraction of the board.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players], "ruleset": self.ruleset})
-
 
     def Send_pickUpAnnouncement(self, name, top_card):
             self.Send_broadcast({"action": "pickUpAnnouncement", "player_name": name, "top_card": top_card.serialize()})
